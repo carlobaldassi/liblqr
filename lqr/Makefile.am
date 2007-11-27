@@ -1,11 +1,11 @@
 ## Process this file with automake to produce Makefile.in
 
-lqr_LIBRARIES = liblqr.a
+lqr_LTLIBRARIES = liblqr.la
 
-#bindir = $(GIMP_LIBDIR)/plug-ins
+##bindir = $(GIMP_LIBDIR)/plug-ins
 lqrdir = $(libdir)/lqr
 
-liblqr_a_SOURCES = \
+liblqr_la_SOURCES = \
 	lqr.h		\
 	lqr_base.h      \
 	lqr_gradient.c  \
@@ -23,8 +23,9 @@ liblqr_a_SOURCES = \
 	lqr_progress.c  \
 	lqr_progress.h
 
+liblqr_la_LDFLAGS = --version-info 0:1:0
+
 AM_CPPFLAGS = \
-	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
 	-DDATADIR=\""$(DATADIR)"\"		\
 	-I$(top_srcdir)		\
 	@GLIB_CFLAGS@		\

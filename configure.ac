@@ -29,10 +29,11 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 
 AC_ISC_POSIX
 AC_PROG_CC
-AC_PROG_RANLIB
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
@@ -65,12 +66,6 @@ GLIB_DIR=`$PKG_CONFIG --variable=libdir glib-2.0`
 AC_SUBST(GLIB_DIR)
 
 AC_CHECK_FUNCS(bind_textdomain_codeset)
-
-LOCALEDIR="${datadir}/locale"
-if test "$DATADIRNAME" = "lib"; then
-   LOCALEDIR="$libdir/locale"
-fi
-AC_SUBST(LOCALEDIR)
 
 DATADIR="${datadir}/library_name"
 AC_SUBST(DATADIR)
