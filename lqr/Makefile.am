@@ -1,0 +1,34 @@
+## Process this file with automake to produce Makefile.in
+
+lqr_LIBRARIES = liblqr.a
+
+#bindir = $(GIMP_LIBDIR)/plug-ins
+lqrdir = $(libdir)/lqr
+
+liblqr_a_SOURCES = \
+	lqr.h		\
+	lqr_base.h      \
+	lqr_gradient.c  \
+	lqr_gradient.h  \
+	lqr_cursor.c    \
+	lqr_cursor.h    \
+	lqr_raster.c    \
+	lqr_raster.h    \
+	lqr_seams_buffer.c \
+	lqr_seams_buffer.h \
+	lqr_seams_buffer_list.c \
+	lqr_seams_buffer_list.h \
+	lqr_colour.c    \
+	lqr_colour.h	\
+	lqr_progress.c  \
+	lqr_progress.h
+
+AM_CPPFLAGS = \
+	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
+	-DDATADIR=\""$(DATADIR)"\"		\
+	-I$(top_srcdir)		\
+	@GLIB_CFLAGS@		\
+	-I$(includedir)
+
+LDADD = $(GLIB_LIBS) -lm
+

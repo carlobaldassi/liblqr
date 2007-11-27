@@ -1,0 +1,67 @@
+target = liblqr.so.0.0.1
+
+lqr_libs = lqr_gradient.o \
+	   lqr_cursor.o   \
+	   lqr_raster.o   \
+	   lqr_seams_buffer.o \
+	   lqr_seams_buffer_list.o \
+	   lqr_colour.o \
+	   lqr_progress.o
+
+base_headers = lqr.h \
+	       lqr_base.h \
+	       lqr_gradient.h \
+	       lqr_cursor.h \
+	       lqr_raster.h \
+	       config.h \
+	       plugin-intl.h
+
+all_headers = $(base_headers) \
+	      lqr_seams_buffer.h \
+	      lqr_seams_buffer_list.h \
+	      lqr_colour.h \
+	      lqr_progress.h
+
+INCLUDES = \
+	-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I.
+
+FLAGS = $(INCLUDES) -fPIC -Wall -O2
+
+GIMP_LIBDIR = /usr/lib/gimp/2.0
+GIMP_LIBS = -lgimpui-2.0 -lgimpwidgets-2.0 -lgimpmodule-2.0 -lgimp-2.0 -lgimpmath-2.0 -lgimpconfig-2.0 -lgimpcolor-2.0 -lgimpbase-2.0 -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lfontconfig -lXext -lXrender -lXinerama -lXi -lXrandr -lXcursor -lXcomposite -lXdamage -lpango-1.0 -lcairo -lX11 -lXfixes -lgobject-2.0 -lgmodule-2.0 -ldl -lglib-2.0  
+
+LIBFLAGS = -shared -L$(GIMP_LIBDIR) $(GIMP_LIBS) -Wall -O2
+
+.PHONY : all make-lib
+
+all : $(target)
+
+$(target) : $(lqr_libs)
+	#rm -f $(target)
+	gcc $(LIBFLAGS) -Wl,-soname,liblqr.so.0 -o $(target) $(lqr_libs) -lc
+	ln -sf $(target) liblqr.so.0
+	ln -sf liblqr.so.0 liblqr.so
+
+lqr_gradient.o: lqr_gradient.c $(base_headers)
+	gcc $(FLAGS) -c lqr_gradient.c
+
+lqr_cursor.o: lqr_cursor.c $(base_headers)
+	gcc $(FLAGS) -c lqr_cursor.c
+
+lqr_raster.o: lqr_raster.c $(all_headers)
+	gcc $(FLAGS) -c lqr_raster.c
+
+lqr_seams_buffer.o: lqr_seams_buffer.c $(all_headers)
+	gcc $(FLAGS) -c lqr_seams_buffer.c
+
+lqr_seams_buffer_list.o: lqr_seams_buffer_list.c $(all_headers)
+	gcc $(FLAGS) -c lqr_seams_buffer_list.c
+
+lqr_colour.o: lqr_colour.c lqr_colour.h
+	gcc $(FLAGS) -c lqr_colour.c
+
+lqr_progress.o: lqr_progress.c lqr_progress.h
+	gcc $(FLAGS) -c lqr_progress.c
+
+clean :
+	rm -f liblqr.so liblqr.so.0 $(target) $(lqr_libs)
