@@ -15,6 +15,7 @@ FILE=lqr/lqr_raster.c
 AUTOCONF_REQUIRED_VERSION=2.54
 AUTOMAKE_REQUIRED_VERSION=1.6
 GLIB_REQUIRED_VERSION=2.0.0
+LIBTOOL_REQUIRED_VERSION=1.5.24
 INTLTOOL_REQUIRED_VERSION=0.17
 
 srcdir=`dirname $0`
@@ -79,6 +80,20 @@ if test x$AUTOMAKE != x; then
     check_version $VER $AUTOMAKE_REQUIRED_VERSION
 fi
 
+echo -n "checking for libtool >= $LIBTOOL_REQUIRED_VERSION ... "
+if (libtoolize --version) < /dev/null > /dev/null 2>&1; then
+    VER=`libtoolize --version \
+         | grep libtoolize | sed "s/.* \([0-9.]*\)/\1/"`
+    check_version $VER $INTLTOOL_REQUIRED_VERSION
+else
+    echo
+    echo "  You must have libtool installed to compile $PROJECT."
+    echo "  Get the latest version from"
+    echo "  ???"
+    DIE=1
+fi
+
+
 if test "$DIE" -eq 1; then
     echo
     echo "Please install/upgrade the missing tools and call me again."
@@ -142,6 +157,8 @@ fi
 
 $AUTOMAKE --add-missing --copy || exit 1
 autoconf || exit 1
+
+libtoolize --force --copy || exit 1
 
 cd $ORIGDIR
 
