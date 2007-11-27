@@ -6,21 +6,31 @@ dnl Name of library
 m4_define([library_name], [liblqr])
 
 dnl These three define the library version number
-m4_define([library_major_version], [0])
-m4_define([library_minor_version], [1])
-m4_define([library_micro_version], [0])
+m4_define([package_major_version], [1])
+m4_define([package_minor_version], [0])
+m4_define([package_micro_version], [0])
 
-m4_define([library_version],
-          [library_major_version.library_minor_version.library_micro_version])
+m4_define([package_version],
+          [package_major_version.package_minor_version.package_micro_version])
 
-AC_INIT([library_name], [library_version])
+m4_define([library_version_current], [0])
+m4_define([library_version_release], [0])
+m4_define([library_version_age], [0])
+
+AC_INIT([library_name], [package_version])
 
 AC_DEFINE(LIBRARY_NAME, PACKAGE_NAME, [Library name])
-AC_DEFINE(LIBRARY_VERSION, PACKAGE_VERSION, [Library version])
 
-AC_DEFINE(LIBRARY_MAJOR_VERSION, library_major_version, [Library major version])
-AC_DEFINE(LIBRARY_MINOR_VERSION, library_minor_version, [Library minor version])
-AC_DEFINE(LIBRARY_MICRO_VERSION, library_micro_version, [Library micro version])
+AC_DEFINE(PACKAGE_MAJOR_VERSION, package_major_version, [Package major version])
+AC_DEFINE(PACKAGE_MINOR_VERSION, package_minor_version, [Package minor version])
+AC_DEFINE(PACKAGE_MICRO_VERSION, package_micro_version, [Package micro version])
+
+AC_DEFINE(LIBRARY_VERSION_CURRENT, library_version_current, [Library current version])
+AC_DEFINE(LIBRARY_VERSION_RELEASE, library_version_release, [Library release])
+AC_DEFINE(LIBRARY_VERSION_AGE, library_version_age, [Library age])
+
+LIBRARY_VERSION=library_version_current:library_version_release:library_version_age
+AC_SUBST(LIBRARY_VERSION)
 
 AC_CONFIG_SRCDIR([lqr/lqr_raster.c])
 AM_CONFIG_HEADER(config.h)

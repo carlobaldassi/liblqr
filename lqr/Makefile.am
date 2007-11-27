@@ -23,7 +23,7 @@ liblqr_la_SOURCES = \
 	lqr_progress.c  \
 	lqr_progress.h
 
-liblqr_la_LDFLAGS = --version-info 0:1:0
+liblqr_la_LDFLAGS = -version-info @LIBRARY_VERSION@
 
 AM_CPPFLAGS = \
 	-DDATADIR=\""$(DATADIR)"\"		\
