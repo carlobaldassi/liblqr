@@ -13,6 +13,7 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -37,9 +38,9 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	config.guess config.sub depcomp install-sh ltmain.sh missing \
-	mkinstalldirs
+	$(srcdir)/lqr-1.pc.in $(top_srcdir)/configure AUTHORS COPYING \
+	ChangeLog INSTALL NEWS config.guess config.sub depcomp \
+	install-sh ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -49,7 +50,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = lqr-1.pc
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -58,6 +59,15 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(lqr_pkgconfigdir)"
+lqr_pkgconfigDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(lqr_pkgconfig_DATA)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
@@ -76,6 +86,7 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+API_VERSION = @API_VERSION@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -112,11 +123,14 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
-LIBRARY_VERSION = @LIBRARY_VERSION@
+LIBRARY_BASE_NAME = @LIBRARY_BASE_NAME@
+LIBRARY_NAME = @LIBRARY_NAME@
+LIBRARY_SNAME = @LIBRARY_SNAME@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+LTVERSION = @LTVERSION@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
@@ -188,6 +202,11 @@ EXTRA_DIST = \
 	BUGS			\
 	autogen.sh
 
+DISTCLEANFILES = \
+		 autom4te.cache
+
+lqr_pkgconfig_DATA = @LIBRARY_SNAME@.pc
+lqr_pkgconfigdir = $(libdir)/pkgconfig
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -242,6 +261,8 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+lqr-1.pc: $(top_builddir)/config.status $(srcdir)/lqr-1.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -252,6 +273,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-lqr_pkgconfigDATA: $(lqr_pkgconfig_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(lqr_pkgconfigdir)" || $(mkdir_p) "$(DESTDIR)$(lqr_pkgconfigdir)"
+	@list='$(lqr_pkgconfig_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(lqr_pkgconfigDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(lqr_pkgconfigdir)/$$f'"; \
+	  $(lqr_pkgconfigDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(lqr_pkgconfigdir)/$$f"; \
+	done
+
+uninstall-lqr_pkgconfigDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lqr_pkgconfig_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(lqr_pkgconfigdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(lqr_pkgconfigdir)/$$f"; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -388,6 +426,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
+	$(mkdir_p) $(distdir)/.
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -528,9 +567,12 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile config.h
+all-am: Makefile $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
+	for dir in "$(DESTDIR)$(lqr_pkgconfigdir)"; do \
+	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
+	done
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -551,6 +593,7 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -575,7 +618,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-lqr_pkgconfigDATA
 
 install-exec-am:
 
@@ -603,7 +646,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-lqr_pkgconfigDATA
 
 uninstall-info: uninstall-info-recursive
 
@@ -615,15 +658,15 @@ uninstall-info: uninstall-info-recursive
 	distclean-recursive distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
+	install-exec-am install-info install-info-am \
+	install-lqr_pkgconfigDATA install-man install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic \
 	maintainer-clean-recursive mostlyclean mostlyclean-generic \
 	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am uninstall-info-am
+	tags tags-recursive uninstall uninstall-am uninstall-info-am \
+	uninstall-lqr_pkgconfigDATA
 
-
-# DISTCLEANFILES = 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

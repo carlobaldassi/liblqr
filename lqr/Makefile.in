@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -37,7 +38,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = lqr
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+DIST_COMMON = $(lqr_include_HEADERS) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -51,14 +53,14 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(lqrdir)"
+am__installdirs = "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)"
 lqrLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lqr_LTLIBRARIES)
-liblqr_la_LIBADD =
-am_liblqr_la_OBJECTS = lqr_gradient.lo lqr_cursor.lo lqr_raster.lo \
+liblqr_1_la_LIBADD =
+am_liblqr_1_la_OBJECTS = lqr_gradient.lo lqr_cursor.lo lqr_raster.lo \
 	lqr_seams_buffer.lo lqr_seams_buffer_list.lo lqr_colour.lo \
 	lqr_progress.lo
-liblqr_la_OBJECTS = $(am_liblqr_la_OBJECTS)
+liblqr_1_la_OBJECTS = $(am_liblqr_1_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -70,8 +72,10 @@ LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(liblqr_la_SOURCES)
-DIST_SOURCES = $(liblqr_la_SOURCES)
+SOURCES = $(liblqr_1_la_SOURCES)
+DIST_SOURCES = $(liblqr_1_la_SOURCES)
+lqr_includeHEADERS_INSTALL = $(INSTALL_HEADER)
+HEADERS = $(lqr_include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -79,6 +83,7 @@ ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+API_VERSION = @API_VERSION@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -115,11 +120,14 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
-LIBRARY_VERSION = @LIBRARY_VERSION@
+LIBRARY_BASE_NAME = @LIBRARY_BASE_NAME@
+LIBRARY_NAME = @LIBRARY_NAME@
+LIBRARY_SNAME = @LIBRARY_SNAME@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+LTVERSION = @LTVERSION@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
@@ -186,9 +194,9 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-lqr_LTLIBRARIES = liblqr.la
-lqrdir = $(libdir)/lqr
-liblqr_la_SOURCES = \
+lqr_LTLIBRARIES = liblqr-1.la
+lqrdir = $(libdir)
+liblqr_1_la_SOURCES = \
 	lqr.h		\
 	lqr_base.h      \
 	lqr_gradient.c  \
@@ -206,7 +214,7 @@ liblqr_la_SOURCES = \
 	lqr_progress.c  \
 	lqr_progress.h
 
-liblqr_la_LDFLAGS = -version-info @LIBRARY_VERSION@
+liblqr_1_la_LDFLAGS = -version-info @LTVERSION@
 AM_CPPFLAGS = \
 	-DDATADIR=\""$(DATADIR)"\"		\
 	-I$(top_srcdir)		\
@@ -214,6 +222,17 @@ AM_CPPFLAGS = \
 	-I$(includedir)
 
 LDADD = $(GLIB_LIBS) -lm
+lqr_include_HEADERS = lqr.h \
+		      lqr_base.h \
+		      lqr_gradient.h \
+		      lqr_cursor.h \
+		      lqr_raster.h \
+		      lqr_seams_buffer.h \
+		      lqr_seams_buffer_list.h \
+		      lqr_colour.h \
+		      lqr_progress.h
+
+lqr_includedir = $(includedir)/@LIBRARY_SNAME@/@LIBRARY_BASE_NAME@
 all: all-am
 
 .SUFFIXES:
@@ -274,8 +293,8 @@ clean-lqrLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-liblqr.la: $(liblqr_la_OBJECTS) $(liblqr_la_DEPENDENCIES) 
-	$(LINK) -rpath $(lqrdir) $(liblqr_la_LDFLAGS) $(liblqr_la_OBJECTS) $(liblqr_la_LIBADD) $(LIBS)
+liblqr-1.la: $(liblqr_1_la_OBJECTS) $(liblqr_1_la_DEPENDENCIES) 
+	$(LINK) -rpath $(lqrdir) $(liblqr_1_la_LDFLAGS) $(liblqr_1_la_OBJECTS) $(liblqr_1_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -321,6 +340,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-lqr_includeHEADERS: $(lqr_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(lqr_includedir)" || $(mkdir_p) "$(DESTDIR)$(lqr_includedir)"
+	@list='$(lqr_include_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(lqr_includeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(lqr_includedir)/$$f'"; \
+	  $(lqr_includeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(lqr_includedir)/$$f"; \
+	done
+
+uninstall-lqr_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lqr_include_HEADERS)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(lqr_includedir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(lqr_includedir)/$$f"; \
+	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -399,9 +435,9 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(lqrdir)"; do \
+	for dir in "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -449,7 +485,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-lqrLTLIBRARIES
+install-data-am: install-lqrLTLIBRARIES install-lqr_includeHEADERS
 
 install-exec-am:
 
@@ -477,7 +513,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-lqrLTLIBRARIES
+uninstall-am: uninstall-info-am uninstall-lqrLTLIBRARIES \
+	uninstall-lqr_includeHEADERS
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-lqrLTLIBRARIES ctags distclean \
@@ -485,12 +522,13 @@ uninstall-am: uninstall-info-am uninstall-lqrLTLIBRARIES
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-exec \
 	install-exec-am install-info install-info-am \
-	install-lqrLTLIBRARIES install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-info-am \
-	uninstall-lqrLTLIBRARIES
+	install-lqrLTLIBRARIES install-lqr_includeHEADERS install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-info-am uninstall-lqrLTLIBRARIES \
+	uninstall-lqr_includeHEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

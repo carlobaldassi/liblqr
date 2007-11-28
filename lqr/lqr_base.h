@@ -35,7 +35,7 @@
 #define __LQR_DEBUG__
 #endif
 
-#if 1
+#if 0
 #define __LQR_CLOCK__
 #endif
 

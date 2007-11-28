@@ -16,7 +16,6 @@ AUTOCONF_REQUIRED_VERSION=2.54
 AUTOMAKE_REQUIRED_VERSION=1.6
 GLIB_REQUIRED_VERSION=2.0.0
 LIBTOOL_REQUIRED_VERSION=1.5.24
-INTLTOOL_REQUIRED_VERSION=0.17
 
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
@@ -35,7 +34,7 @@ check_version ()
 
 echo
 echo "I am testing that you have the required versions of autoconf," 
-echo "automake, glib-gettextize and intltoolize..."
+echo "automake and libtoolize..."
 echo
 
 DIE=0
@@ -84,7 +83,7 @@ echo -n "checking for libtool >= $LIBTOOL_REQUIRED_VERSION ... "
 if (libtoolize --version) < /dev/null > /dev/null 2>&1; then
     VER=`libtoolize --version \
          | grep libtoolize | sed "s/.* \([0-9.]*\)/\1/"`
-    check_version $VER $INTLTOOL_REQUIRED_VERSION
+    check_version $VER $LIBTOOL_REQUIRED_VERSION
 else
     echo
     echo "  You must have libtool installed to compile $PROJECT."

@@ -37,13 +37,13 @@
 #undef LIBRARY_NAME
 
 /* Library age */
-#undef LIBRARY_VERSION_AGE
+#undef LTVERSION_AGE
 
 /* Library current version */
-#undef LIBRARY_VERSION_CURRENT
+#undef LTVERSION_CURRENT
 
 /* Library release */
-#undef LIBRARY_VERSION_RELEASE
+#undef LTVERSION_RELEASE
 
 /* Name of package */
 #undef PACKAGE

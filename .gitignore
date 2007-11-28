@@ -1,0 +1,15 @@
+.*.swp
+Makefile
+*/Makefile
+*/.deps
+*/.libs
+*/*.l[oa]
+*/*.[oa]
+autom4te.cache
+config.h
+config.log
+config.status
+config.guess
+libtool
+lqr-1.pc
+stamp-h1
