@@ -1,0 +1,4 @@
+lqr/lqr*.h usr/include/lqr-1/lqr/
+lqr/.libs/lib*.so usr/lib/
+lqr-1.pc usr/lib/pkgconfig/
+lqr/.libs/*.la usr/lib/

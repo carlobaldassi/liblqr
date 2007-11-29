@@ -1418,5 +1418,41 @@ gint lqr_raster_get_height(LqrRaster* r)
   return (r->transposed ? r->w : r->h);
 }
 
+/* readout reset */
+void lqr_raster_read_reset (LqrRaster * r)
+{
+  lqr_cursor_reset (r->c);
+}
+
+/* readout move */
+gboolean lqr_raster_read_next (LqrRaster * r)
+{
+  if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
+    {
+      return FALSE;
+    }
+  lqr_cursor_next(r->c);
+  return TRUE;
+}
+
+
+/* readout coordinates */
+gint lqr_raster_read_x(LqrRaster* r)
+{
+  return (r->transposed ? r->c->y : r->c->x);
+}
+
+gint lqr_raster_read_y(LqrRaster* r)
+{
+  return (r->transposed ? r->c->x : r->c->y);
+}
+
+/* readout colour */
+guchar lqr_raster_read_c (LqrRaster * r, gint col)
+{
+  gint k = CLAMP(col, 0, r->bpp - 1);
+  return r->rgb[r->c->now * r->bpp + k];
+}
+
 
 /**** END OF LQR_RASTER CLASS FUNCTIONS ****/

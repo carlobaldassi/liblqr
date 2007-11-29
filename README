@@ -148,7 +148,7 @@ desired size, and the visibility map will computed as necessary.
 ++ Basic methods
 
 The main lqr library class is LqrRaster, which is used to
-igenerate and store the multi-size image representation.
+generate and store the multi-size image representation.
 Its basic public methods are:
 
   +++ constructor and destructor
@@ -162,20 +162,16 @@ Its basic public methods are:
     gboolean lqr_raster_resize (LqrRaster * r, gint w1, gint h1)
     gboolean lqr_raster_flatten (LqrRaster * r)
 
+  ++ readout
+    void lqr_raster_read_reset (LqrRaster * r)
+    gboolean lqr_raster_read_next (LqrRaster * r)
+    gint lqr_raster_read_x (LqrRaster * r)
+    gint lqr_raster_read_y (LqrRaster * r)
+    guchar lqr_raster_read_c (LqrRaster * r, gint col)
+
   +++ get values
     gint lqr_raster_get_width (LqrRaster * r)
     gint lqr_raster_get_height (LqrRaster * r)
-
-Another important class is LqrCursor, which is used to read out
-the multi-size image (necessary for real-time rescaling). Each
-LqrRaster, has an associated LqrCursor, so creation and destruction
-are automatic. The public methods are:
-
-  +++ Reposition at the beginning of the image
-    void lqr_cursor_reset (LqrCursor * c)
-  +++ Scan the image
-    void lqr_cursor_next (LqrCursor * c)
-    void lqr_cursor_prev (LqrCursor * c)
 
 The other classes are optional. The class LqrProgress is used to
 customize progress report from the resizing engine, which by

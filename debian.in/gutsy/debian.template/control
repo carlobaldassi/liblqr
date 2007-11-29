@@ -1,0 +1,34 @@
+Source: liblqr-1
+Priority: extra
+Maintainer: Carlo Baldassi <carlobaldassi@yahoo.it>
+Build-Depends: libglib2.0-dev (>= 2.14.1), libxml-parser-perl (>= 2.34), debhelper (>= 5), autotools-dev 
+Standards-Version: 3.7.2
+Section: libs
+
+Package: liblqr1-dev
+Section: libdevel
+Architecture: any
+Depends: liblqr1 (= ${Source-Version})
+Description: Liquid Rescale library
+ LqR is a library providing a free implementation of
+ the "seam carving for content-aware image resizing"
+ algorithm by Shai Avidan and Ariel Shamir.
+ .
+ This package contains the header files needed
+ for development with liblqr. 
+
+Package: liblqr1
+Section: libs
+Architecture: any
+Depends: libglib2.0-0 (>= 2.14.1), ${shlibs:Depends}, ${misc:Depends}
+Description: Liquid Rescale library
+ LqR is a library providing a free implementation of
+ the "seam carving for content-aware image resizing"
+ algorithm by Shai Avidan and Ariel Shamir.
+ .
+ This technique aims at resizing images non-uniformly
+ while preserving their features. It can also be used
+ to remove portions of the picture in a consistent way.
+ .
+ You can find more information and examples at:
+ http://liquidrescale.wikidot.com

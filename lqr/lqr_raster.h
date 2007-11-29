@@ -139,8 +139,14 @@ void lqr_raster_set_progress (LqrRaster *r, LqrProgress *p);
 gboolean lqr_raster_resize (LqrRaster * r, gint w1, gint h1);   /* liquid resize */
 gboolean lqr_raster_flatten (LqrRaster * r);    /* flatten the multisize image */
 
-/* other */
+/* readout */
 gint lqr_raster_get_width (LqrRaster * r);
 gint lqr_raster_get_height (LqrRaster * r);
+gint lqr_raster_read_x (LqrRaster * r);
+gint lqr_raster_read_y (LqrRaster * r);
+void lqr_raster_read_reset (LqrRaster * r);
+gboolean lqr_raster_read_next (LqrRaster * r);
+guchar lqr_raster_read_c (LqrRaster * r, gint col);
+
 
 #endif /* __LQR_RASTER_H__ */
