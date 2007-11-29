@@ -45,7 +45,7 @@ typedef gboolean (*LqrSeamsBufferFunc) (LqrSeamsBuffer * seams_buffer, gpointer 
 LqrSeamsBuffer* lqr_seams_buffer_new (guchar * buffer, gint width, gint heigth);
 void lqr_seams_buffer_destroy (LqrSeamsBuffer * seams_buffer);
 
-gboolean lqr_seams_buffer_flush_vs (LqrRaster * r);
+gboolean lqr_seams_buffer_flush_vs (LqrCarver * r);
 
 
 #endif /* __LQR_SEAMS_BUFFER__ */

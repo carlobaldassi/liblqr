@@ -54,7 +54,7 @@ lqr_seams_buffer_destroy (LqrSeamsBuffer * seams_buffer)
  * uses original size
  * uninitialized points are plotted transparent */
 gboolean
-lqr_seams_buffer_flush_vs (LqrRaster * r)
+lqr_seams_buffer_flush_vs (LqrCarver * r)
 {
   guchar * buffer;
   LqrSeamsBuffer * seams_buffer;
@@ -66,10 +66,10 @@ lqr_seams_buffer_flush_vs (LqrRaster * r)
   w1 = r->w;
 
   /* temporarily set the size to the original */
-  lqr_raster_set_width (r, r->w_start);
+  lqr_carver_set_width (r, r->w_start);
 
-  w = lqr_raster_get_width (r);
-  h = lqr_raster_get_height (r);
+  w = lqr_carver_get_width (r);
+  h = lqr_carver_get_height (r);
 
   bpp = 4;
 
@@ -121,7 +121,7 @@ lqr_seams_buffer_flush_vs (LqrRaster * r)
     }
 
   /* recover size */
-  lqr_raster_set_width (r, w1);
+  lqr_carver_set_width (r, w1);
 
   TRY_N_F (seams_buffer = lqr_seams_buffer_new(buffer, w, h));
 

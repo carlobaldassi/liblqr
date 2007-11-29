@@ -20,23 +20,23 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_RASTER_H__
-#define __LQR_RASTER_H__
+#ifndef __LQR_CARVER_H__
+#define __LQR_CARVER_H__
 
 #ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_raster.h"
+#error "lqr_base.h must be included prior to lqr_carver.h"
 #endif /* __LQR_BASE_H__ */
 
 #ifndef __LQR_GRADIENT_H__
-#error "lqr_gradient.h must be included prior to lqr_raster.h"
+#error "lqr_gradient.h must be included prior to lqr_carver.h"
 #endif /* __LQR_GRADIENT_H__ */
 
-/**** LQR_RASTER CLASS DEFINITION ****/
+/**** LQR_CARVER CLASS DEFINITION ****/
 /* This is the representation of the multisize image
  * The image is stored internally as a one-dimentional
  * array of LqrData points, called map.
  * The points are ordered by rows. */
-struct _LqrRaster
+struct _LqrCarver
 {
   gint w_start, h_start;        /* original width & height */
   gint w, h;                    /* current width & height */
@@ -52,7 +52,7 @@ struct _LqrRaster
   gint bpp;                     /* number of bpp of the image */
 
   gint transposed;              /* flag to set transposed state */
-  gboolean aux;                 /* flag to set if raster is auxiliary */
+  gboolean aux;                 /* flag to set if carver is auxiliary */
 
   gboolean resize_aux_layers;   /* flag to determine whether the auxiliary layers are resized */
   gboolean output_seams;        /* flag to determine whether to output the seam map */
@@ -60,8 +60,8 @@ struct _LqrRaster
   LqrColourRGBA seam_colour_start;     /* start colour for the seam map */
   LqrColourRGBA seam_colour_end;       /* end colour for the seam map */
 
-  LqrRaster *pres_raster;       /* preservation layer raster */
-  LqrRaster *disc_raster;       /* discard layer raster */
+  LqrCarver *pres_carver;       /* preservation layer carver */
+  LqrCarver *disc_carver;       /* discard layer carver */
 
   gfloat rigidity;              /* rigidity value (can straighten seams) */
   gdouble *rigidity_map;        /* the rigidity function */
@@ -90,63 +90,63 @@ struct _LqrRaster
 };
 
 
-/* LQR_RASTER CLASS FUNCTIONS */
+/* LQR_CARVER CLASS FUNCTIONS */
 
 /** private functions **/
 
 /* build maps */
-gboolean lqr_raster_build_maps (LqrRaster * r, gint depth);     /* build all */
-void lqr_raster_build_emap (LqrRaster * r);     /* energy */
-void lqr_raster_build_mmap (LqrRaster * r);     /* minpath */
-gboolean lqr_raster_build_vsmap (LqrRaster * r, gint depth);    /* visibility */
+gboolean lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */
+void lqr_carver_build_emap (LqrCarver * r);     /* energy */
+void lqr_carver_build_mmap (LqrCarver * r);     /* minpath */
+gboolean lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility */
 
 /* internal functions for maps computation */
-inline gdouble lqr_raster_read (LqrRaster * r, gint x, gint y); /* read the average value at given point */
-void lqr_raster_compute_e (LqrRaster * r, gint x, gint y);      /* compute energy of point at c (fast) */
-void lqr_raster_update_emap (LqrRaster * r);    /* update energy map after seam removal */
-void lqr_raster_update_mmap (LqrRaster * r);    /* minpath */
-void lqr_raster_build_vpath (LqrRaster * r);    /* compute seam path */
-void lqr_raster_carve (LqrRaster * r);  /* updates the "raw" buffer */
-void lqr_raster_update_vsmap (LqrRaster * r, gint l);   /* update visibility map after seam removal */
-void lqr_raster_finish_vsmap (LqrRaster * r);   /* complete visibility map (last seam) */
-void lqr_raster_copy_vsmap (LqrRaster * r, LqrRaster * dest);   /* copy vsmap on another raster */
-gboolean lqr_raster_inflate (LqrRaster * r, gint l);    /* adds enlargment info to map */
+inline gdouble lqr_carver_read (LqrCarver * r, gint x, gint y); /* read the average value at given point */
+void lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c (fast) */
+void lqr_carver_update_emap (LqrCarver * r);    /* update energy map after seam removal */
+void lqr_carver_update_mmap (LqrCarver * r);    /* minpath */
+void lqr_carver_build_vpath (LqrCarver * r);    /* compute seam path */
+void lqr_carver_carve (LqrCarver * r);  /* updates the "raw" buffer */
+void lqr_carver_update_vsmap (LqrCarver * r, gint l);   /* update visibility map after seam removal */
+void lqr_carver_finish_vsmap (LqrCarver * r);   /* complete visibility map (last seam) */
+void lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest);   /* copy vsmap on another carver */
+gboolean lqr_carver_inflate (LqrCarver * r, gint l);    /* adds enlargment info to map */
 
 /* image manipulations */
-gboolean lqr_raster_resize_width (LqrRaster * r, gint w1);   /* liquid resize width */
-gboolean lqr_raster_resize_height (LqrRaster * r, gint h1);   /* liquid resize height */
-void lqr_raster_set_width (LqrRaster * r, gint w1);
-gboolean lqr_raster_transpose (LqrRaster * r);
+gboolean lqr_carver_resize_width (LqrCarver * r, gint w1);   /* liquid resize width */
+gboolean lqr_carver_resize_height (LqrCarver * r, gint h1);   /* liquid resize height */
+void lqr_carver_set_width (LqrCarver * r, gint w1);
+gboolean lqr_carver_transpose (LqrCarver * r);
 
 /** public functions **/
 
 /* constructor & destructor */
-LqrRaster * lqr_raster_new (guchar * buffer, gint width, gint height, gint bpp);
-void lqr_raster_destroy (LqrRaster * r);
+LqrCarver * lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp);
+void lqr_carver_destroy (LqrCarver * r);
 
 /* initialize */
-gboolean lqr_raster_init (LqrRaster *r, gint delta_x, gfloat rigidity);
+gboolean lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 
 /* set attributes */
-void lqr_raster_set_gradient_function (LqrRaster * r, LqrGradFuncType gf_ind);
-void lqr_raster_set_output_seams (LqrRaster *r, LqrColourRGBA seam_colour_start, LqrColourRGBA seam_colour_end);
-void lqr_raster_set_resize_order (LqrRaster *r, LqrResizeOrder resize_order);
-gboolean lqr_raster_attach_pres_layer (LqrRaster * r, guchar * buffer, gint bpp);
-gboolean lqr_raster_attach_disc_layer (LqrRaster * r, guchar * buffer, gint bpp);
-void lqr_raster_set_progress (LqrRaster *r, LqrProgress *p);
+void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
+void lqr_carver_set_output_seams (LqrCarver *r, LqrColourRGBA seam_colour_start, LqrColourRGBA seam_colour_end);
+void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
+gboolean lqr_carver_attach_pres_layer (LqrCarver * r, guchar * buffer, gint bpp);
+gboolean lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp);
+void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 
 /* image manipulations */
-gboolean lqr_raster_resize (LqrRaster * r, gint w1, gint h1);   /* liquid resize */
-gboolean lqr_raster_flatten (LqrRaster * r);    /* flatten the multisize image */
+gboolean lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */
+gboolean lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image */
 
 /* readout */
-gint lqr_raster_get_width (LqrRaster * r);
-gint lqr_raster_get_height (LqrRaster * r);
-gint lqr_raster_read_x (LqrRaster * r);
-gint lqr_raster_read_y (LqrRaster * r);
-void lqr_raster_read_reset (LqrRaster * r);
-gboolean lqr_raster_read_next (LqrRaster * r);
-guchar lqr_raster_read_c (LqrRaster * r, gint col);
+gint lqr_carver_get_width (LqrCarver * r);
+gint lqr_carver_get_height (LqrCarver * r);
+gint lqr_carver_read_x (LqrCarver * r);
+gint lqr_carver_read_y (LqrCarver * r);
+void lqr_carver_read_reset (LqrCarver * r);
+gboolean lqr_carver_read_next (LqrCarver * r);
+guchar lqr_carver_read_c (LqrCarver * r, gint col);
 
 
-#endif /* __LQR_RASTER_H__ */
+#endif /* __LQR_CARVER_H__ */

@@ -730,7 +730,7 @@ PACKAGE_VERSION='0.0.1'
 PACKAGE_STRING='liblqr-1 0.0.1'
 PACKAGE_BUGREPORT=''
 
-ac_unique_file="lqr/lqr_raster.c"
+ac_unique_file="lqr/lqr_carver.c"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>

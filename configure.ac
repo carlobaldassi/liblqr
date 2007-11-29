@@ -51,7 +51,7 @@ AC_SUBST(PACKAGE_VERSION)
 LTVERSION=ltversion_current:ltversion_release:ltversion_age
 AC_SUBST(LTVERSION)
 
-AC_CONFIG_SRCDIR([lqr/lqr_raster.c])
+AC_CONFIG_SRCDIR([lqr/lqr_carver.c])
 AM_CONFIG_HEADER(config.h)
 
 AM_INIT_AUTOMAKE([-Wall -Werror])

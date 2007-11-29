@@ -11,8 +11,8 @@ liblqr_1_la_SOURCES = \
 	lqr_gradient.h  \
 	lqr_cursor.c    \
 	lqr_cursor.h    \
-	lqr_raster.c    \
-	lqr_raster.h    \
+	lqr_carver.c    \
+	lqr_carver.h    \
 	lqr_seams_buffer.c \
 	lqr_seams_buffer.h \
 	lqr_seams_buffer_list.c \
@@ -36,7 +36,7 @@ lqr_include_HEADERS = lqr.h \
 		      lqr_base.h \
 		      lqr_gradient.h \
 		      lqr_cursor.h \
-		      lqr_raster.h \
+		      lqr_carver.h \
 		      lqr_seams_buffer.h \
 		      lqr_seams_buffer_list.h \
 		      lqr_colour.h \

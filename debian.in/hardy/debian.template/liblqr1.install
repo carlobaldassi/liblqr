@@ -1,1 +1,1 @@
-usr/lib/lib*.so.*
+lqr/.libs/lib*.so.* usr/lib/

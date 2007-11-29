@@ -30,17 +30,17 @@
 #include <assert.h>
 #endif /* __LQR_DEBUG__ */
 
-/**** LQR_RASTER CLASS FUNCTIONS ****/
+/**** LQR_CARVER CLASS FUNCTIONS ****/
 
 /*** constructor & destructor ***/
 
 /* constructor */
-LqrRaster *
-lqr_raster_new (guchar * buffer, gint width, gint height, gint bpp)
+LqrCarver *
+lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 {
-  LqrRaster *r;
+  LqrCarver *r;
 
-  TRY_N_N (r = g_try_new (LqrRaster, 1));
+  TRY_N_N (r = g_try_new (LqrCarver, 1));
 
   r->level = 1;
   r->max_level = 1;
@@ -52,8 +52,8 @@ lqr_raster_new (guchar * buffer, gint width, gint height, gint bpp)
   lqr_colour_rgba_set(&(r->seam_colour_start), 0, 0, 0, 0);
   lqr_colour_rgba_set(&(r->seam_colour_end), 0, 0, 0, 0);
   r->resize_order = LQR_RES_ORDER_HOR;
-  r->pres_raster = NULL;
-  r->disc_raster = NULL;
+  r->pres_carver = NULL;
+  r->disc_carver = NULL;
   r->flushed_vs = NULL;
   TRY_N_N (r->progress = lqr_progress_new());
 
@@ -77,7 +77,7 @@ lqr_raster_new (guchar * buffer, gint width, gint height, gint bpp)
   r->w_start = r->w;
   r->h_start = r->h;
 
-  lqr_raster_set_gradient_function(r, LQR_GF_XABS);
+  lqr_carver_set_gradient_function(r, LQR_GF_XABS);
 
   r->rgb = buffer;
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
@@ -92,7 +92,7 @@ lqr_raster_new (guchar * buffer, gint width, gint height, gint bpp)
 
 /* destructor */
 void
-lqr_raster_destroy (LqrRaster * r)
+lqr_carver_destroy (LqrCarver * r)
 {
   g_free (r->rgb);
   g_free (r->vs);
@@ -104,13 +104,13 @@ lqr_raster_destroy (LqrRaster * r)
   lqr_cursor_destroy (r->c);
   g_free (r->vpath);
   g_free (r->vpath_x);
-  if (r->pres_raster != NULL)
+  if (r->pres_carver != NULL)
     {
-      lqr_raster_destroy (r->pres_raster);
+      lqr_carver_destroy (r->pres_carver);
     }
-  if (r->disc_raster != NULL)
+  if (r->disc_carver != NULL)
     {
-      lqr_raster_destroy (r->disc_raster);
+      lqr_carver_destroy (r->disc_carver);
     }
   if (r->rigidity_map != NULL)
     {
@@ -127,7 +127,7 @@ lqr_raster_destroy (LqrRaster * r)
 /*** initialization ***/
 
 gboolean
-lqr_raster_init (LqrRaster *r, gint delta_x, gfloat rigidity)
+lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
   gint y, x;
 
@@ -170,7 +170,7 @@ lqr_raster_init (LqrRaster *r, gint delta_x, gfloat rigidity)
 
 /* gradient function for energy computation */
 void
-lqr_raster_set_gradient_function (LqrRaster * r, LqrGradFuncType gf_ind)
+lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 {
   switch (gf_ind)
     {
@@ -201,36 +201,36 @@ lqr_raster_set_gradient_function (LqrRaster * r, LqrGradFuncType gf_ind)
 
 /* attach layers to be scaled along with the main one */
 gboolean
-lqr_raster_attach_pres_layer (LqrRaster * r, guchar * buffer, gint bpp)
+lqr_carver_attach_pres_layer (LqrCarver * r, guchar * buffer, gint bpp)
 {
-  if (r->pres_raster)
+  if (r->pres_carver)
     {
-      lqr_raster_destroy(r->pres_raster);
+      lqr_carver_destroy(r->pres_carver);
     }
 
   r->resize_aux_layers = TRUE;
-  TRY_N_F (r->pres_raster = lqr_raster_new (buffer, r->w0, r->h0, bpp));
-  r->pres_raster->aux = TRUE;
+  TRY_N_F (r->pres_carver = lqr_carver_new (buffer, r->w0, r->h0, bpp));
+  r->pres_carver->aux = TRUE;
   return TRUE;
 }
 
 gboolean
-lqr_raster_attach_disc_layer (LqrRaster * r, guchar * buffer, gint bpp)
+lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp)
 {
-  if (r->disc_raster)
+  if (r->disc_carver)
     {
-      lqr_raster_destroy(r->disc_raster);
+      lqr_carver_destroy(r->disc_carver);
     }
 
   r->resize_aux_layers = TRUE;
-  TRY_N_F (r->disc_raster = lqr_raster_new (buffer, r->w0, r->h0, bpp));
-  r->disc_raster->aux = TRUE;
+  TRY_N_F (r->disc_carver = lqr_carver_new (buffer, r->w0, r->h0, bpp));
+  r->disc_carver->aux = TRUE;
   return TRUE;
 }
 
 /* set the seam output flag and colours */
 void
-lqr_raster_set_output_seams (LqrRaster *r, LqrColourRGBA seam_colour_start, LqrColourRGBA seam_colour_end)
+lqr_carver_set_output_seams (LqrCarver *r, LqrColourRGBA seam_colour_start, LqrColourRGBA seam_colour_end)
 {
   r->output_seams = TRUE;
   r->seam_colour_start = seam_colour_start;
@@ -239,13 +239,13 @@ lqr_raster_set_output_seams (LqrRaster *r, LqrColourRGBA seam_colour_start, LqrC
 
 /* set order if rescaling in both directions */
 void
-lqr_raster_set_resize_order (LqrRaster *r, LqrResizeOrder resize_order)
+lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 {
   r->resize_order = resize_order;
 }
 
 void
-lqr_raster_set_progress (LqrRaster *r, LqrProgress *p)
+lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 {
   g_free(r->progress);
   r->progress = p;
@@ -257,7 +257,7 @@ lqr_raster_set_progress (LqrRaster *r, LqrProgress *p)
 /* build multisize image up to given depth
  * it is progressive (can be called multilple times) */
 gboolean
-lqr_raster_build_maps (LqrRaster * r, gint depth)
+lqr_carver_build_maps (LqrCarver * r, gint depth)
 {
 #ifdef __LQR_DEBUG__
   assert (depth <= r->w_start);
@@ -268,21 +268,21 @@ lqr_raster_build_maps (LqrRaster * r, gint depth)
   if (depth > r->max_level)
     {
       /* set to minimum width reached so far */
-      lqr_raster_set_width (r, r->w_start - r->max_level + 1);
+      lqr_carver_set_width (r, r->w_start - r->max_level + 1);
 
       /* compute energy & minpath maps */
-      lqr_raster_build_emap (r);
-      lqr_raster_build_mmap (r);
+      lqr_carver_build_emap (r);
+      lqr_carver_build_mmap (r);
 
       /* compute visibility map */
-      TRY_F_F (lqr_raster_build_vsmap (r, depth));
+      TRY_F_F (lqr_carver_build_vsmap (r, depth));
     }
   return TRUE;
 }
 
 /* compute energy map */
 void
-lqr_raster_build_emap (LqrRaster * r)
+lqr_carver_build_emap (LqrCarver * r)
 {
   gint x, y;
 
@@ -290,7 +290,7 @@ lqr_raster_build_emap (LqrRaster * r)
     {
       for (x = 0; x < r->w; x++)
         {
-          lqr_raster_compute_e (r, x, y);
+          lqr_carver_compute_e (r, x, y);
         }
     }
 }
@@ -305,7 +305,7 @@ lqr_raster_build_emap (LqrRaster * r)
  *   rig(x') is the rigidity for step x'
  */
 void
-lqr_raster_build_mmap (LqrRaster * r)
+lqr_carver_build_mmap (LqrCarver * r)
 {
   gint x, y;
   gint data;
@@ -384,7 +384,7 @@ lqr_raster_build_mmap (LqrRaster * r)
 /* compute (vertical) visibility map up to given depth
  * (it also calls inflate() to add image enlargment information) */
 gboolean
-lqr_raster_build_vsmap (LqrRaster * r, gint depth)
+lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 {
   gint l;
   gint update_step;
@@ -408,7 +408,7 @@ lqr_raster_build_vsmap (LqrRaster * r, gint depth)
     }
 
   /* here we assume that
-   * lqr_raster_set_width(w_start - max_level + 1);
+   * lqr_carver_set_width(w_start - max_level + 1);
    * has been given */
 
   /* update step for progress reprt*/
@@ -425,11 +425,11 @@ lqr_raster_build_vsmap (LqrRaster * r, gint depth)
         }
 
       /* compute vertical seam */
-      lqr_raster_build_vpath (r);
+      lqr_carver_build_vpath (r);
 
       /* update visibility map
        * (assign level to the seam) */
-      lqr_raster_update_vsmap (r, l + r->max_level - 1);
+      lqr_carver_update_vsmap (r, l + r->max_level - 1);
 
       /* increase (in)visibility level
        * (make the last seam invisible) */
@@ -437,65 +437,65 @@ lqr_raster_build_vsmap (LqrRaster * r, gint depth)
       r->w--;
 
       /* update raw data */
-      lqr_raster_carve (r);
+      lqr_carver_carve (r);
 
       if (r->w > 1)
         {
           /* update the energy */
-          //lqr_raster_build_emap (r);
-          lqr_raster_update_emap (r);
+          //lqr_carver_build_emap (r);
+          lqr_carver_update_emap (r);
 
           /* recalculate the minpath map */
-          lqr_raster_update_mmap (r);
-          //lqr_raster_build_mmap (r);
+          lqr_carver_update_mmap (r);
+          //lqr_carver_build_mmap (r);
         }
       else
         {
           /* complete the map (last seam) */
-          lqr_raster_finish_vsmap (r);
+          lqr_carver_finish_vsmap (r);
         }
     }
 
   /* reset width to the maximum */
-  lqr_raster_set_width (r, r->w0);
+  lqr_carver_set_width (r, r->w0);
 
   /* copy visibility maps on auxiliary layers
    * (needs to be done before inflation) */
   if (r->resize_aux_layers)
     {
-      if (r->pres_raster != NULL)
+      if (r->pres_carver != NULL)
         {
-          lqr_raster_copy_vsmap (r, r->pres_raster);
+          lqr_carver_copy_vsmap (r, r->pres_carver);
         }
-      if (r->disc_raster != NULL)
+      if (r->disc_carver != NULL)
         {
-          lqr_raster_copy_vsmap (r, r->disc_raster);
+          lqr_carver_copy_vsmap (r, r->disc_carver);
         }
     }
 
   /* insert seams for image enlargement */
-  TRY_F_F (lqr_raster_inflate (r, depth - 1));
+  TRY_F_F (lqr_carver_inflate (r, depth - 1));
 
   /* set new max_level */
   r->max_level = depth;
 
   /* reset image size */
-  lqr_raster_set_width (r, r->w_start);
+  lqr_carver_set_width (r, r->w_start);
 
   /* repeat the above steps for auxiliary layers */
   if (r->resize_aux_layers)
     {
-      if (r->pres_raster != NULL)
+      if (r->pres_carver != NULL)
         {
-          TRY_F_F (lqr_raster_inflate (r->pres_raster, depth - 1));
-          r->pres_raster->max_level = depth;
-          lqr_raster_set_width (r->pres_raster, r->pres_raster->w_start);
+          TRY_F_F (lqr_carver_inflate (r->pres_carver, depth - 1));
+          r->pres_carver->max_level = depth;
+          lqr_carver_set_width (r->pres_carver, r->pres_carver->w_start);
         }
-      if (r->disc_raster != NULL)
+      if (r->disc_carver != NULL)
         {
-          TRY_F_F (lqr_raster_inflate (r->disc_raster, depth - 1));
-          r->disc_raster->max_level = depth;
-          lqr_raster_set_width (r->disc_raster, r->disc_raster->w_start);
+          TRY_F_F (lqr_carver_inflate (r->disc_carver, depth - 1));
+          r->disc_carver->max_level = depth;
+          lqr_carver_set_width (r->disc_carver, r->disc_carver->w_start);
         }
     }
 
@@ -511,7 +511,7 @@ lqr_raster_build_vsmap (LqrRaster * r, gint depth)
  * visibility map is updated and the resulting multisize image
  * is complete in both directions */
 gboolean
-lqr_raster_inflate (LqrRaster * r, gint l)
+lqr_carver_inflate (LqrCarver * r, gint l)
 {
   gint w1, z0, vs, k;
   gint x, y;
@@ -531,7 +531,7 @@ lqr_raster_inflate (LqrRaster * r, gint l)
 
   /* scale to current maximum size
    * (this is the original size the first time) */
-  lqr_raster_set_width (r, r->w0);
+  lqr_carver_set_width (r, r->w0);
 
   /* final width */
   w1 = r->w0 + l - r->max_level + 1;
@@ -668,7 +668,7 @@ lqr_raster_inflate (LqrRaster * r, gint l)
 /* read average pixel value at x, y 
  * for energy computation */
 inline gdouble
-lqr_raster_read (LqrRaster * r, gint x, gint y)
+lqr_carver_read (LqrCarver * r, gint x, gint y)
 {
   gdouble sum = 0;
   gint k;
@@ -683,37 +683,37 @@ lqr_raster_read (LqrRaster * r, gint x, gint y)
 
 /* compute energy at x, y */
 void
-lqr_raster_compute_e (LqrRaster * r, gint x, gint y)
+lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
 {
   gdouble gx, gy;
   gint data;
 
   if (y == 0)
     {
-      gy = lqr_raster_read (r, x, y + 1) - lqr_raster_read (r, x, y);
+      gy = lqr_carver_read (r, x, y + 1) - lqr_carver_read (r, x, y);
     }
   else if (y < r->h - 1)
     {
       gy =
-        (lqr_raster_read (r, x, y + 1) - lqr_raster_read (r, x, y - 1)) / 2;
+        (lqr_carver_read (r, x, y + 1) - lqr_carver_read (r, x, y - 1)) / 2;
     }
   else
     {
-      gy = lqr_raster_read (r, x, y) - lqr_raster_read (r, x, y - 1);
+      gy = lqr_carver_read (r, x, y) - lqr_carver_read (r, x, y - 1);
     }
 
   if (x == 0)
     {
-      gx = lqr_raster_read (r, x + 1, y) - lqr_raster_read (r, x, y);
+      gx = lqr_carver_read (r, x + 1, y) - lqr_carver_read (r, x, y);
     }
   else if (x < r->w - 1)
     {
       gx =
-        (lqr_raster_read (r, x + 1, y) - lqr_raster_read (r, x - 1, y)) / 2;
+        (lqr_carver_read (r, x + 1, y) - lqr_carver_read (r, x - 1, y)) / 2;
     }
   else
     {
-      gx = lqr_raster_read (r, x, y) - lqr_raster_read (r, x - 1, y);
+      gx = lqr_carver_read (r, x, y) - lqr_carver_read (r, x - 1, y);
     }
   data = r->raw[y][x];
   r->en[data] = (*(r->gf)) (gx, gy) + r->bias[data] / r->w_start;
@@ -724,7 +724,7 @@ lqr_raster_compute_e (LqrRaster * r, gint x, gint y)
  * which holds the indices to be used
  * in all the other maps */
 void
-lqr_raster_carve (LqrRaster * r)
+lqr_carver_carve (LqrCarver * r)
 {
   gint x, y;
 
@@ -752,7 +752,7 @@ lqr_raster_carve (LqrRaster * r)
  * (the only affected energies are to the
  * left and right of the removed seam) */
 void
-lqr_raster_update_emap (LqrRaster * r)
+lqr_carver_update_emap (LqrCarver * r)
 {
   gint x, y;
   gint x1, x_min, x_max;
@@ -764,7 +764,7 @@ lqr_raster_update_emap (LqrRaster * r)
       x_max = MIN (r->w - 1, x + r->delta_x - 1);
       for (x1 = x_min; x1 <= x_max; x1++)
         {
-          lqr_raster_compute_e (r, x1, y);
+          lqr_carver_compute_e (r, x1, y);
         }
     }
 }
@@ -776,7 +776,7 @@ lqr_raster_update_emap (LqrRaster * r)
  * and expand at most by delta_x (in both
  * directions) at each row */
 void
-lqr_raster_update_mmap (LqrRaster * r)
+lqr_carver_update_mmap (LqrCarver * r)
 {
   gint x, y;
   gint x_min, x_max;
@@ -880,7 +880,7 @@ lqr_raster_update_mmap (LqrRaster * r)
 
 /* compute seam path from minpath map */
 void
-lqr_raster_build_vpath (LqrRaster * r)
+lqr_carver_build_vpath (LqrCarver * r)
 {
   gint x, y, z0;
   gdouble m, m1;
@@ -975,7 +975,7 @@ lqr_raster_build_vpath (LqrRaster * r)
 
 /* update visibility map after seam computation */
 void
-lqr_raster_update_vsmap (LqrRaster * r, gint l)
+lqr_carver_update_vsmap (LqrCarver * r, gint l)
 {
   gint y;
   for (y = 0; y < r->h; y++)
@@ -991,7 +991,7 @@ lqr_raster_update_vsmap (LqrRaster * r, gint l)
 /* complete visibility map (last seam) */
 /* set the last column of pixels to vis. level w0 */
 void
-lqr_raster_finish_vsmap (LqrRaster * r)
+lqr_carver_finish_vsmap (LqrCarver * r)
 {
   gint y;
 
@@ -1008,10 +1008,10 @@ lqr_raster_finish_vsmap (LqrRaster * r)
     }
 }
 
-/* copy the visibility map from a lqr_raster
+/* copy the visibility map from a lqr_carver
  * to another one of the same size */
 void
-lqr_raster_copy_vsmap (LqrRaster * r, LqrRaster * dest)
+lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest)
 {
   gint x, y;
 #ifdef __LQR_DEBUG__
@@ -1033,7 +1033,7 @@ lqr_raster_copy_vsmap (LqrRaster * r, LqrRaster * dest)
 /* set width of the multisize image
  * (maps have to be computed already) */
 void
-lqr_raster_set_width (LqrRaster * r, gint w1)
+lqr_carver_set_width (LqrCarver * r, gint w1)
 {
 #ifdef __LQR_DEBUG__
   assert (w1 <= r->w0);
@@ -1048,7 +1048,7 @@ lqr_raster_set_width (LqrRaster * r, gint w1)
 /* flatten the image to its current state
  * (all maps are reset, invisible points are lost) */
 gboolean
-lqr_raster_flatten (LqrRaster * r)
+lqr_carver_flatten (LqrCarver * r)
 {
   guchar *new_rgb;
   gdouble *new_bias = NULL;
@@ -1145,7 +1145,7 @@ lqr_raster_flatten (LqrRaster * r)
 /* transpose the image, in its current state
  * (all maps and invisible points are lost) */
 gboolean
-lqr_raster_transpose (LqrRaster * r)
+lqr_carver_transpose (LqrCarver * r)
 {
   gint x, y, k;
   gint z0, z1;
@@ -1160,7 +1160,7 @@ lqr_raster_transpose (LqrRaster * r)
 
   if (r->level > 1)
     {
-      TRY_F_F (lqr_raster_flatten (r));
+      TRY_F_F (lqr_carver_flatten (r));
     }
 
   /* free non needed maps first */
@@ -1262,13 +1262,13 @@ lqr_raster_transpose (LqrRaster * r)
   /* call transpose on auxiliary layers */
   if (r->resize_aux_layers == TRUE)
     {
-      if (r->pres_raster != NULL)
+      if (r->pres_carver != NULL)
         {
-          TRY_F_F (lqr_raster_transpose (r->pres_raster));
+          TRY_F_F (lqr_carver_transpose (r->pres_carver));
         }
-      if (r->disc_raster != NULL)
+      if (r->disc_carver != NULL)
         {
-          TRY_F_F (lqr_raster_transpose (r->disc_raster));
+          TRY_F_F (lqr_carver_transpose (r->disc_carver));
         }
     }
 
@@ -1285,7 +1285,7 @@ lqr_raster_transpose (LqrRaster * r)
  * according to the desired size, can be called multiple
  * times, transpose the image as necessasry */
 gboolean
-lqr_raster_resize_width (LqrRaster * r, gint w1)
+lqr_carver_resize_width (LqrCarver * r, gint w1)
 {
   gint delta, gamma;
   /* delta is used to determine the required depth
@@ -1306,20 +1306,20 @@ lqr_raster_resize_width (LqrRaster * r, gint w1)
     {
       if (r->transposed)
         {
-          TRY_F_F (lqr_raster_transpose (r));
+          TRY_F_F (lqr_carver_transpose (r));
         }
       lqr_progress_init (r->progress, r->progress->init_width_message);
-      TRY_F_F (lqr_raster_build_maps (r, delta + 1));
-      lqr_raster_set_width (r, w1);
+      TRY_F_F (lqr_carver_build_maps (r, delta + 1));
+      lqr_carver_set_width (r, w1);
       if (r->resize_aux_layers == TRUE)
         {
-          if (r->pres_raster != NULL)
+          if (r->pres_carver != NULL)
             {
-              lqr_raster_set_width (r->pres_raster, w1);
+              lqr_carver_set_width (r->pres_carver, w1);
             }
-          if (r->disc_raster != NULL)
+          if (r->disc_carver != NULL)
             {
-              lqr_raster_set_width (r->disc_raster, w1);
+              lqr_carver_set_width (r->disc_carver, w1);
             }
         }
       if (r->output_seams)
@@ -1332,7 +1332,7 @@ lqr_raster_resize_width (LqrRaster * r, gint w1)
 }
 
 gboolean
-lqr_raster_resize_height (LqrRaster * r, gint h1)
+lqr_carver_resize_height (LqrCarver * r, gint h1)
 {
   gint delta, gamma;
   if (!r->transposed)
@@ -1350,20 +1350,20 @@ lqr_raster_resize_height (LqrRaster * r, gint h1)
     {
       if (!r->transposed)
         {
-          TRY_F_F (lqr_raster_transpose (r));
+          TRY_F_F (lqr_carver_transpose (r));
         }
       lqr_progress_init (r->progress, r->progress->init_height_message);
-      TRY_F_F (lqr_raster_build_maps (r, delta + 1));
-      lqr_raster_set_width (r, h1);
+      TRY_F_F (lqr_carver_build_maps (r, delta + 1));
+      lqr_carver_set_width (r, h1);
       if (r->resize_aux_layers == TRUE)
         {
-          if (r->pres_raster != NULL)
+          if (r->pres_carver != NULL)
             {
-              lqr_raster_set_width (r->pres_raster, h1);
+              lqr_carver_set_width (r->pres_carver, h1);
             }
-          if (r->disc_raster != NULL)
+          if (r->disc_carver != NULL)
             {
-              lqr_raster_set_width (r->disc_raster, h1);
+              lqr_carver_set_width (r->disc_carver, h1);
             }
         }
       if (r->output_seams)
@@ -1378,7 +1378,7 @@ lqr_raster_resize_height (LqrRaster * r, gint h1)
 
 /* liquid rescale public method */
 gboolean
-lqr_raster_resize (LqrRaster * r, gint w1, gint h1)
+lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 {
 #ifdef __LQR_VERBOSE__
   printf("[ Rescale from %i,%i to %i,%i ]\n", (r->transposed ? r->h : r->w), (r->transposed ? r->w : r->h), w1, h1);
@@ -1387,12 +1387,12 @@ lqr_raster_resize (LqrRaster * r, gint w1, gint h1)
   switch (r->resize_order)
     {
       case LQR_RES_ORDER_HOR:
-	TRY_F_F (lqr_raster_resize_width(r, w1));
-	TRY_F_F (lqr_raster_resize_height(r, h1));
+	TRY_F_F (lqr_carver_resize_width(r, w1));
+	TRY_F_F (lqr_carver_resize_height(r, h1));
 	break;
       case LQR_RES_ORDER_VERT:
-	TRY_F_F (lqr_raster_resize_height(r, h1));
-	TRY_F_F (lqr_raster_resize_width(r, w1));
+	TRY_F_F (lqr_carver_resize_height(r, h1));
+	TRY_F_F (lqr_carver_resize_width(r, w1));
 	break;
 #ifdef __LQR_DEBUG__
       default:
@@ -1408,24 +1408,24 @@ lqr_raster_resize (LqrRaster * r, gint w1, gint h1)
 }
 
 /* get size */
-gint lqr_raster_get_width(LqrRaster* r)
+gint lqr_carver_get_width(LqrCarver* r)
 {
   return (r->transposed ? r->h : r->w);
 }
 
-gint lqr_raster_get_height(LqrRaster* r)
+gint lqr_carver_get_height(LqrCarver* r)
 {
   return (r->transposed ? r->w : r->h);
 }
 
 /* readout reset */
-void lqr_raster_read_reset (LqrRaster * r)
+void lqr_carver_read_reset (LqrCarver * r)
 {
   lqr_cursor_reset (r->c);
 }
 
 /* readout move */
-gboolean lqr_raster_read_next (LqrRaster * r)
+gboolean lqr_carver_read_next (LqrCarver * r)
 {
   if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
     {
@@ -1437,22 +1437,22 @@ gboolean lqr_raster_read_next (LqrRaster * r)
 
 
 /* readout coordinates */
-gint lqr_raster_read_x(LqrRaster* r)
+gint lqr_carver_read_x(LqrCarver* r)
 {
   return (r->transposed ? r->c->y : r->c->x);
 }
 
-gint lqr_raster_read_y(LqrRaster* r)
+gint lqr_carver_read_y(LqrCarver* r)
 {
   return (r->transposed ? r->c->x : r->c->y);
 }
 
 /* readout colour */
-guchar lqr_raster_read_c (LqrRaster * r, gint col)
+guchar lqr_carver_read_c (LqrCarver * r, gint col)
 {
   gint k = CLAMP(col, 0, r->bpp - 1);
   return r->rgb[r->c->now * r->bpp + k];
 }
 
 
-/**** END OF LQR_RASTER CLASS FUNCTIONS ****/
+/**** END OF LQR_CARVER CLASS FUNCTIONS ****/

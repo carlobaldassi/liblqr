@@ -64,10 +64,10 @@ typedef enum _LqrResizeOrder LqrResizeOrder;
 
 /**** CLASSES DECLARATIONS ****/
 
-struct _LqrCursor;              /* a "smart" index to read the raster */
-struct _LqrRaster;              /* the multisize image raster         */
+struct _LqrCursor;              /* a "smart" index to read the carver */
+struct _LqrCarver;              /* the multisize image carver         */
 
 typedef struct _LqrCursor LqrCursor;
-typedef struct _LqrRaster LqrRaster;
+typedef struct _LqrCarver LqrCarver;
 
 #endif /* __LQR_BASE_H__ */

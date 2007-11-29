@@ -6,7 +6,7 @@ using namespace std;
 /*** AUXILIARY FUNCTIONS DECLARATIONS ***/
 
 guchar *rgb_buffer_from_image (pngwriter * png);
-gboolean write_raster_to_image (LqrRaster * r, pngwriter * png);
+gboolean write_carver_to_image (LqrCarver * r, pngwriter * png);
 
 gboolean my_progress_init (const gchar * message);
 gboolean my_progress_update (gdouble percentage);
@@ -64,15 +64,15 @@ main (int argc, char **argv)
   guchar *rgb_buffer;
   rgb_buffer = rgb_buffer_from_image (&png);
 
-  /* (2) swallow the buffer in a (minimal) LqrRaster object 
+  /* (2) swallow the buffer in a (minimal) LqrCarver object 
    *     (arguments are width, height and number of color channels) */
-  LqrRaster *rasta;
-  rasta = lqr_raster_new (rgb_buffer, w0, h0, 3);
+  LqrCarver *rasta;
+  rasta = lqr_carver_new (rgb_buffer, w0, h0, 3);
 
-  /* (3) initialize the raster (with default values),
+  /* (3) initialize the carver (with default values),
    *     so that we can do the resizing
    *     (arguments are max seam step and seam rigidity) */
-  lqr_raster_init (rasta, 1, 0);
+  lqr_carver_init (rasta, 1, 0);
 
 
   /**** (II) SET UP THE PROGRESS INDICATOR (OPTIONAL) ****/
@@ -82,17 +82,17 @@ main (int argc, char **argv)
   /* (2) set up with custom commands */
   init_progress (progress);
   /* (3) attach the progress to out multisize image */
-  lqr_raster_set_progress (rasta, progress);
+  lqr_carver_set_progress (rasta, progress);
 
 
   /**** (III) LIQUID RESCALE ****/
 
-  lqr_raster_resize (rasta, w1, h1);
+  lqr_carver_resize (rasta, w1, h1);
 
 
   /**** (IV) READOUT THE MULTISIZE IMAGE ****/
 
-  write_raster_to_image (rasta, &png);
+  write_carver_to_image (rasta, &png);
 
 
 
@@ -144,7 +144,7 @@ rgb_buffer_from_image (pngwriter * png)
 
 /* readout the multizie image */
 gboolean
-write_raster_to_image (LqrRaster * r, pngwriter * png)
+write_carver_to_image (LqrCarver * r, pngwriter * png)
 {
   gint x, y;
   gdouble red, green, blue;
@@ -156,25 +156,25 @@ write_raster_to_image (LqrRaster * r, pngwriter * png)
   /* resize the image canvas as needed to
    * fit for the new size
    * (remember it may be transposed) */
-  w = lqr_raster_get_width (r);
-  h = lqr_raster_get_height (r);
+  w = lqr_carver_get_width (r);
+  h = lqr_carver_get_height (r);
   png->resize (w, h);
 
   /* initialize image reading */
-  lqr_raster_read_reset (r);
+  lqr_carver_read_reset (r);
 
   do
     {
-      x = lqr_raster_read_x (r);
-      y = lqr_raster_read_y (r);
+      x = lqr_carver_read_x (r);
+      y = lqr_carver_read_y (r);
       /* readout the pixel information */
-      red = (gdouble) lqr_raster_read_c (r, 0) / 255;
-      green = (gdouble) lqr_raster_read_c (r, 1) / 255;
-      blue = (gdouble) lqr_raster_read_c (r, 2) / 255;
+      red = (gdouble) lqr_carver_read_c (r, 0) / 255;
+      green = (gdouble) lqr_carver_read_c (r, 1) / 255;
+      blue = (gdouble) lqr_carver_read_c (r, 2) / 255;
 
       png->plot (x + 1, y + 1, red, green, blue);
     }
-  while (lqr_raster_read_next (r));
+  while (lqr_carver_read_next (r));
 
   return TRUE;
 }

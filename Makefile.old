@@ -2,7 +2,7 @@ target = liblqr.so.0.0.1
 
 lqr_libs = lqr_gradient.o \
 	   lqr_cursor.o   \
-	   lqr_raster.o   \
+	   lqr_carver.o   \
 	   lqr_seams_buffer.o \
 	   lqr_seams_buffer_list.o \
 	   lqr_colour.o \
@@ -12,7 +12,7 @@ base_headers = lqr.h \
 	       lqr_base.h \
 	       lqr_gradient.h \
 	       lqr_cursor.h \
-	       lqr_raster.h \
+	       lqr_carver.h \
 	       config.h \
 	       plugin-intl.h
 
@@ -48,8 +48,8 @@ lqr_gradient.o: lqr_gradient.c $(base_headers)
 lqr_cursor.o: lqr_cursor.c $(base_headers)
 	gcc $(FLAGS) -c lqr_cursor.c
 
-lqr_raster.o: lqr_raster.c $(all_headers)
-	gcc $(FLAGS) -c lqr_raster.c
+lqr_carver.o: lqr_carver.c $(all_headers)
+	gcc $(FLAGS) -c lqr_carver.c
 
 lqr_seams_buffer.o: lqr_seams_buffer.c $(all_headers)
 	gcc $(FLAGS) -c lqr_seams_buffer.c

@@ -136,9 +136,9 @@ map has to be wasted, because the two maps are not consistent one with each
 other.
 This also implies that the resizing order affects the final result.
 
-When the multi-size image is created in a LqrRaster object, the visibility
+When the multi-size image is created in a LqrCarver object, the visibility
 of each pixel is uninitialized. At this point, one could either import a
-previously computed visibility map, or initialize the LqrRaster so that
+previously computed visibility map, or initialize the LqrCarver so that
 it performs the needed computations when asked.
 
 In either case, there's a single method to call, specifiying the new
@@ -147,31 +147,31 @@ desired size, and the visibility map will computed as necessary.
  
 ++ Basic methods
 
-The main lqr library class is LqrRaster, which is used to
+The main lqr library class is LqrCarver, which is used to
 generate and store the multi-size image representation.
 Its basic public methods are:
 
   +++ constructor and destructor
-    LqrRaster * lqr_raster_new (guchar * buffer, gint width, gint height, gint bpp)
-    void lqr_raster_destroy (LqrRaster * r)
+    LqrCarver * lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
+    void lqr_carver_destroy (LqrCarver * r)
 
   +++ initialization
-    gboolean lqr_raster_init (LqrRaster *r, gint delta_x, gfloat rigidity)
+    gboolean lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
   +++ image manipulations
-    gboolean lqr_raster_resize (LqrRaster * r, gint w1, gint h1)
-    gboolean lqr_raster_flatten (LqrRaster * r)
+    gboolean lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
+    gboolean lqr_carver_flatten (LqrCarver * r)
 
   ++ readout
-    void lqr_raster_read_reset (LqrRaster * r)
-    gboolean lqr_raster_read_next (LqrRaster * r)
-    gint lqr_raster_read_x (LqrRaster * r)
-    gint lqr_raster_read_y (LqrRaster * r)
-    guchar lqr_raster_read_c (LqrRaster * r, gint col)
+    void lqr_carver_read_reset (LqrCarver * r)
+    gboolean lqr_carver_read_next (LqrCarver * r)
+    gint lqr_carver_read_x (LqrCarver * r)
+    gint lqr_carver_read_y (LqrCarver * r)
+    guchar lqr_carver_read_c (LqrCarver * r, gint col)
 
   +++ get values
-    gint lqr_raster_get_width (LqrRaster * r)
-    gint lqr_raster_get_height (LqrRaster * r)
+    gint lqr_carver_get_width (LqrCarver * r)
+    gint lqr_carver_get_height (LqrCarver * r)
 
 The other classes are optional. The class LqrProgress is used to
 customize progress report from the resizing engine, which by
@@ -182,11 +182,11 @@ maps.
 
 ++ Generating the multi-size image
 
-The LqrRaster objects are initialized from a plain buffer of unsigned
+The LqrCarver objects are initialized from a plain buffer of unsigned
 chars representing an image, in which each colour channel takes a value
 between 0 and 255, through this function:
 
-LqrRaster * lqr_raster_new (guchar * buffer, int width, int height, int bpp)
+LqrCarver * lqr_carver_new (guchar * buffer, int width, int height, int bpp)
 
   buffer: a plain array of unsigned characters representing an image.
           The array must be ordered by row, then by column, then by
@@ -207,17 +207,17 @@ buffer[(y * width + x) * bpp + k]
 (this assumes that x, y and k all start from 0 and reach widht-1, height-1
 and bpp-1, respectively)
 
-The newly created LqrRaster consists only of the image buffer plus
+The newly created LqrCarver consists only of the image buffer plus
 an uninitialized visibility map. If one had a previously computed
-visibility map, it could be imported into the LqrRaster and that would be
+visibility map, it could be imported into the LqrCarver and that would be
 enough.
 
-If the visibility map has to be computed, the LqrRaster needs to be
+If the visibility map has to be computed, the LqrCarver needs to be
 initialized through this function:
 
-gboolean lqr_raster_init (LqrRaster *raster, gint delta_x, gfloat rigidity)
+gboolean lqr_carver_init (LqrCarver *carver, gint delta_x, gfloat rigidity)
 
-  raster:   the LqrRaster to initialize
+  carver:   the LqrCarver to initialize
   delta_x:  the maximum allowed transversal step of the seams
             (0 means straight seams, default is 1)
   rigidity: this parameter can be used to introduce a bias for non-stright
@@ -231,9 +231,9 @@ failures.
 
 Once initialized, the image can be resized through this function:
 
-gboolean lqr_raster_resize (LqrRaster * r, gint w1, gint h1)
+gboolean lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 
-  raster: the raster to resize
+  carver: the carver to resize
   w1:     the desired new width
   h1:     the desired new height
 
@@ -247,7 +247,7 @@ resizing and a vertical resize has been requested, or vice versa.
 
 The function also takes advantage of the fact that the enlargment process
 mirrors the shrink process. For example, if the original size of the image
-is (w0,h0) and lqr_raster_resize is invoked with (w0 - 100, h0) as an
+is (w0,h0) and lqr_carver_resize is invoked with (w0 - 100, h0) as an
 argument, then subsequent calls to the function will allow on-the-fly
 resizing in the whole range from (w0 - 100, h0) to (w0 + 100, h0).
 
@@ -257,7 +257,7 @@ size in one step. See also the section "Additional notes" below.
 In order to resize in more than one step, the image can be flattened in
 its current state, thrugh this function:
 
-gboolean lqr_raster_flatten (LqrRaster * raster)
+gboolean lqr_carver_flatten (LqrCarver * carver)
 
 The return value is FALSE in case of insufficient memory, as before.
 
@@ -295,11 +295,11 @@ resizing, by accessing the bias array inside the LqrStructure.
 This is a plain array of doubles, of size (widht * height),
 ordered by rows.
 
-For example, if we have an initialized pointer to a LqrRaster
-caller raster, and we want to set to 10.5 the bias of the pixel
+For example, if we have an initialized pointer to a LqrCarver
+caller carver, and we want to set to 10.5 the bias of the pixel
 at coordinates (x,y), we use:
 
-raster->bias[(y * raster->w) + x] = 10.0;
+carver->bias[(y * carver->w) + x] = 10.0;
 
 (here x and y start from 0)
 
@@ -314,7 +314,7 @@ The automatic feature detection relies on the computation
 of the gradient in each pixel of the image. The precise
 function to use can be set through:
 
-void lqr_raster_set_gradient_function (LqrRaster * raster, LqrGradFuncType gf_ind);
+void lqr_carver_set_gradient_function (LqrCarver * carver, LqrGradFuncType gf_ind);
 
 The possible values for gf_ind are:
  
@@ -326,11 +326,11 @@ The possible values for gf_ind are:
 The null value can be used to override completely the automatic
 feature detection (see the "Adding a bias" section above).
 
-When lqr_raster_resize is asked to resize along both directions
+When lqr_carver_resize is asked to resize along both directions
 in a single step, it has to choose which direction to resize first.
 The resize order can be changed through this function:
 
-void lqr_raster_set_resize_order (LqrRaster *r, LqrResizeOrder resize_order);
+void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
 
 The possible values for resize_order are:
   LQR_RES_ORDER_HOR  : resize horizonally first (default) 

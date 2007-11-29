@@ -35,7 +35,7 @@ G_BEGIN_DECLS
 #include <lqr/lqr_progress.h>
 #include <lqr/lqr_seams_buffer.h>
 #include <lqr/lqr_seams_buffer_list.h>
-#include <lqr/lqr_raster.h>
+#include <lqr/lqr_carver.h>
 
 G_END_DECLS
 

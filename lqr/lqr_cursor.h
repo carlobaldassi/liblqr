@@ -38,14 +38,14 @@ struct _LqrCursor
   gint x;                       /* x coordinate of current data */
   gint y;                       /* y coordinate of current data */
   gint now;                     /* current array position */
-  LqrRaster *o;                 /* pointer to owner raster */
+  LqrCarver *o;                 /* pointer to owner carver */
   gint *vs;                     /* pointer to owner's visibility map */
 };
 
 /* LQR_CURSOR CLASS FUNCTIONS */
 
 /* constructor */
-LqrCursor *lqr_cursor_create (LqrRaster * owner, gint * vs);
+LqrCursor *lqr_cursor_create (LqrCarver * owner, gint * vs);
 
 /* destructor */
 void lqr_cursor_destroy (LqrCursor * c);
