@@ -45,7 +45,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   r->level = 1;
   r->max_level = 1;
   r->transposed = 0;
-  r->aux = FALSE;
+  r->active = FALSE;
   r->rigidity = 0;
   r->resize_aux_layers = FALSE;
   r->output_seams = FALSE;
@@ -81,7 +81,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
   TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->bpp));
 
-  /* initialize cursors */
+  /* initialize cursor */
 
   TRY_N_N (r->c = lqr_cursor_create (r, r->vs));
 
@@ -162,6 +162,8 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
         (gdouble) r->rigidity * exp (0.75 * log (x * x)) / r->h;
     }
 
+  r->active = TRUE;
+
   return TRUE;
 }
 
@@ -209,7 +211,6 @@ lqr_carver_attach_pres_layer (LqrCarver * r, guchar * buffer, gint bpp)
 
   r->resize_aux_layers = TRUE;
   TRY_N_F (r->pres_carver = lqr_carver_new (buffer, r->w0, r->h0, bpp));
-  r->pres_carver->aux = TRUE;
   return TRUE;
 }
 
@@ -223,7 +224,6 @@ lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp)
 
   r->resize_aux_layers = TRUE;
   TRY_N_F (r->disc_carver = lqr_carver_new (buffer, r->w0, r->h0, bpp));
-  r->disc_carver->aux = TRUE;
   return TRUE;
 }
 
@@ -264,6 +264,7 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
   /* only go deeper if needed */
   if (depth > r->max_level)
     {
+      TRY_F_F (r->active);
       /* set to minimum width reached so far */
       lqr_carver_set_width (r, r->w_start - r->max_level + 1);
 
@@ -518,7 +519,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   gdouble *new_bias = NULL;
 
 #ifdef __LQR_VERBOSE__
-  printf ("  [ inflating (aux=%i) ]\n", r->aux);
+  printf ("  [ inflating (active=%i) ]\n", r->active);
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
@@ -536,7 +537,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   /* allocate room for new maps */
   TRY_N_F (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->bpp));
   TRY_N_F (new_vs = g_try_new0 (gint, w1 * r->h0));
-  if (!r->aux)
+  if (r->active)
     {
       TRY_N_F (new_bias = g_try_new0 (gdouble, w1 * r->h0));
     }
@@ -573,7 +574,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
                 (r->rgb[c_left * r->bpp + k] +
                  r->rgb[r->c->now * r->bpp + k]) / 2;
             }
-          if (!r->aux)
+          if (r->active)
             {
               new_bias[z0] = (r->bias[c_left] + r->bias[r->c->now]) / 2;
             }
@@ -589,7 +590,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
         {
           new_rgb[z0 * r->bpp + k] = r->rgb[r->c->now * r->bpp + k];
         }
-      if (!r->aux)
+      if (r->active)
         {
           new_bias[z0] = r->bias[r->c->now];
         }
@@ -636,7 +637,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   r->rgb = new_rgb;
   r->vs = new_vs;
-  if (!r->aux)
+  if (r->active)
     {
       r->bias = new_bias;
       TRY_N_F (r->en = g_try_new0 (gdouble, w1 * r->h0));
@@ -1054,7 +1055,7 @@ lqr_carver_flatten (LqrCarver * r)
   gint z0;
 
 #ifdef __LQR_VERBOSE__
-  printf ("    [ flattening (aux=%i) ]\n", r->aux);
+  printf ("    [ flattening (active=%i) ]\n", r->active);
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
@@ -1065,7 +1066,7 @@ lqr_carver_flatten (LqrCarver * r)
 
   /* allocate room for new map */
   TRY_N_F (new_rgb = g_try_new0 (guchar, r->w * r->h * r->bpp));
-  if (!r->aux)
+  if (r->active)
     {
       TRY_N_F (new_bias = g_try_new0 (gdouble, r->w * r->h));
 
@@ -1081,7 +1082,7 @@ lqr_carver_flatten (LqrCarver * r)
   lqr_cursor_reset (r->c);
   for (y = 0; y < r->h; y++)
     {
-      if (!r->aux)
+      if (r->active)
         {
           r->raw[y] = r->_raw + y * r->w;
         }
@@ -1092,7 +1093,7 @@ lqr_carver_flatten (LqrCarver * r)
             {
               new_rgb[z0 * r->bpp + k] = r->rgb[r->c->now * r->bpp + k];
             }
-          if (!r->aux)
+          if (r->active)
             {
               new_bias[z0] = r->bias[r->c->now];
               r->raw[y][x] = z0;
@@ -1104,7 +1105,7 @@ lqr_carver_flatten (LqrCarver * r)
   /* substitute the old maps */
   g_free (r->rgb);
   r->rgb = new_rgb;
-  if (!r->aux)
+  if (r->active)
     {
       g_free (r->bias);
       r->bias = new_bias;
@@ -1113,7 +1114,7 @@ lqr_carver_flatten (LqrCarver * r)
   /* init the other maps */
   g_free (r->vs);
   TRY_N_F (r->vs = g_try_new0 (gint, r->w * r->h));
-  if (!r->aux)
+  if (r->active)
     {
       TRY_N_F (r->en = g_try_new0 (gdouble, r->w * r->h));
       TRY_N_F (r->m = g_try_new0 (gdouble, r->w * r->h));
@@ -1152,7 +1153,7 @@ lqr_carver_transpose (LqrCarver * r)
   gdouble *new_bias = NULL;
 
 #ifdef __LQR_VERBOSE__
-  printf ("[ transposing (aux=%i) ]\n", r->aux);
+  printf ("[ transposing (active=%i) ]\n", r->active);
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
@@ -1169,7 +1170,7 @@ lqr_carver_transpose (LqrCarver * r)
 
   /* allocate room for the new maps */
   TRY_N_F (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->bpp));
-  if (!r->aux)
+  if (r->active)
     {
       TRY_N_F (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
 
@@ -1182,7 +1183,7 @@ lqr_carver_transpose (LqrCarver * r)
   /* compute trasposed maps */
   for (x = 0; x < r->w; x++)
     {
-      if (!r->aux)
+      if (r->active)
         {
           r->raw[x] = r->_raw + x * r->h0;
         }
@@ -1194,7 +1195,7 @@ lqr_carver_transpose (LqrCarver * r)
             {
               new_rgb[z1 * r->bpp + k] = r->rgb[z0 * r->bpp + k];
             }
-          if (!r->aux)
+          if (r->active)
             {
               new_bias[z1] = r->bias[z0];
               r->raw[x][y] = z1;
@@ -1205,7 +1206,7 @@ lqr_carver_transpose (LqrCarver * r)
   /* substitute the map */
   g_free (r->rgb);
   r->rgb = new_rgb;
-  if (!r->aux)
+  if (r->active)
     {
       g_free (r->bias);
       r->bias = new_bias;
@@ -1213,7 +1214,7 @@ lqr_carver_transpose (LqrCarver * r)
 
   /* init the other maps */
   TRY_N_F (r->vs = g_try_new0 (gint, r->w0 * r->h0));
-  if (!r->aux)
+  if (r->active)
     {
       TRY_N_F (r->en = g_try_new0 (gdouble, r->w0 * r->h0));
       TRY_N_F (r->m = g_try_new0 (gdouble, r->w0 * r->h0));
@@ -1234,7 +1235,7 @@ lqr_carver_transpose (LqrCarver * r)
   r->max_level = 1;
 
   /* reset seam path and cursors */
-  if (!r->aux)
+  if (r->active)
     {
       g_free (r->vpath);
       TRY_N_F (r->vpath = g_try_new (gint, r->h));
@@ -1246,7 +1247,7 @@ lqr_carver_transpose (LqrCarver * r)
 
   /* rescale rigidity */
 
-  if (!r->aux)
+  if (r->active)
     {
       for (x = -r->delta_x; x <= r->delta_x; x++)
         {
@@ -1299,7 +1300,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
       gamma = w1 - r->h;
     }
   delta = delta > 0 ? delta : -delta;
-  
+
   if (gamma)
     {
       if (r->transposed)

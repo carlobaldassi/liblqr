@@ -52,7 +52,7 @@ struct _LqrCarver
   gint bpp;                     /* number of bpp of the image */
 
   gint transposed;              /* flag to set transposed state */
-  gboolean aux;                 /* flag to set if carver is auxiliary */
+  gboolean active;              /* flag to set if carver is active */
 
   gboolean resize_aux_layers;   /* flag to determine whether the auxiliary layers are resized */
   gboolean output_seams;        /* flag to determine whether to output the seam map */

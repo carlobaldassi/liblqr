@@ -52,14 +52,12 @@ lqr_vmap_destroy (LqrVMap * vmap)
   g_free (vmap);
 }
 
-/* flush the visibility level of the image
- * uses original size
- * uninitialized points are plotted transparent */
+/* flush the visibility level of the image */
 gboolean
 lqr_vmap_flush (LqrCarver * r)
 {
   LqrVMap * vmap;
-  gint w, h, w1, x, y, z0, k, vs;
+  gint w, h, w1, x, y, z0, vs;
   gint * buffer;
   gint depth; 
   gint bpp;
@@ -112,6 +110,64 @@ lqr_vmap_flush (LqrCarver * r)
   TRY_N_F (vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
 
   TRY_N_F (r->flushed_vs = lqr_vmap_list_append(r->flushed_vs, vmap));
+
+  return TRUE;
+}
+
+
+gboolean
+lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
+{
+  gint w, h;
+  gint x, y, z0, z1;
+
+  w = vmap->width;
+  h = vmap->height;
+
+  if (r->active)
+    {
+      return FALSE;
+    }
+
+  if (!r->transposed)
+    {
+      TRY_F_F ((r->w_start == w ) && (r->h_start == h));
+    }
+  else
+    {
+      TRY_F_F ((r->w_start == h ) && (r->h_start == w));
+    }
+
+  TRY_F_F (lqr_carver_flatten(r));
+
+  if (vmap->orientation != r->transposed)
+    {
+      TRY_F_F (lqr_carver_transpose (r));
+    }
+
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+	{
+	  if (!r->transposed)
+	    {
+	      z0 = y * r->w + x;
+	    }
+	  else
+	    {
+	      z0 = x * r->h + y;
+	    }
+	  z1 = y * r->w + x;
+
+	  r->vs[z1] = vmap->buffer[z0];
+	}
+    }
+
+  TRY_F_F (lqr_carver_inflate(r, vmap->depth));
+
+  r->max_level = vmap->depth + 1;
+
+  lqr_cursor_reset (r->c);
 
   return TRUE;
 }
