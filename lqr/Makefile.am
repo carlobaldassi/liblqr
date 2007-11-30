@@ -17,8 +17,6 @@ liblqr_1_la_SOURCES = \
 	lqr_vmap.h \
 	lqr_vmap_list.c \
 	lqr_vmap_list.h \
-	lqr_colour.c    \
-	lqr_colour.h	\
 	lqr_progress.c  \
 	lqr_progress.h
 
@@ -39,7 +37,6 @@ lqr_include_HEADERS = lqr.h \
 		      lqr_carver.h \
 		      lqr_vmap.h \
 		      lqr_vmap_list.h \
-		      lqr_colour.h \
 		      lqr_progress.h
 
 lqr_includedir = $(includedir)/@LIBRARY_SNAME@/@LIBRARY_BASE_NAME@

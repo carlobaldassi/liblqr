@@ -30,7 +30,6 @@ G_BEGIN_DECLS
 
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_gradient.h>
-#include <lqr/lqr_colour.h>
 #include <lqr/lqr_cursor.h>
 #include <lqr/lqr_progress.h>
 #include <lqr/lqr_vmap.h>

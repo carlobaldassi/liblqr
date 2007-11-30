@@ -49,8 +49,6 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   r->rigidity = 0;
   r->resize_aux_layers = FALSE;
   r->output_seams = FALSE;
-  lqr_colour_rgba_set(&(r->seam_colour_start), 0, 0, 0, 0);
-  lqr_colour_rgba_set(&(r->seam_colour_end), 0, 0, 0, 0);
   r->resize_order = LQR_RES_ORDER_HOR;
   r->pres_carver = NULL;
   r->disc_carver = NULL;

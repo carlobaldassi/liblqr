@@ -57,8 +57,6 @@ struct _LqrCarver
   gboolean resize_aux_layers;   /* flag to determine whether the auxiliary layers are resized */
   gboolean output_seams;        /* flag to determine whether to output the seam map */
   LqrResizeOrder resize_order;  /* resize order */
-  LqrColourRGBA seam_colour_start;     /* start colour for the seam map */
-  LqrColourRGBA seam_colour_end;       /* end colour for the seam map */
 
   LqrCarver *pres_carver;       /* preservation layer carver */
   LqrCarver *disc_carver;       /* discard layer carver */
