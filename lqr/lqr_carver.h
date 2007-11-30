@@ -31,6 +31,18 @@
 #error "lqr_gradient.h must be included prior to lqr_carver.h"
 #endif /* __LQR_GRADIENT_H__ */
 
+#ifndef __LQR_CARVER_LIST_H__
+#error "lqr_carver_list.h must be included prior to lqr_carver.h"
+#endif /* __LQR_GRADIENT_H__ */
+
+#ifndef __LQR_VMAP_H__
+#error "lqr_vmap.h must be included prior to lqr_carver.h"
+#endif /* __LQR_GRADIENT_H__ */
+
+#ifndef __LQR_VMAP_LIST_H__
+#error "lqr_vmap_list.h must be included prior to lqr_carver.h"
+#endif /* __LQR_GRADIENT_H__ */
+
 /**** LQR_CARVER CLASS DEFINITION ****/
 /* This is the representation of the multisize image
  * The image is stored internally as a one-dimentional
@@ -55,11 +67,10 @@ struct _LqrCarver
   gboolean active;              /* flag to set if carver is active */
 
   gboolean resize_aux_layers;   /* flag to determine whether the auxiliary layers are resized */
-  gboolean output_seams;        /* flag to determine whether to output the seam map */
+  gboolean dump_vmaps;         /* flag to determine whether to output the seam map */
   LqrResizeOrder resize_order;  /* resize order */
 
-  LqrCarver *pres_carver;       /* preservation layer carver */
-  LqrCarver *disc_carver;       /* discard layer carver */
+  LqrCarverList *attached_list; /* list of attached carvers */
 
   gfloat rigidity;              /* rigidity value (can straighten seams) */
   gdouble *rigidity_map;        /* the rigidity function */
@@ -117,6 +128,12 @@ gboolean lqr_carver_resize_height (LqrCarver * r, gint h1);   /* liquid resize h
 void lqr_carver_set_width (LqrCarver * r, gint w1);
 gboolean lqr_carver_transpose (LqrCarver * r);
 
+/* auxiliary */
+gboolean lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data);
+gboolean lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data);
+gboolean lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data);
+gboolean lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data);
+
 /** public functions **/
 
 /* constructor & destructor */
@@ -128,10 +145,9 @@ gboolean lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 
 /* set attributes */
 void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
-void lqr_carver_set_output_seams (LqrCarver *r);
+void lqr_carver_set_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
-gboolean lqr_carver_attach_pres_layer (LqrCarver * r, guchar * buffer, gint bpp);
-gboolean lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp);
+gboolean lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 
 /* image manipulations */

@@ -48,10 +48,9 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   r->active = FALSE;
   r->rigidity = 0;
   r->resize_aux_layers = FALSE;
-  r->output_seams = FALSE;
+  r->dump_vmaps = FALSE;
   r->resize_order = LQR_RES_ORDER_HOR;
-  r->pres_carver = NULL;
-  r->disc_carver = NULL;
+  r->attached_list = NULL;
   r->flushed_vs = NULL;
   TRY_N_N (r->progress = lqr_progress_new());
 
@@ -103,20 +102,13 @@ lqr_carver_destroy (LqrCarver * r)
   lqr_cursor_destroy (r->c);
   g_free (r->vpath);
   g_free (r->vpath_x);
-  if (r->pres_carver != NULL)
-    {
-      lqr_carver_destroy (r->pres_carver);
-    }
-  if (r->disc_carver != NULL)
-    {
-      lqr_carver_destroy (r->disc_carver);
-    }
   if (r->rigidity_map != NULL)
     {
       r->rigidity_map -= r->delta_x;
       g_free (r->rigidity_map);
     }
   lqr_vmap_list_destroy(r->flushed_vs);
+  lqr_carver_list_destroy(r->attached_list);
   g_free (r->progress);
   g_free (r->_raw);
   g_free (r->raw);
@@ -202,36 +194,19 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 
 /* attach layers to be scaled along with the main one */
 gboolean
-lqr_carver_attach_pres_layer (LqrCarver * r, guchar * buffer, gint bpp)
+lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
-  if (r->pres_carver)
-    {
-      lqr_carver_destroy(r->pres_carver);
-    }
-
-  r->resize_aux_layers = TRUE;
-  TRY_N_F (r->pres_carver = lqr_carver_new (buffer, r->w0, r->h0, bpp));
-  return TRUE;
-}
-
-gboolean
-lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp)
-{
-  if (r->disc_carver)
-    {
-      lqr_carver_destroy(r->disc_carver);
-    }
-
-  r->resize_aux_layers = TRUE;
-  TRY_N_F (r->disc_carver = lqr_carver_new (buffer, r->w0, r->h0, bpp));
+  TRY_F_F (r->w0 == aux->w0);
+  TRY_F_F (r->h0 == aux->h0);
+  TRY_N_F (r->attached_list = lqr_carver_list_append (r->attached_list, aux));
   return TRUE;
 }
 
 /* set the seam output flag */
 void
-lqr_carver_set_output_seams (LqrCarver *r)
+lqr_carver_set_dump_vmaps (LqrCarver *r)
 {
-  r->output_seams = TRUE;
+  r->dump_vmaps = TRUE;
 }
 
 /* set order if rescaling in both directions */
@@ -386,6 +361,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 {
   gint l;
   gint update_step;
+  LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
   printf ("[ building visibility map ]\n");
@@ -459,43 +435,21 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 
   /* copy visibility maps on auxiliary layers
    * (needs to be done before inflation) */
-  if (r->resize_aux_layers)
-    {
-      if (r->pres_carver != NULL)
-        {
-          lqr_carver_copy_vsmap (r, r->pres_carver);
-        }
-      if (r->disc_carver != NULL)
-        {
-          lqr_carver_copy_vsmap (r, r->disc_carver);
-        }
-    }
+
+  data_tok.carver = r;
+  lqr_carver_list_foreach (r->attached_list,  lqr_carver_copy_vsmap1, data_tok);
 
   /* insert seams for image enlargement */
   TRY_F_F (lqr_carver_inflate (r, depth - 1));
-
-  /* set new max_level */
-  r->max_level = depth;
 
   /* reset image size */
   lqr_carver_set_width (r, r->w_start);
 
   /* repeat the above steps for auxiliary layers */
-  if (r->resize_aux_layers)
-    {
-      if (r->pres_carver != NULL)
-        {
-          TRY_F_F (lqr_carver_inflate (r->pres_carver, depth - 1));
-          r->pres_carver->max_level = depth;
-          lqr_carver_set_width (r->pres_carver, r->pres_carver->w_start);
-        }
-      if (r->disc_carver != NULL)
-        {
-          TRY_F_F (lqr_carver_inflate (r->disc_carver, depth - 1));
-          r->disc_carver->max_level = depth;
-          lqr_carver_set_width (r->disc_carver, r->disc_carver->w_start);
-        }
-    }
+  data_tok.integer = depth - 1;
+  TRY_F_F (lqr_carver_list_foreach (r->attached_list, lqr_carver_inflate1, data_tok));
+  data_tok.integer = r->w_start;
+  TRY_F_F (lqr_carver_list_foreach (r->attached_list, lqr_carver_set_width1, data_tok));
 
 #ifdef __LQR_VERBOSE__
   printf ("[ visibility map OK ]\n");
@@ -646,6 +600,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   /* set new widths & levels (w_start is kept for reference) */
   r->level = l + 1;
+  r->max_level = l + 1;
   r->w0 = w1;
   r->w = r->w_start;
 
@@ -659,6 +614,12 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 #endif /* __LQR_VERBOSE__ */
 
   return TRUE;
+}
+
+gboolean
+lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data)
+{
+  return lqr_carver_inflate (r, data.integer);
 }
 
 /*** internal functions for maps computations ***/
@@ -1026,6 +987,13 @@ lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest)
     }
 }
 
+gboolean
+lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data)
+{
+  lqr_carver_copy_vsmap (data.carver, r);
+  return TRUE;
+}
+
 
 /*** image manipulations ***/
 
@@ -1040,6 +1008,13 @@ lqr_carver_set_width (LqrCarver * r, gint w1)
 #endif /* __LQR_DEBUG__ */
   r->w = w1;
   r->level = r->w0 - w1 + 1;
+}
+
+gboolean
+lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data)
+{
+  lqr_carver_set_width (r, data.integer);
+  return TRUE;
 }
 
 
@@ -1151,6 +1126,7 @@ lqr_carver_transpose (LqrCarver * r)
   gint d;
   guchar *new_rgb;
   gdouble *new_bias = NULL;
+  LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
   printf ("[ transposing (active=%i) ]\n", r->active);
@@ -1259,17 +1235,7 @@ lqr_carver_transpose (LqrCarver * r)
   r->transposed = (r->transposed ? 0 : 1);
 
   /* call transpose on auxiliary layers */
-  if (r->resize_aux_layers == TRUE)
-    {
-      if (r->pres_carver != NULL)
-        {
-          TRY_F_F (lqr_carver_transpose (r->pres_carver));
-        }
-      if (r->disc_carver != NULL)
-        {
-          TRY_F_F (lqr_carver_transpose (r->disc_carver));
-        }
-    }
+  lqr_carver_list_foreach (r->attached_list,  lqr_carver_transpose1, data_tok);
 
 #ifdef __LQR_VERBOSE__
   printf ("[ transpose OK ]\n");
@@ -1279,6 +1245,12 @@ lqr_carver_transpose (LqrCarver * r)
   return TRUE;
 }
 
+gboolean
+lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data)
+{
+  return lqr_carver_transpose(r);
+}
+
 /* resize w + h: these are the liquid rescale methods.
  * They automatically determine the depth of the map
  * according to the desired size, can be called multiple
@@ -1286,6 +1258,7 @@ lqr_carver_transpose (LqrCarver * r)
 gboolean
 lqr_carver_resize_width (LqrCarver * r, gint w1)
 {
+  LqrDataTok data_tok;
   gint delta, gamma;
   /* delta is used to determine the required depth
    * gamma to decide if action is necessary */
@@ -1310,18 +1283,11 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
       lqr_progress_init (r->progress, r->progress->init_width_message);
       TRY_F_F (lqr_carver_build_maps (r, delta + 1));
       lqr_carver_set_width (r, w1);
-      if (r->resize_aux_layers == TRUE)
-        {
-          if (r->pres_carver != NULL)
-            {
-              lqr_carver_set_width (r->pres_carver, w1);
-            }
-          if (r->disc_carver != NULL)
-            {
-              lqr_carver_set_width (r->disc_carver, w1);
-            }
-        }
-      if (r->output_seams)
+
+      data_tok.integer = w1;
+      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width1, data_tok);
+
+      if (r->dump_vmaps)
         {
           TRY_F_F (lqr_vmap_flush (r));
         }
@@ -1333,6 +1299,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
 gboolean
 lqr_carver_resize_height (LqrCarver * r, gint h1)
 {
+  LqrDataTok data_tok;
   gint delta, gamma;
   if (!r->transposed)
     {
@@ -1354,18 +1321,11 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       lqr_progress_init (r->progress, r->progress->init_height_message);
       TRY_F_F (lqr_carver_build_maps (r, delta + 1));
       lqr_carver_set_width (r, h1);
-      if (r->resize_aux_layers == TRUE)
-        {
-          if (r->pres_carver != NULL)
-            {
-              lqr_carver_set_width (r->pres_carver, h1);
-            }
-          if (r->disc_carver != NULL)
-            {
-              lqr_carver_set_width (r->disc_carver, h1);
-            }
-        }
-      if (r->output_seams)
+
+      data_tok.integer = h1;
+      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width1, data_tok);
+      
+      if (r->dump_vmaps)
         {
           TRY_F_F (lqr_vmap_flush (r));
         }

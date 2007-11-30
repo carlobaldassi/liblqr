@@ -165,8 +165,6 @@ lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
 
   TRY_F_F (lqr_carver_inflate(r, vmap->depth));
 
-  r->max_level = vmap->depth + 1;
-
   lqr_cursor_reset (r->c);
 
   return TRUE;

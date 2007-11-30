@@ -20,23 +20,35 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
+#ifndef __LQR_VMAP_LIST_H__
+#define __LQR_VMAP_LIST_H__
 
-#ifndef __LQR_H__
-#define __LQR_H__
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_vmap_list.h"
+#endif /* __LQR_BASE_H__ */
 
-#include <glib.h>
+#ifndef __LQR_VMAP_H__
+#error "lqr_vmap.h must be included prior to lqr_vmap_list.h"
+#endif
 
-G_BEGIN_DECLS
+/**** LQR_VMAP_LIST CLASS DEFINITION ****/
+struct _LqrVMapList;
 
-#include <lqr/lqr_base.h>
-#include <lqr/lqr_gradient.h>
-#include <lqr/lqr_cursor.h>
-#include <lqr/lqr_progress.h>
-#include <lqr/lqr_vmap.h>
-#include <lqr/lqr_vmap_list.h>
-#include <lqr/lqr_carver_list.h>
-#include <lqr/lqr_carver.h>
+typedef struct _LqrVMapList LqrVMapList;
 
-G_END_DECLS
+struct _LqrVMapList
+{
+  LqrVMap * current;
+  LqrVMapList * next;
+};
 
-#endif /* __LQR_H__ */
+/* LQR_VMAP_LIST FUNCTIONS */
+
+LqrVMapList * lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer);
+void lqr_vmap_list_destroy (LqrVMapList * list);
+
+gboolean lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data);
+
+#endif /* __LQR_VMAP__ */
+
+
