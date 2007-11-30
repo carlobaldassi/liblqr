@@ -77,6 +77,7 @@ struct _LqrCarver
   gint **raw;                   /* array of array-coordinates, for seam computation */
 
   LqrCursor *c;                 /* cursor to be used as image reader */
+  guchar *rgb_ro_buffer;	/* readout buffer */
 
   gint *vpath;                  /* array of array-coordinates representing a vertical seam */
   gint *vpath_x;                /* array of abscisses representing a vertical seam */
@@ -140,11 +141,13 @@ gboolean lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize
 gboolean lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image */
 
 /* readout */
+void lqr_carver_scan_reset (LqrCarver * r);
+gboolean lqr_carver_scan (LqrCarver *r, gint *x, gint *y, guchar ** rgb);
+gint lqr_carver_get_bpp (LqrCarver *r);
 gint lqr_carver_get_width (LqrCarver * r);
 gint lqr_carver_get_height (LqrCarver * r);
 gint lqr_carver_read_x (LqrCarver * r);
 gint lqr_carver_read_y (LqrCarver * r);
-void lqr_carver_read_reset (LqrCarver * r);
 gboolean lqr_carver_read_next (LqrCarver * r);
 guchar lqr_carver_read_c (LqrCarver * r, gint col);
 

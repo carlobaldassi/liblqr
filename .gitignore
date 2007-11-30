@@ -13,3 +13,4 @@ config.guess
 libtool
 lqr-1.pc
 stamp-h1
+examples/*.png

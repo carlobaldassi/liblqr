@@ -23,7 +23,7 @@ main (int argc, char **argv)
   if (argc < 5)
     {
       cerr << "error: usage: " << argv[0] << " <input_file> <output_file> <x> <y>" << endl;
-      cerr << "       * files must be RGB in PNG format" << endl;
+      cerr << "       * files must be RGB in PNG format (no alpha channel)" << endl;
       cerr << "       * setting <x> = 0 or <y> = 0 means keep original size"
         << endl;
       exit (1);
@@ -147,6 +147,7 @@ gboolean
 write_carver_to_image (LqrCarver * r, pngwriter * png)
 {
   gint x, y;
+  guchar * rgb;
   gdouble red, green, blue;
   gint w, h;
 
@@ -161,20 +162,19 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   png->resize (w, h);
 
   /* initialize image reading */
-  lqr_carver_read_reset (r);
+  lqr_carver_scan_reset (r);
 
-  do
+  /* readout (no nedd to init rgb) */
+  while (lqr_carver_scan(r, &x, &y, &rgb))
     {
-      x = lqr_carver_read_x (r);
-      y = lqr_carver_read_y (r);
-      /* readout the pixel information */
-      red = (gdouble) lqr_carver_read_c (r, 0) / 255;
-      green = (gdouble) lqr_carver_read_c (r, 1) / 255;
-      blue = (gdouble) lqr_carver_read_c (r, 2) / 255;
+      /* convert the output into doubles */
+      red = (gdouble) rgb[0] / 255;
+      green = (gdouble) rgb[1] / 255;
+      blue = (gdouble) rgb[2] / 255;
 
+      /* plot (pngwriter's coordinates start from 1,1) */
       png->plot (x + 1, y + 1, red, green, blue);
     }
-  while (lqr_carver_read_next (r));
 
   return TRUE;
 }

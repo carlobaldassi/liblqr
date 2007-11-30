@@ -81,6 +81,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 
   r->rgb = buffer;
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
+  TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->bpp));
 
   /* initialize cursors */
 
@@ -1006,6 +1007,7 @@ lqr_carver_finish_vsmap (LqrCarver * r)
 #endif /* __LQR_DEBUG__ */
       r->vs[r->c->now] = r->w0;
     }
+  lqr_cursor_reset (r->c);
 }
 
 /* copy the visibility map from a lqr_carver
@@ -1418,10 +1420,37 @@ gint lqr_carver_get_height(LqrCarver* r)
   return (r->transposed ? r->w : r->h);
 }
 
+/* get colour channels */
+gint lqr_carver_get_bpp (LqrCarver * r)
+{
+  return r->bpp;
+}
+
+
 /* readout reset */
-void lqr_carver_read_reset (LqrCarver * r)
+void lqr_carver_scan_reset (LqrCarver * r)
 {
   lqr_cursor_reset (r->c);
+}
+
+/* readout all */
+gboolean lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
+{
+  gint k;
+  if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
+    {
+      lqr_carver_scan_reset (r->c);
+      return FALSE;
+    }
+  (*x) = (r->transposed ? r->c->y : r->c->x);
+  (*y) = (r->transposed ? r->c->x : r->c->y);
+  for (k = 0; k < r->bpp; k++)
+    {
+      r->rgb_ro_buffer[k] = r->rgb[r->c->now * r->bpp + k];
+    }
+  (*rgb) = r->rgb_ro_buffer;
+  lqr_cursor_next(r->c);
+  return TRUE;
 }
 
 /* readout move */
@@ -1429,9 +1458,10 @@ gboolean lqr_carver_read_next (LqrCarver * r)
 {
   if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
     {
+      lqr_carver_scan_reset (r->c);
       return FALSE;
     }
-  lqr_cursor_next(r->c);
+  lqr_cursor_next (r->c);
   return TRUE;
 }
 
@@ -1453,6 +1483,5 @@ guchar lqr_carver_read_c (LqrCarver * r, gint col)
   gint k = CLAMP(col, 0, r->bpp - 1);
   return r->rgb[r->c->now * r->bpp + k];
 }
-
 
 /**** END OF LQR_CARVER CLASS FUNCTIONS ****/
