@@ -58,8 +58,7 @@ lqrLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lqr_LTLIBRARIES)
 liblqr_1_la_LIBADD =
 am_liblqr_1_la_OBJECTS = lqr_gradient.lo lqr_cursor.lo lqr_carver.lo \
-	lqr_seams_buffer.lo lqr_seams_buffer_list.lo lqr_colour.lo \
-	lqr_progress.lo
+	lqr_vmap.lo lqr_vmap_list.lo lqr_colour.lo lqr_progress.lo
 liblqr_1_la_OBJECTS = $(am_liblqr_1_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -205,10 +204,10 @@ liblqr_1_la_SOURCES = \
 	lqr_cursor.h    \
 	lqr_carver.c    \
 	lqr_carver.h    \
-	lqr_seams_buffer.c \
-	lqr_seams_buffer.h \
-	lqr_seams_buffer_list.c \
-	lqr_seams_buffer_list.h \
+	lqr_vmap.c \
+	lqr_vmap.h \
+	lqr_vmap_list.c \
+	lqr_vmap_list.h \
 	lqr_colour.c    \
 	lqr_colour.h	\
 	lqr_progress.c  \
@@ -227,8 +226,8 @@ lqr_include_HEADERS = lqr.h \
 		      lqr_gradient.h \
 		      lqr_cursor.h \
 		      lqr_carver.h \
-		      lqr_seams_buffer.h \
-		      lqr_seams_buffer_list.h \
+		      lqr_vmap.h \
+		      lqr_vmap_list.h \
 		      lqr_colour.h \
 		      lqr_progress.h
 
@@ -307,8 +306,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_cursor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_gradient.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_progress.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_seams_buffer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_seams_buffer_list.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_vmap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_vmap_list.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

@@ -118,7 +118,7 @@ lqr_carver_destroy (LqrCarver * r)
       r->rigidity_map -= r->delta_x;
       g_free (r->rigidity_map);
     }
-  lqr_seams_buffer_list_destroy(r->flushed_vs);
+  lqr_vmap_list_destroy(r->flushed_vs);
   g_free (r->progress);
   g_free (r->_raw);
   g_free (r->raw);
@@ -229,13 +229,11 @@ lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp)
   return TRUE;
 }
 
-/* set the seam output flag and colours */
+/* set the seam output flag */
 void
-lqr_carver_set_output_seams (LqrCarver *r, LqrColourRGBA seam_colour_start, LqrColourRGBA seam_colour_end)
+lqr_carver_set_output_seams (LqrCarver *r)
 {
   r->output_seams = TRUE;
-  r->seam_colour_start = seam_colour_start;
-  r->seam_colour_end = seam_colour_end;
 }
 
 /* set order if rescaling in both directions */
@@ -401,7 +399,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
   assert (depth >= 1);
 #endif /* __LQR_DEBUG__ */
 
-  /* default behavior : compute all possible levels
+  /* default behaviour : compute all possible levels
    * (complete map) */
   if (depth == 0)
     {
@@ -1326,7 +1324,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
         }
       if (r->output_seams)
         {
-          TRY_F_F (lqr_seams_buffer_flush_vs (r));
+          TRY_F_F (lqr_vmap_flush (r));
         }
       lqr_progress_end (r->progress, r->progress->end_width_message);
     }
@@ -1370,7 +1368,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
         }
       if (r->output_seams)
         {
-          TRY_F_F (lqr_seams_buffer_flush_vs (r));
+          TRY_F_F (lqr_vmap_flush (r));
         }
       lqr_progress_end (r->progress, r->progress->end_height_message);
     }
@@ -1401,6 +1399,7 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 	assert(0);
 #endif /* __LQR_DEBUG__ */
     }
+  lqr_carver_scan_reset(r);
 
 #ifdef __LQR_VERBOSE__
   printf("[ Rescale OK ]\n");
@@ -1439,7 +1438,7 @@ gboolean lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
   gint k;
   if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
     {
-      lqr_carver_scan_reset (r->c);
+      lqr_carver_scan_reset (r);
       return FALSE;
     }
   (*x) = (r->transposed ? r->c->y : r->c->x);
@@ -1458,7 +1457,7 @@ gboolean lqr_carver_read_next (LqrCarver * r)
 {
   if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
     {
-      lqr_carver_scan_reset (r->c);
+      lqr_carver_scan_reset (r);
       return FALSE;
     }
   lqr_cursor_next (r->c);

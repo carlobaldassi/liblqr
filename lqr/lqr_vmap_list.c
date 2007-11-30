@@ -23,27 +23,27 @@
 #include <glib.h>
 
 #include <lqr/lqr_base.h>
-#include <lqr/lqr_seams_buffer.h>
-#include <lqr/lqr_seams_buffer_list.h>
+#include <lqr/lqr_vmap.h>
+#include <lqr/lqr_vmap_list.h>
 
 #ifdef __LQR_DEBUG__
 #include <assert.h>
 #endif /* __LQR_DEBUG__ */
 
 
-/**** SEAMS BUFFER LIST FUNCTIONS ****/
+/**** VMAP LIST FUNCTIONS ****/
 
-LqrSeamsBufferList * 
-lqr_seams_buffer_list_append (LqrSeamsBufferList * list, LqrSeamsBuffer * buffer)
+LqrVMapList * 
+lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer)
 {
-  LqrSeamsBufferList * prev = NULL;
-  LqrSeamsBufferList * now = list;
+  LqrVMapList * prev = NULL;
+  LqrVMapList * now = list;
   while (now != NULL)
     {
       prev = now;
       now = now->next;
     }
-  TRY_N_N (now = g_try_new(LqrSeamsBufferList, 1));
+  TRY_N_N (now = g_try_new(LqrVMapList, 1));
   now->next = NULL;
   now->current = buffer;
   if (prev)
@@ -61,24 +61,24 @@ lqr_seams_buffer_list_append (LqrSeamsBufferList * list, LqrSeamsBuffer * buffer
 }
 
 void
-lqr_seams_buffer_list_destroy(LqrSeamsBufferList * list)
+lqr_vmap_list_destroy(LqrVMapList * list)
 {
-  LqrSeamsBufferList * now = list;
+  LqrVMapList * now = list;
   if (now != NULL)
     {
-      lqr_seams_buffer_list_destroy(now->next);
-      lqr_seams_buffer_destroy(now->current);
+      lqr_vmap_list_destroy(now->next);
+      lqr_vmap_destroy(now->current);
     }
 }
 
 gboolean
-lqr_seams_buffer_list_foreach (LqrSeamsBufferList * list, LqrSeamsBufferFunc func, gpointer data)
+lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data)
 {
-  LqrSeamsBufferList * now = list;
+  LqrVMapList * now = list;
   if (now != NULL)
     {
       TRY_F_F (func(now->current, data));
-      return lqr_seams_buffer_list_foreach (now->next, func, data);
+      return lqr_vmap_list_foreach (now->next, func, data);
     }
   return TRUE;
 }

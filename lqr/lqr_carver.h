@@ -86,7 +86,7 @@ struct _LqrCarver
 
   LqrProgress * progress;	/* pointer to progress update functions */
 
-  LqrSeamsBufferList * flushed_vs;  /* linked list of pointers to flushed visibility maps buffers */
+  LqrVMapList * flushed_vs;  /* linked list of pointers to flushed visibility maps buffers */
 
 };
 
@@ -130,7 +130,7 @@ gboolean lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 
 /* set attributes */
 void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
-void lqr_carver_set_output_seams (LqrCarver *r, LqrColourRGBA seam_colour_start, LqrColourRGBA seam_colour_end);
+void lqr_carver_set_output_seams (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
 gboolean lqr_carver_attach_pres_layer (LqrCarver * r, guchar * buffer, gint bpp);
 gboolean lqr_carver_attach_disc_layer (LqrCarver * r, guchar * buffer, gint bpp);

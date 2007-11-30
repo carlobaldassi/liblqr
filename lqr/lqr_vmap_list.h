@@ -20,35 +20,35 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_SEAMS_BUFFER_LIST_H__
-#define __LQR_SEAMS_BUFFER_LIST_H__
+#ifndef __LQR_VMAP_LIST_H__
+#define __LQR_VMAP_LIST_H__
 
 #ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_seams_buffer_list.h"
+#error "lqr_base.h must be included prior to lqr_vmap_list.h"
 #endif /* __LQR_BASE_H__ */
 
-#ifndef __LQR_SEAMS_BUFFER_H__
-#error "lqr_seams_buffer.h must be included prior to lqr_seams_buffer_list.h"
+#ifndef __LQR_VMAP_H__
+#error "lqr_vmap.h must be included prior to lqr_vmap_list.h"
 #endif
 
-/**** LQR_SEAMS_BUFFER_LIST CLASS DEFINITION ****/
-struct _LqrSeamsBufferList;
+/**** LQR_VMAP_LIST CLASS DEFINITION ****/
+struct _LqrVMapList;
 
-typedef struct _LqrSeamsBufferList LqrSeamsBufferList;
+typedef struct _LqrVMapList LqrVMapList;
 
-struct _LqrSeamsBufferList
+struct _LqrVMapList
 {
-  LqrSeamsBuffer * current;
-  LqrSeamsBufferList * next;
+  LqrVMap * current;
+  LqrVMapList * next;
 };
 
-/* LQR_SEAMS_BUFFER_LIST FUNCTIONS */
+/* LQR_VMAP_LIST FUNCTIONS */
 
-LqrSeamsBufferList * lqr_seams_buffer_list_append (LqrSeamsBufferList * list, LqrSeamsBuffer * buffer);
-void lqr_seams_buffer_list_destroy (LqrSeamsBufferList * list);
+LqrVMapList * lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer);
+void lqr_vmap_list_destroy (LqrVMapList * list);
 
-gboolean lqr_seams_buffer_list_foreach (LqrSeamsBufferList * list, LqrSeamsBufferFunc func, gpointer data);
+gboolean lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data);
 
-#endif /* __LQR_SEAMS_BUFFER__ */
+#endif /* __LQR_VMAP__ */
 
 

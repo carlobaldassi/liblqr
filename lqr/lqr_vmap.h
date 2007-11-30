@@ -20,33 +20,35 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_SEAMS_BUFFER_H__
-#define __LQR_SEAMS_BUFFER_H__
+#ifndef __LQR_VMAP_H__
+#define __LQR_VMAP_H__
 
 #ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_seams_buffer.h"
+#error "lqr_base.h must be included prior to lqr_vmap.h"
 #endif /* __LQR_BASE_H__ */
 
 
-/*** LQR_SEAMS_BUFFER CLASS DEFINITION ***/
-struct _LqrSeamsBuffer
+/*** LQR_VMAP CLASS DEFINITION ***/
+struct _LqrVMap
 {
-  guchar * buffer;
+  gint * buffer;
   gint width;
   gint height;
+  gint depth;
+  gint orientation;
 };
 
-typedef struct _LqrSeamsBuffer LqrSeamsBuffer;
+typedef struct _LqrVMap LqrVMap;
 
-typedef gboolean (*LqrSeamsBufferFunc) (LqrSeamsBuffer * seams_buffer, gpointer data);
+typedef gboolean (*LqrVMapFunc) (LqrVMap * vmap, gpointer data);
 
-/* LQR_SEAMS_BUFFER FUNCTIONS */
+/* LQR_VMAP FUNCTIONS */
 
-LqrSeamsBuffer* lqr_seams_buffer_new (guchar * buffer, gint width, gint heigth);
-void lqr_seams_buffer_destroy (LqrSeamsBuffer * seams_buffer);
+LqrVMap* lqr_vmap_new (gint * buffer, gint width, gint heigth, gint depth, gint orientation);
+void lqr_vmap_destroy (LqrVMap * vmap);
 
-gboolean lqr_seams_buffer_flush_vs (LqrCarver * r);
+gboolean lqr_vmap_flush (LqrCarver * r);
 
 
-#endif /* __LQR_SEAMS_BUFFER__ */
+#endif /* __LQR_VMAP__ */
 

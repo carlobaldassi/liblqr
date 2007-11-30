@@ -31,36 +31,38 @@
 
 /**** SEAMS BUFFER FUNCTIONS ****/
 
-LqrSeamsBuffer*
-lqr_seams_buffer_new (guchar * buffer, gint width, gint height)
+LqrVMap*
+lqr_vmap_new (gint * buffer, gint width, gint height, gint depth, gint orientation)
 {
-  LqrSeamsBuffer * seams_buffer;
+  LqrVMap * vmap;
 
-  TRY_N_N (seams_buffer = g_try_new(LqrSeamsBuffer, 1));
-  seams_buffer->buffer = buffer;
-  seams_buffer->width = width;
-  seams_buffer->height = height;
-  return seams_buffer;
+  TRY_N_N (vmap = g_try_new(LqrVMap, 1));
+  vmap->buffer = buffer;
+  vmap->width = width;
+  vmap->height = height;
+  vmap->orientation = orientation;
+  vmap->depth = depth;
+  return vmap;
 }
 
 void
-lqr_seams_buffer_destroy (LqrSeamsBuffer * seams_buffer)
+lqr_vmap_destroy (LqrVMap * vmap)
 {
-  g_free (seams_buffer->buffer);
-  g_free (seams_buffer);
+  g_free (vmap->buffer);
+  g_free (vmap);
 }
 
 /* flush the visibility level of the image
  * uses original size
  * uninitialized points are plotted transparent */
 gboolean
-lqr_seams_buffer_flush_vs (LqrCarver * r)
+lqr_vmap_flush (LqrCarver * r)
 {
-  guchar * buffer;
-  LqrSeamsBuffer * seams_buffer;
+  LqrVMap * vmap;
   gint w, h, w1, x, y, z0, k, vs;
+  gint * buffer;
+  gint depth; 
   gint bpp;
-  gdouble value, rd, gr, bl, al;
 
   /* save current size */
   w1 = r->w;
@@ -70,10 +72,12 @@ lqr_seams_buffer_flush_vs (LqrCarver * r)
 
   w = lqr_carver_get_width (r);
   h = lqr_carver_get_height (r);
+  depth = r->w0 - r->w_start;
+
 
   bpp = 4;
 
-  TRY_N_F (buffer = g_try_new (guchar, w * h * bpp));
+  TRY_N_F (buffer = g_try_new (gint, w * h));
 
   lqr_cursor_reset (r->c);
   for (y = 0; y < r->h; y++)
@@ -89,43 +93,25 @@ lqr_seams_buffer_flush_vs (LqrCarver * r)
 	    {
 	      z0 = x * r->h + y;
 	    }
-          if (vs == 0)
-            {
-              for (k = 0; k < bpp; k++)
-                {
-                  buffer[z0 * bpp + k] = 0;
-                }
-            }
-          else
-            {
-              value =
-                (double) (r->max_level -
-                          (vs - r->w0 + r->w_start)) / r->max_level;
-              rd =
-                value * r->seam_colour_start.r + (1 -
-                                                 value) * r->seam_colour_end.r;
-              gr =
-                value * r->seam_colour_start.g + (1 -
-                                                 value) * r->seam_colour_end.g;
-              bl =
-                value * r->seam_colour_start.b + (1 -
-                                                 value) * r->seam_colour_end.b;
-              al = 0.5 * (1 + value);
-              buffer[z0 * bpp] = 255 * rd;
-              buffer[z0 * bpp + 1] = 255 * gr;
-              buffer[z0 * bpp + 2] = 255 * bl;
-              buffer[z0 * bpp + 3] = 255 * al;
-            }
+	  if (vs == 0)
+	    {
+	      buffer[z0] = 0;
+	    }
+	  else
+	    {
+	      buffer[z0] = vs - depth;
+	    }
           lqr_cursor_next (r->c);
         }
     }
 
   /* recover size */
   lqr_carver_set_width (r, w1);
+  lqr_cursor_reset (r->c);
 
-  TRY_N_F (seams_buffer = lqr_seams_buffer_new(buffer, w, h));
+  TRY_N_F (vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
 
-  TRY_N_F (r->flushed_vs = lqr_seams_buffer_list_append(r->flushed_vs, seams_buffer));
+  TRY_N_F (r->flushed_vs = lqr_vmap_list_append(r->flushed_vs, vmap));
 
   return TRUE;
 }

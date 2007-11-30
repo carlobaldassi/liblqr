@@ -33,8 +33,8 @@ G_BEGIN_DECLS
 #include <lqr/lqr_colour.h>
 #include <lqr/lqr_cursor.h>
 #include <lqr/lqr_progress.h>
-#include <lqr/lqr_seams_buffer.h>
-#include <lqr/lqr_seams_buffer_list.h>
+#include <lqr/lqr_vmap.h>
+#include <lqr/lqr_vmap_list.h>
 #include <lqr/lqr_carver.h>
 
 G_END_DECLS
