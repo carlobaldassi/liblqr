@@ -15,6 +15,8 @@ liblqr_1_la_SOURCES = \
 	lqr_carver.h    \
 	lqr_carver_list.c    \
 	lqr_carver_list.h    \
+	lqr_carver_bias.c    \
+	lqr_carver_bias.h    \
 	lqr_vmap.c \
 	lqr_vmap.h \
 	lqr_vmap_list.c \
@@ -38,6 +40,7 @@ lqr_include_HEADERS = lqr.h \
 		      lqr_cursor.h \
 		      lqr_carver.h \
 		      lqr_carver_list.h \
+		      lqr_carver_bias.h    \
 		      lqr_vmap.h \
 		      lqr_vmap_list.h \
 		      lqr_progress.h

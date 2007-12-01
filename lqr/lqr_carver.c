@@ -1116,6 +1116,18 @@ lqr_carver_flatten (LqrCarver * r)
   return TRUE;
 }
 
+gboolean
+lqr_carver_swoosh (LqrCarver * r)
+{
+  TRY_F_F (lqr_carver_flatten (r));
+  if (r->transposed)
+    {
+      TRY_F_F (lqr_carver_transpose (r));
+    }
+  return TRUE;
+}
+
+
 /* transpose the image, in its current state
  * (all maps and invisible points are lost) */
 gboolean

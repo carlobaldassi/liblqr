@@ -20,24 +20,21 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
+#ifndef __LQR_CARVER_BIAS_H__
+#define __LQR_CARVER_BIAS_H__
 
-#ifndef __LQR_H__
-#define __LQR_H__
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_carver_bias.h"
+#endif /* __LQR_BASE_H__ */
 
-#include <glib.h>
+/* LQR_CARVER_BIAS CLASS FUNCTIONS */
 
-G_BEGIN_DECLS
+/** private functions **/
 
-#include <lqr/lqr_base.h>
-#include <lqr/lqr_gradient.h>
-#include <lqr/lqr_cursor.h>
-#include <lqr/lqr_progress.h>
-#include <lqr/lqr_vmap.h>
-#include <lqr/lqr_vmap_list.h>
-#include <lqr/lqr_carver_list.h>
-#include <lqr/lqr_carver_bias.h>
-#include <lqr/lqr_carver.h>
+gboolean lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp, gint width, gint height, gint x_off, gint y_off);
+gboolean lqr_carver_bias_add_rgb(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp);
+gboolean lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off);
+gboolean lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor);
 
-G_END_DECLS
 
-#endif /* __LQR_H__ */
+#endif /* __LQR_CARVER_BIAS_H__ */

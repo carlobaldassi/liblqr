@@ -153,6 +153,7 @@ void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 /* image manipulations */
 gboolean lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */
 gboolean lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image */
+gboolean lqr_carver_swoosh (LqrCarver * r);    /* flatten and transpose the multisize image */
 
 /* readout */
 void lqr_carver_scan_reset (LqrCarver * r);
