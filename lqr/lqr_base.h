@@ -40,28 +40,18 @@
 #define __LQR_VERBOSE__
 #endif
 
-/**** OPERATIONAL_MODES ****/
-enum _LqrMode
-{
-  LQR_MODE_NORMAL,
-  LQR_MODE_LQRBACK,
-  LQR_MODE_SCALEBACK
-};
-
-typedef enum _LqrMode LqrMode;
-
 /**** RETURN VALUES (signals) ****/
 enum _LqrRetVal
 {
   LQR_ERROR,		/* generic error */
   LQR_OK,		/* ok */ 
   LQR_NOMEM,		/* not enough memory */
-  LQR_READ_END		/* reader cursor reached the end */
+  LQR_WARNING		/* generic warning */
 };
 
 typedef enum _LqrRetVal LqrRetVal;
 
-/* generic signal processing */
+/* generic signal processing macros */
 #define CATCH(expr) G_STMT_START { \
   LqrRetVal ret_val; \
   if ((ret_val = (expr)) != LQR_OK) \
@@ -99,10 +89,8 @@ typedef enum _LqrResizeOrder LqrResizeOrder;
 
 /**** CLASSES DECLARATIONS ****/
 
-struct _LqrCursor;              /* a "smart" index to read the carver */
-struct _LqrCarver;              /* the multisize image carver         */
+struct _LqrCarver;              /* the multisize image carver */
 
-typedef struct _LqrCursor LqrCursor;
 typedef struct _LqrCarver LqrCarver;
 
 #endif /* __LQR_BASE_H__ */

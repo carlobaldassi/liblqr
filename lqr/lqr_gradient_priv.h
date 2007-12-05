@@ -20,10 +20,15 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_GRADIENT_PRIV_H__
+#define __LQR_GRADIENT_PRIV_H__
 
-#endif /* __LQR_CARVER_H__ */
+double lqr_grad_norm (double x, double y);
+double lqr_grad_norm_bias (double x, double y);
+double lqr_grad_sumabs (double x, double y);
+double lqr_grad_xabs (double x, double y);
+double lqr_grad_yabs (double x, double y);
+double lqr_grad_zero (double x, double y);
+
+#endif /* __LQR_GRADIENT_PRIV_H__ */

@@ -24,6 +24,8 @@ LqrResizeOrder res_order = LQR_RES_ORDER_HOR;
 gfloat new_width_p = 0;
 gfloat new_height_p = 0;
 
+gboolean quiet = FALSE;
+
 clock_t clock_start, clock_now;
 
 
@@ -68,19 +70,29 @@ main (int argc, char **argv)
       exit (1);
     }
 
+  /*** print some information on screen ***/
+  if (!quiet)
+    {
+      cout << "resizing " << infile << " [" << old_width << "x" << old_height << "] into " <<
+	outfile << " [" << new_width << "x" << new_height << "]" << endl << endl << flush;
+    }
+
+
+
+  if (vmap_infile)
+    {
+      info_msg ("will read VMap from", vmap_infile);
+    }
+  if (vmap_outfile)
+    {
+      info_msg ("will write VMap to", vmap_outfile);
+    }
+
   if ((new_height != old_height) && (new_width != old_width) && (vmap_outfile))
     {
       cerr << "Warning: only the first computed visibility map will be written" << endl;
     }
 
-  /*** print some information on screen ***/
-  cout << "resizing " << infile << " [" << old_width << "x" << old_height << "] into " <<
-    outfile << " [" << new_width << "x" << new_height << "]" << endl << flush;
-
-  if (vmap_infile)
-    {
-      cout << "reading VMap from " << vmap_infile << endl;
-    }
 
   /*** read and check the feature masks ***/
   pngwriter png_pmask;
@@ -88,10 +100,10 @@ main (int argc, char **argv)
 
   if (pres_infile)
     {
-      cout << "reading preservation mask from " << pres_infile << endl;
+      info_msg ("will read preservation mask from", pres_infile);
       if (pres_outfile)
         {
-	  cout << "will write preservarion mask to " << pres_outfile << endl;
+	  info_msg ("will write preservation mask to", pres_outfile);
 	  png_pmask.pngwriter_rename(pres_outfile);
 	}
       png_pmask.readfromfile (pres_infile);
@@ -114,10 +126,10 @@ main (int argc, char **argv)
 
   if (disc_infile)
     {
-      cout << "reading discard mask from " << disc_infile << endl;
+      info_msg ("will read discard mask from", disc_infile);
       if (disc_outfile)
         {
-	  cout << "will write discard mask to " << disc_outfile << endl;
+	  info_msg ("will write discrad mask to", disc_outfile);
 	  png_dmask.pngwriter_rename(disc_outfile);
 	}
       png_dmask.readfromfile (disc_infile);
@@ -152,6 +164,11 @@ main (int argc, char **argv)
   if (disc_infile)
     {
       TRAP_N (rgb_disc_buffer = rgb_buffer_from_image (&png_dmask));
+    }
+
+  if (!quiet)
+    {
+      cout << endl;
     }
 
   
@@ -228,20 +245,24 @@ main (int argc, char **argv)
 
   /**** (II) SET UP THE PROGRESS INDICATOR ****/
 
-  /* (II.1) generate a progress with default values */
-  LqrProgress *progress;
-  TRAP_N (progress = lqr_progress_new ());
-  /* (II.2) set up with custom commands */
-  init_progress (progress);
-  /* (II.3) attach the progress to out multisize image */
-  lqr_carver_set_progress (carver, progress);
+  if (!quiet)
+    {
+      /* (II.1) generate a progress with default values */
+      LqrProgress *progress;
+      TRAP_N (progress = lqr_progress_new ());
+      /* (II.2) set up with custom commands */
+      init_progress (progress);
+      /* (II.3) attach the progress to out multisize image */
+      lqr_carver_set_progress (carver, progress);
+    }
 
 
   /**** (III) LIQUID RESCALE ****/
 
   /* (III.1) set the rescaling order */
   lqr_carver_set_resize_order (carver, res_order);
-  /* (III.2) invoke the rescaling function */
+  /* (III.2) invoke the rescaling function
+   *         this step could be reiterated at wish */
   TRAP (lqr_carver_resize (carver, new_width, new_height));
 
 
@@ -311,13 +332,14 @@ LqrRetVal parse_command_line (int argc, char **argv)
     {"vmap-out-file", required_argument, NULL, 'v'},
     {"vmap-in-file", required_argument, NULL, 'V'},
     {"vertical-first", no_argument, NULL, 't'},
+    {"quiet", no_argument, NULL, 'q'},
     {"help", no_argument, NULL, '#'},
     {NULL,0,NULL,0}
   };
 
 
 
-  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,v:,V:,t", lopts, &i)) != EOF) {
+  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,v:,V:,tq", lopts, &i)) != EOF) {
     switch (c)
     {
       case 'f':
@@ -381,6 +403,9 @@ LqrRetVal parse_command_line (int argc, char **argv)
       case 't':
 	res_order = LQR_RES_ORDER_VERT;
 	break;
+      case 'q':
+	quiet = 1;
+	break;
       case '#':
 	help(argv[0]);
 	exit (0);
@@ -402,7 +427,7 @@ LqrRetVal parse_command_line (int argc, char **argv)
      return LQR_ERROR;
     } 
 
-  if (!new_width && !new_height && !new_width_p && !new_width_p)
+  if (!new_width && !new_height && !new_width_p && !new_height_p)
     {
       cerr << "At least one of --width or --height has to be specified and be different from 0." << endl;
       return LQR_ERROR;
@@ -491,7 +516,9 @@ void help(char *command)
   cout << "    -V <vmap-out-file> or --vmap-out-file <vmap-out-file>" << endl;
   cout << "        Writes the visibility map in the specified file. Currently, only the first one." << endl;
   cout << "    -t or --vertical-first" << endl;
-  cout << "        Rescale vertically first" << endl;
+  cout << "        Rescale vertically first (instead of horizontally)." << endl;
+  cout << "    -q or --quiet" << endl;
+  cout << "        Quiet mode." << endl;
   cout << "    --help" << endl;
   cout << "        This help." << endl;
 }/*}}}*/
@@ -571,6 +598,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
 
   return LQR_OK;
 }/*}}}*/
+
 
 /*** PROGRESS INDICATOR ***/
 
@@ -663,6 +691,7 @@ init_progress (LqrProgress * progress)
   lqr_progress_set_end_height_message(progress, "done");
   lqr_progress_set_update_step (progress, 0.01);
 }/*}}}*/
+
 
 /*** VISIBILTY MAPS ***/
 
@@ -867,4 +896,14 @@ LqrVMap * load_vmap_from_file (gchar *name)
   TRY_N_N (vmap = lqr_vmap_new (buffer, w, h, depth, orientation));
 
   return vmap;
+}/*}}}*/
+
+/*** EXTRA ***/
+
+void info_msg(const gchar * msg, const gchar *name)
+{/*{{{*/
+  if (!quiet)
+    {
+      cout << "  + " << msg << " " << name << endl << flush;
+    }
 }/*}}}*/

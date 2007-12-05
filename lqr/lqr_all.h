@@ -20,10 +20,24 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_ALL_H__
+#define __LQR_ALL_H__
 
-#endif /* __LQR_CARVER_H__ */
+#include <glib.h>
+
+G_BEGIN_DECLS
+
+#include <lqr/lqr_base.h>
+#include <lqr/lqr_gradient.h>
+#include <lqr/lqr_cursor.h>
+#include <lqr/lqr_progress.h>
+#include <lqr/lqr_vmap.h>
+#include <lqr/lqr_vmap_list.h>
+#include <lqr/lqr_carver_list.h>
+#include <lqr/lqr_carver_bias.h>
+#include <lqr/lqr_carver.h>
+
+G_END_DECLS
+
+#endif /* __LQR_ALL_H__ */

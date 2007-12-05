@@ -24,26 +24,7 @@
 #ifndef __LQR_GRADIENT_H__
 #define __LQR_GRADIENT_H__
 
-/**** gradient functions for energy evluation ****/
-typedef double (*LqrGradFunc) (double, double);
-
-enum _LqrGradFuncType
-{
-  LQR_GF_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
-  LQR_GF_NORM_BIAS,             /* gradient biased norm : sqrt(x^2 + 0.1 y^2) */
-  LQR_GF_SUMABS,                /* sum of absulte values : |x| + |y|          */
-  LQR_GF_XABS,                  /* x absolute value : |x|                     */
-  LQR_GF_YABS,                  /* y absolute value : |y|                     */
-  LQR_GF_NULL                   /* 0 */
-};
-
-typedef enum _LqrGradFuncType LqrGradFuncType;
-
-double lqr_grad_norm (double x, double y);
-double lqr_grad_norm_bias (double x, double y);
-double lqr_grad_sumabs (double x, double y);
-double lqr_grad_xabs (double x, double y);
-double lqr_grad_yabs (double x, double y);
-double lqr_grad_zero (double x, double y);
+#include <lqr/lqr_gradient_pub.h>
+#include <lqr/lqr_gradient_priv.h>
 
 #endif /* __LQR_GRADIENT_H__ */

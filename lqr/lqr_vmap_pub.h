@@ -20,10 +20,36 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
+#ifndef __LQR_VMAP_PUB_H__
+#define __LQR_VMAP_PUB_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_vmap_pub.h"
+#endif /* __LQR_BASE_H__ */
 
-#endif /* __LQR_CARVER_H__ */
+
+/*** LQR_VMAP CLASS DEFINITION ***/
+struct _LqrVMap
+{
+  gint * buffer;
+  gint width;
+  gint height;
+  gint depth;
+  gint orientation;
+};
+
+typedef struct _LqrVMap LqrVMap;
+
+typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
+
+/* LQR_VMAP PUBLIC FUNCTIONS */
+
+LqrVMap* lqr_vmap_new (gint *buffer, gint width, gint heigth, gint depth, gint orientation);
+void lqr_vmap_destroy (LqrVMap *vmap);
+
+LqrRetVal lqr_vmap_flush (LqrCarver *r);
+LqrRetVal lqr_vmap_load (LqrCarver *r, LqrVMap *vmap);
+
+
+#endif /* __LQR_VMAP_PUB_H__ */
+

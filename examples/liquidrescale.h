@@ -52,4 +52,7 @@ LqrRetVal my_progress_update (gdouble percentage);
 LqrRetVal my_progress_end (const gchar * message);
 void init_progress (LqrProgress * progress);
 
+/*** EXTRA ***/
+void info_msg(const gchar * msg, const gchar *name);
+
 #endif /* __LIQUIDRESCALE_H__ */

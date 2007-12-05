@@ -20,7 +20,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#include <lqr/lqr.h>
+#include <lqr/lqr_all.h>
 
 #ifdef __LQR_DEBUG__
 #include <assert.h>
@@ -38,6 +38,7 @@ lqr_cursor_create (LqrCarver * owner, gint * vs)
   TRY_N_N (c = g_try_new (LqrCursor, 1));
   c->o = owner;
   c->vs = vs;
+  c->eoc = 0;
 #ifdef __LQR_DEBUG__
   c->initialized = 1;
 #endif
@@ -62,6 +63,9 @@ lqr_cursor_reset (LqrCursor * c)
 #ifdef __LQR_DEBUG__
   assert (c->initialized);
 #endif /* __LQR_DEBUG__ */
+
+  /* reset end of carver flag */
+  c->eoc = 0;
 
   /* reset coordinates */
   c->x = 0;
@@ -89,12 +93,19 @@ lqr_cursor_next (LqrCursor * c)
   assert (c->initialized);
 #endif /* __LQR_DEBUG__ */
 
+  /* are we at the end? */
+  if (c->eoc)
+    {
+      return;
+    }
+
   /* update coordinates */
   if (c->x == c->o->w - 1)
     {
       if (c->y == c->o->h - 1)
         {
-          /* top-right corner, do nothing */
+          /* top-right corner, set eoc flag */
+	  c->eoc = 1;
           return;
         }
       /* end-of-line, carriage return */
@@ -127,6 +138,13 @@ lqr_cursor_next (LqrCursor * c)
 void
 lqr_cursor_prev (LqrCursor * c)
 {
+
+  /* are we at the end of carver ? */
+  if (c->eoc)
+    {
+      return;
+    }
+ 
   /* update coordinates */
   if (c->x == 0)
     {
@@ -175,6 +193,7 @@ lqr_cursor_left (LqrCursor * c)
 #ifdef __LQR_DEBUG__
   assert (c->initialized);
   assert (c->x > 0);
+  assert (c->eoc == 0);
 #endif /* __LQR_DEBUG__ */
 
   /* first move */

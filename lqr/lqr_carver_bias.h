@@ -23,18 +23,7 @@
 #ifndef __LQR_CARVER_BIAS_H__
 #define __LQR_CARVER_BIAS_H__
 
-#ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_carver_bias.h"
-#endif /* __LQR_BASE_H__ */
-
-/* LQR_CARVER_BIAS CLASS FUNCTIONS */
-
-/** private functions **/
-
-LqrRetVal lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp, gint width, gint height, gint x_off, gint y_off);
-LqrRetVal lqr_carver_bias_add_rgb(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp);
-LqrRetVal lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off);
-LqrRetVal lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor);
-
+#include <lqr/lqr_carver_bias_pub.h>
+#include <lqr/lqr_carver_bias_priv.h>
 
 #endif /* __LQR_CARVER_BIAS_H__ */

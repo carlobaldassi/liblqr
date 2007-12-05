@@ -23,39 +23,7 @@
 #ifndef __LQR_CURSOR_H__
 #define __LQR_CURSOR_H__
 
-#ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_cursor.h"
-#endif /* __LQR_BASE_H__ */
-
-/**** LQR_CURSOR CLASS DEFINITION ****/
-/* The lqr_cursors can scan a multisize image according to its
- * current visibility level, skipping invisible points */
-struct _LqrCursor
-{
-#ifdef __LQR_DEBUG__
-  gint initialized;             /* initialization flag */
-#endif
-  gint x;                       /* x coordinate of current data */
-  gint y;                       /* y coordinate of current data */
-  gint now;                     /* current array position */
-  LqrCarver *o;                 /* pointer to owner carver */
-  gint *vs;                     /* pointer to owner's visibility map */
-};
-
-/* LQR_CURSOR CLASS FUNCTIONS */
-
-/* constructor */
-LqrCursor *lqr_cursor_create (LqrCarver * owner, gint * vs);
-
-/* destructor */
-void lqr_cursor_destroy (LqrCursor * c);
-
-/* functions for moving around */
-void lqr_cursor_reset (LqrCursor * c);
-void lqr_cursor_next (LqrCursor * c);
-void lqr_cursor_prev (LqrCursor * c);
-
-/* methods for exploring neighborhoods */
-gint lqr_cursor_left (LqrCursor * c);
+#include <lqr/lqr_cursor_pub.h>
+#include <lqr/lqr_cursor_priv.h>
 
 #endif /* __LQR_CURSOR_H__ */

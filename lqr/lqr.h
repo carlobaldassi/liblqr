@@ -29,14 +29,14 @@
 G_BEGIN_DECLS
 
 #include <lqr/lqr_base.h>
-#include <lqr/lqr_gradient.h>
-#include <lqr/lqr_cursor.h>
-#include <lqr/lqr_progress.h>
-#include <lqr/lqr_vmap.h>
-#include <lqr/lqr_vmap_list.h>
-#include <lqr/lqr_carver_list.h>
-#include <lqr/lqr_carver_bias.h>
-#include <lqr/lqr_carver.h>
+#include <lqr/lqr_gradient_pub.h>
+#include <lqr/lqr_cursor_pub.h>
+#include <lqr/lqr_progress_pub.h>
+#include <lqr/lqr_vmap_pub.h>
+#include <lqr/lqr_vmap_list_pub.h>
+#include <lqr/lqr_carver_list_pub.h>
+#include <lqr/lqr_carver_bias_pub.h>
+#include <lqr/lqr_carver_pub.h>
 
 G_END_DECLS
 

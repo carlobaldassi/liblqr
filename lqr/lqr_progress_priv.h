@@ -20,10 +20,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_PROGRESS_PRIV_H__
+#define __LQR_PROGRESS_PRIV_H__
 
-#endif /* __LQR_CARVER_H__ */
+/* LQR_PROGRESS CLASS PRIVATE FUNCTIONS */
+
+/* no private functions currently */
+
+#endif /* __LQR_PROGRESS_PRIV_H__ */
+
+
+
+

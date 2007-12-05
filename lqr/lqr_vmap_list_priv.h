@@ -20,10 +20,27 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
+#ifndef __LQR_VMAP_LIST_PRIV_H__
+#define __LQR_VMAP_LIST_PRIV_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_vmap_list_priv.h"
+#endif /* __LQR_BASE_H__ */
 
-#endif /* __LQR_CARVER_H__ */
+#ifndef __LQR_VMAP_H__
+#error "lqr_vmap.h must be included prior to lqr_vmap_list_priv.h"
+#endif
+
+#ifndef __LQR_VMAP_LIST_PUB_H__
+#error "lqr_vmap_list_pub.h must be included prior to lqr_vmap_list_priv.h"
+#endif
+
+
+/* LQR_VMAP_LIST CLASS PRIVATE FUNCTIONS */
+
+LqrVMapList * lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer);
+void lqr_vmap_list_destroy (LqrVMapList * list);
+
+#endif /* __LQR_VMAP_LIST_PRIV_H__ */
+
+

@@ -23,35 +23,9 @@
 #ifndef __LQR_VMAP_LIST_H__
 #define __LQR_VMAP_LIST_H__
 
-#ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_vmap_list.h"
-#endif /* __LQR_BASE_H__ */
+#include <lqr/lqr_vmap_list_pub.h>
+#include <lqr/lqr_vmap_list_priv.h>
 
-#ifndef __LQR_VMAP_H__
-#error "lqr_vmap.h must be included prior to lqr_vmap_list.h"
-#endif
-
-/**** LQR_VMAP_LIST CLASS DEFINITION ****/
-struct _LqrVMapList;
-
-typedef struct _LqrVMapList LqrVMapList;
-
-struct _LqrVMapList
-{
-  LqrVMap * current;
-  LqrVMapList * next;
-};
-
-/* LQR_VMAP_LIST FUNCTIONS */
-
-LqrVMapList * lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer);
-void lqr_vmap_list_destroy (LqrVMapList * list);
-
-LqrVMapList * lqr_vmap_list_start(LqrCarver *r);
-LqrVMap * lqr_vmap_list_current(LqrVMapList *list);
-LqrVMapList * lqr_vmap_list_next (LqrVMapList * list);
-LqrRetVal lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data);
-
-#endif /* __LQR_VMAP__ */
+#endif /* __LQR_VMAP_LIST_H__ */
 
 

@@ -23,33 +23,8 @@
 #ifndef __LQR_VMAP_H__
 #define __LQR_VMAP_H__
 
-#ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_vmap.h"
-#endif /* __LQR_BASE_H__ */
+#include <lqr/lqr_vmap_pub.h>
+#include <lqr/lqr_vmap_priv.h>
 
-
-/*** LQR_VMAP CLASS DEFINITION ***/
-struct _LqrVMap
-{
-  gint * buffer;
-  gint width;
-  gint height;
-  gint depth;
-  gint orientation;
-};
-
-typedef struct _LqrVMap LqrVMap;
-
-typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
-
-/* LQR_VMAP FUNCTIONS */
-
-LqrVMap* lqr_vmap_new (gint *buffer, gint width, gint heigth, gint depth, gint orientation);
-void lqr_vmap_destroy (LqrVMap *vmap);
-
-LqrRetVal lqr_vmap_flush (LqrCarver *r);
-LqrRetVal lqr_vmap_load (LqrCarver *r, LqrVMap *vmap);
-
-
-#endif /* __LQR_VMAP__ */
+#endif /* __LQR_VMAP_H__ */
 

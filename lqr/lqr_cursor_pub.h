@@ -20,10 +20,20 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
+#ifndef __LQR_CURSOR_PUB_H__
+#define __LQR_CURSOR_PUB_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_cursor_pub.h"
+#endif /* __LQR_BASE_H__ */
 
-#endif /* __LQR_CARVER_H__ */
+/* LQR_CURSOR CLASS DECLARATION */
+
+struct _LqrCursor;              /* a "smart" index to read the carver */
+typedef struct _LqrCursor LqrCursor;
+
+/* LQR_CURSOR CLASS PUBLIC FUNCTIONS */
+
+/* no public functions for this class */
+
+#endif /* __LQR_CURSOR_PUB_H__ */

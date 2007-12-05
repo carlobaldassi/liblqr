@@ -20,10 +20,35 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
+#ifndef __LQR_VMAP_LIST_PUB_H__
+#define __LQR_VMAP_LIST_PUB_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_vmap_list_pub.h"
+#endif /* __LQR_BASE_H__ */
 
-#endif /* __LQR_CARVER_H__ */
+#ifndef __LQR_VMAP_PUB_H__
+#error "lqr_vmap_pub.h must be included prior to lqr_vmap_list_pub.h"
+#endif /* __LQR_VMAP_PUB_H__ */
+
+/**** LQR_VMAP_LIST CLASS DEFINITION ****/
+struct _LqrVMapList;
+
+typedef struct _LqrVMapList LqrVMapList;
+
+struct _LqrVMapList
+{
+  LqrVMap * current;
+  LqrVMapList * next;
+};
+
+/* LQR_VMAP_LIST CLASS PUBLIC FUNCTIONS */
+
+LqrVMapList * lqr_vmap_list_start(LqrCarver *r);
+LqrVMap * lqr_vmap_list_current(LqrVMapList *list);
+LqrVMapList * lqr_vmap_list_next (LqrVMapList * list);
+LqrRetVal lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data);
+
+#endif /* __LQR_VMAP_LIST_PUB_H__ */
+
+

@@ -24,40 +24,8 @@
 #ifndef __LQR_PROGRESS_H__
 #define __LQR_PROGRESS_H__
 
-#define LQR_PROGRESS_MAX_MESSAGE_LENGTH (1024)
-
-struct _LqrProgress;
-
-typedef struct _LqrProgress LqrProgress;
-
-typedef LqrRetVal (*LqrProgressFuncInit)(const gchar*);
-typedef LqrRetVal (*LqrProgressFuncUpdate)(gdouble);
-typedef LqrRetVal (*LqrProgressFuncEnd)(const gchar*);
-
-struct _LqrProgress
-{
-  gfloat update_step;
-  LqrProgressFuncInit init;
-  LqrProgressFuncUpdate update;
-  LqrProgressFuncEnd end;
-  gchar init_width_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-  gchar end_width_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-  gchar init_height_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-  gchar end_height_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-};
-
-LqrProgress * lqr_progress_new(void);
-
-LqrRetVal lqr_progress_init(LqrProgress * p, const gchar * message);
-LqrRetVal lqr_progress_update(LqrProgress * p, gdouble percentage);
-LqrRetVal lqr_progress_end(LqrProgress * p, const gchar * message);
-
-LqrRetVal lqr_progress_set_update_step(LqrProgress *p, gfloat update_step);
-
-LqrRetVal lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message);
-LqrRetVal lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message);
-LqrRetVal lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message);
-LqrRetVal lqr_progress_set_end_height_message(LqrProgress *p, const gchar * message);
+#include <lqr/lqr_progress_pub.h>
+#include <lqr/lqr_progress_priv.h>
 
 #endif /* __LQR_PROGRESS_H__ */
 

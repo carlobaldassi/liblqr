@@ -20,10 +20,17 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#ifndef __LQR_CARVER_H__
-#define __LQR_CARVER_H__
+#ifndef __LQR_CARVER_LIST_PRIV_H__
+#define __LQR_CARVER_LIST_PRIV_H__
 
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_carver_priv.h>
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_carver_list_priv.h"
+#endif /* __LQR_BASE_H__ */
 
-#endif /* __LQR_CARVER_H__ */
+/* LQR_CARVER_LIST PRIVATE FUNCTIONS */
+
+/* this header is currently useless  */
+
+#endif /* __LQR_CARVER_LIST_PRIV_H__ */
+
+

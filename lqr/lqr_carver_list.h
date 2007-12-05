@@ -23,45 +23,9 @@
 #ifndef __LQR_CARVER_LIST_H__
 #define __LQR_CARVER_LIST_H__
 
-#ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_carver_list.h"
-#endif /* __LQR_BASE_H__ */
+#include <lqr/lqr_carver_list_pub.h>
+#include <lqr/lqr_carver_list_priv.h>
 
-
-union _LqrDataTok;
-typedef union _LqrDataTok LqrDataTok;
-
-union _LqrDataTok
-{
-  LqrCarver *carver;
-  gint integer;
-  gpointer data;
-};
-
-typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
-
-
-/**** LQR_CARVER_LIST CLASS DEFINITION ****/
-struct _LqrCarverList;
-
-typedef struct _LqrCarverList LqrCarverList;
-
-struct _LqrCarverList
-{
-  LqrCarver * current;
-  LqrCarverList * next;
-};
-
-/* LQR_CARVER_LIST FUNCTIONS */
-
-LqrCarverList * lqr_carver_list_append (LqrCarverList * list, LqrCarver * buffer);
-void lqr_carver_list_destroy (LqrCarverList * list);
-
-LqrCarverList * lqr_carver_list_start(LqrCarver *r);
-LqrCarver * lqr_carver_list_current(LqrCarverList *list);
-LqrCarverList * lqr_carver_list_next (LqrCarverList * list);
-LqrRetVal lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data);
-
-#endif /* __LQR_CARVER__ */
+#endif /* __LQR_CARVER_LIST_H__ */
 
 
