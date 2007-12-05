@@ -21,6 +21,11 @@ gint pres_strength = 1000;
 gint disc_strength = 1000;
 LqrResizeOrder res_order = LQR_RES_ORDER_HOR;
 
+gfloat new_width_p = 0;
+gfloat new_height_p = 0;
+
+clock_t clock_start, clock_now;
+
 
 /*** MAIN ***/
 
@@ -38,6 +43,15 @@ main (int argc, char **argv)
   /*** old and new size ***/
   gint old_width = png.getwidth ();
   gint old_height = png.getheight ();
+
+  if (new_width_p)
+    {
+      new_width = (gint) (new_width_p * old_width / 100);
+    }
+  if (new_height_p)
+    {
+      new_height = (gint) (new_height_p * old_height / 100);
+    }
 
   new_width = (new_width ? new_width : old_width);
   new_height = (new_height ? new_height : old_height);
@@ -313,10 +327,26 @@ LqrRetVal parse_command_line (int argc, char **argv)
 	outfile = optarg;
 	break;
       case 'w':
-	new_width = atoi(optarg);
+	if (optarg[strlen(optarg) - 1] == '%')
+	  {
+	    new_width_p = atof(optarg); 
+	  }
+	else
+	  {  
+	    new_width = atoi(optarg);
+	    new_width_p = 0;
+	  }
 	break;
       case 'h':
-	new_height = atoi(optarg);
+	if (optarg[strlen(optarg) - 1] == '%')
+	  {
+	    new_height_p = atof(optarg);
+	  }
+	else
+	  {  
+	    new_height = atoi(optarg);
+	    new_height_p = 0;
+	  }
 	break;
       case 'r':
 	rigidity = atof(optarg);
@@ -372,9 +402,9 @@ LqrRetVal parse_command_line (int argc, char **argv)
      return LQR_ERROR;
     } 
 
-  if (!new_width && !new_height)
+  if (!new_width && !new_height && !new_width_p && !new_width_p)
     {
-      cerr << "Either --width or --height has to be specified." << endl;
+      cerr << "At least one of --width or --height has to be specified and be different from 0." << endl;
       return LQR_ERROR;
     }
 
@@ -429,9 +459,10 @@ void help(char *command)
   cout << "    -w <width> or --width <width>" << endl;
   cout << "        The new width. It must be between 2 and twice the origianl width." << endl;
   cout << "        If it is 0, or it is not given, the width is unchanged." << endl;
+  cout << "        If it is followed by a %, it is interpreted as a percentage with" << endl;
+  cout << "        respect to the original width (and needs not being an integer)." << endl;
   cout << "    -h <height> or --height <height>" << endl;
-  cout << "        The new height. It must be between 2 and twice the origianl height." << endl;
-  cout << "        If it is 0, or it is not given, the height is unchanged." << endl;
+  cout << "        Same as -w for the height." << endl;
   cout << "    -r <rigidity> or --rigidity < rigidity>" << endl;
   cout << "        Seams rigidity. Any non-negative value is allowed. Defaults to 0." << endl;
   cout << "    -s <max-step> or --max-step <mask-step>" << endl;
@@ -543,19 +574,46 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
 
 /*** PROGRESS INDICATOR ***/
 
-/* set up some simple progress functions */
+/* set up the progress functions */
 LqrRetVal
 my_progress_init (const gchar * message)
 {/*{{{*/
-  printf ("%s ", message);
+  printf ("%s --------------------  0.00%% (00:00:00.00)", message);
   fflush (stdout);
+  clock_start = clock();
   return LQR_OK;
 }/*}}}*/
 
 LqrRetVal
 my_progress_update (gdouble percentage)
 {/*{{{*/
-  printf ("+");
+  gint i;
+  gfloat p;
+  for (i = 0; i < 41; i++) {
+    printf("\b");
+  }
+  for (i = 0; i < 20 * percentage; i++) {
+    printf("*");
+  }
+  for (; i < 20; i++) {
+    printf("-");
+  }
+  p = 100 * percentage;
+  printf(" %s%.2f%%", p < 10 ? " " : "", p);
+
+  gfloat t;
+  clock_now = clock();
+  t = (gfloat) (clock_now - clock_start) / CLOCKS_PER_SEC;
+
+  i = (gint) t;
+
+  gint hrs, min, sec, cent;
+
+  hrs = i / 3600;
+  min = (i % 3600) / 60;
+  sec = i % 60;
+  cent = (gint) ((t - i) * 100);
+  printf (" (%s%i:%s%i:%s%i:%s%i)", hrs < 10 ? "0" : "", hrs, min < 10 ? "0" : "", min, sec < 10 ? "0" : "", sec, cent < 10 ? "0" : "", cent);
   fflush (stdout);
   return LQR_OK;
 }/*}}}*/
@@ -563,18 +621,47 @@ my_progress_update (gdouble percentage)
 LqrRetVal
 my_progress_end (const gchar * message)
 {/*{{{*/
-  printf (" %s\n", message);
+  gint i;
+  for (i = 0; i < 41; i++) {
+    printf("\b");
+  }
+  printf ("******************** %s", message);
+
+  for (i = 0; i < (gint) (6 - strnlen(message, 6)); i++)
+    {
+      printf(" ");
+    }
+
+  gfloat t;
+  clock_now = clock();
+  t = (gfloat) (clock_now - clock_start) / CLOCKS_PER_SEC;
+
+  i = (gint) t;
+
+  gint hrs, min, sec, cent;
+
+  hrs = i / 3600;
+  min = (i % 3600) / 60;
+  sec = i % 60;
+  cent = (gint) ((t - i) * 100);
+  printf (" (%s%i:%s%i:%s%i:%s%i)\n", hrs < 10 ? "0" : "", hrs, min < 10 ? "0" : "", min, sec < 10 ? "0" : "", sec, cent < 10 ? "0" : "", cent);
+
   fflush (stdout);
   return LQR_OK;
 }/*}}}*/
 
-/* setup the progress machinery (use standard messages) */
+/* setup the progress machinery */
 void
 init_progress (LqrProgress * progress)
 {/*{{{*/
   progress->init = my_progress_init;
   progress->update = my_progress_update;
   progress->end = my_progress_end;
+  lqr_progress_set_init_width_message(progress, "Resizing width :");
+  lqr_progress_set_init_height_message(progress, "Resizing height :");
+  lqr_progress_set_end_width_message(progress, "done");
+  lqr_progress_set_end_height_message(progress, "done");
+  lqr_progress_set_update_step (progress, 0.01);
 }/*}}}*/
 
 /*** VISIBILTY MAPS ***/

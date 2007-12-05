@@ -387,7 +387,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
    * has been given */
 
   /* update step for progress reprt*/
-  update_step = MAX ((depth - r->max_level) / 50, 1);
+  update_step = (gint) MAX ((depth - r->max_level) * r->progress->update_step, 1);
 
   /* cycle over levels */
   for (l = r->max_level; l < depth; l++)

@@ -37,6 +37,7 @@ lqr_progress_new(void)
   lqr_progress_set_init_height_message(progress, "Resizing height...");
   lqr_progress_set_end_width_message(progress, "done");
   lqr_progress_set_end_height_message(progress, "done");
+  lqr_progress_set_update_step(progress, 0.02);
 
   return progress;
 }
@@ -81,6 +82,13 @@ lqr_progress_end(LqrProgress * p, const gchar * message)
     {
       return LQR_OK;
     }
+}
+
+LqrRetVal
+lqr_progress_set_update_step (LqrProgress *p, gfloat update_step)
+{
+  p->update_step = update_step;
+  return LQR_OK;
 }
 
 LqrRetVal

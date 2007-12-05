@@ -183,8 +183,7 @@ void help(char *command)
   cout << "        The new width. It must be between 2 and twice the origianl width." << endl;
   cout << "        If it is 0, or it is not given, the width is unchanged." << endl;
   cout << "    -h <height> or --height <height>" << endl;
-  cout << "        The new height. It must be between 2 and twice the origianl height." << endl;
-  cout << "        If it is 0, or it is not given, the height is unchanged." << endl;
+  cout << "        Same as -w for the height." << endl;
   cout << "    -r <rigidity> or --rigidity < rigidity>" << endl;
   cout << "        Seams rigidity. Any non-negative value is allowed. Defaults to 0." << endl;
   cout << "    -s <max-step> or --max-step <mask-step>" << endl;
