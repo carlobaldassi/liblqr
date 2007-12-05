@@ -30,7 +30,7 @@
 
 /**** LQR_CARVER_BIAS STRUCT FUNTIONS ****/
 
-gboolean
+LqrRetVal
 lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off)
 {
   gint x, y;
@@ -42,8 +42,11 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
       return TRUE;
     }
 
-  TRY_F_F (r->active);
-  TRY_F_F (!r->transposed);
+  CATCH_F (r->active);
+  if (r->transposed)
+    {
+      CATCH (lqr_carver_transpose(r));
+    }
 
   x1 = MAX (0, x_off);
   y1 = MAX (0, y_off);
@@ -62,23 +65,23 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
 
     }
 
-  return TRUE;
+  return LQR_OK;
 }
 
 
-gboolean
+LqrRetVal
 lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor)
-//update_bias (LqrCarver *r, gint32 layer_ID, gint bias_factor, gint base_x_off, gint base_y_off)
 {
   return lqr_carver_bias_add_area(r, buffer, bias_factor, r->w0, r->h0, 0, 0);
 }
 
-gboolean
+LqrRetVal
 lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint bpp, gint width, gint height, gint x_off, gint y_off)
 {
   gint x, y, k, c_bpp;
   gboolean has_alpha;
   gint x1, y1, x2, y2;
+  gint transposed = 0;
   gint sum;
   gdouble bias;
 
@@ -87,16 +90,21 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint b
       return TRUE;
     }
 
-  TRY_F_F (r->active);
-  TRY_F_F (!r->transposed);
+  CATCH_F (r->active);
+  CATCH (lqr_carver_flatten(r));
+  if (r->transposed)
+    {
+      transposed = 1;
+      CATCH (lqr_carver_transpose(r));
+    }
 
   has_alpha = (bpp == 2 || bpp >= 4);
   c_bpp = bpp - (has_alpha ? 1 : 0);
 
   x1 = MAX (0, x_off);
   y1 = MAX (0, y_off);
-  x2 = MIN (r->w, width + x_off);
-  y2 = MIN (r->h, height + y_off);
+  x2 = MIN (r->w0, width + x_off);
+  y2 = MIN (r->h0, height + y_off);
 
   for (y = 0; y < y2 - y1; y++)
     {
@@ -120,10 +128,15 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint b
 
     }
 
-  return TRUE;
+  if (transposed)
+    {
+      CATCH (lqr_carver_transpose(r));
+    }
+
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_carver_bias_add_rgb(LqrCarver *r, guchar *rgb, gint bias_factor, gint bpp)
 {
   return lqr_carver_bias_add_rgb_area(r, rgb, bias_factor, bpp, r->w0, r->h0, 0, 0);

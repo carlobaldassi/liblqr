@@ -47,7 +47,10 @@ struct _LqrVMapList
 LqrVMapList * lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer);
 void lqr_vmap_list_destroy (LqrVMapList * list);
 
-gboolean lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data);
+LqrVMapList * lqr_vmap_list_start(LqrCarver *r);
+LqrVMap * lqr_vmap_list_current(LqrVMapList *list);
+LqrVMapList * lqr_vmap_list_next (LqrVMapList * list);
+LqrRetVal lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data);
 
 #endif /* __LQR_VMAP__ */
 

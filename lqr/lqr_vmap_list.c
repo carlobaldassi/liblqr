@@ -22,9 +22,7 @@
 
 #include <glib.h>
 
-#include <lqr/lqr_base.h>
-#include <lqr/lqr_vmap.h>
-#include <lqr/lqr_vmap_list.h>
+#include <lqr/lqr.h>
 
 #ifdef __LQR_DEBUG__
 #include <assert.h>
@@ -71,15 +69,35 @@ lqr_vmap_list_destroy(LqrVMapList * list)
     }
 }
 
-gboolean
+LqrVMapList *
+lqr_vmap_list_start (LqrCarver *r)
+{
+  return r->flushed_vs;
+}
+
+LqrVMapList *
+lqr_vmap_list_next (LqrVMapList * list)
+{
+  TRY_N_N (list);
+  return list->next;
+}
+
+LqrVMap *
+lqr_vmap_list_current (LqrVMapList * list)
+{
+  TRY_N_N (list);
+  return list->current;
+}
+
+LqrRetVal
 lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data)
 {
   LqrVMapList * now = list;
   if (now != NULL)
     {
-      TRY_F_F (func(now->current, data));
+      CATCH (func(now->current, data));
       return lqr_vmap_list_foreach (now->next, func, data);
     }
-  return TRUE;
+  return LQR_OK;
 }
 

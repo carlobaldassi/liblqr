@@ -105,10 +105,10 @@ struct _LqrCarver
 /** private functions **/
 
 /* build maps */
-gboolean lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */
+LqrRetVal lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */
 void lqr_carver_build_emap (LqrCarver * r);     /* energy */
 void lqr_carver_build_mmap (LqrCarver * r);     /* minpath */
-gboolean lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility */
+LqrRetVal lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility */
 
 /* internal functions for maps computation */
 inline gdouble lqr_carver_read (LqrCarver * r, gint x, gint y); /* read the average value at given point */
@@ -120,19 +120,20 @@ void lqr_carver_carve (LqrCarver * r);  /* updates the "raw" buffer */
 void lqr_carver_update_vsmap (LqrCarver * r, gint l);   /* update visibility map after seam removal */
 void lqr_carver_finish_vsmap (LqrCarver * r);   /* complete visibility map (last seam) */
 void lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest);   /* copy vsmap on another carver */
-gboolean lqr_carver_inflate (LqrCarver * r, gint l);    /* adds enlargment info to map */
+LqrRetVal lqr_carver_inflate (LqrCarver * r, gint l);    /* adds enlargment info to map */
 
 /* image manipulations */
-gboolean lqr_carver_resize_width (LqrCarver * r, gint w1);   /* liquid resize width */
-gboolean lqr_carver_resize_height (LqrCarver * r, gint h1);   /* liquid resize height */
+LqrRetVal lqr_carver_resize_width (LqrCarver * r, gint w1);   /* liquid resize width */
+LqrRetVal lqr_carver_resize_height (LqrCarver * r, gint h1);   /* liquid resize height */
 void lqr_carver_set_width (LqrCarver * r, gint w1);
-gboolean lqr_carver_transpose (LqrCarver * r);
+LqrRetVal lqr_carver_transpose (LqrCarver * r);
 
 /* auxiliary */
-gboolean lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data);
-gboolean lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data);
-gboolean lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data);
-gboolean lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_flatten1 (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data);
 
 /** public functions **/
 
@@ -141,19 +142,19 @@ LqrCarver * lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp);
 void lqr_carver_destroy (LqrCarver * r);
 
 /* initialize */
-gboolean lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
+LqrRetVal lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 
 /* set attributes */
 void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
 void lqr_carver_set_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
-gboolean lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
+LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 
 /* image manipulations */
-gboolean lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */
-gboolean lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image */
-gboolean lqr_carver_swoosh (LqrCarver * r);    /* flatten and transpose the multisize image */
+LqrRetVal lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */
+LqrRetVal lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image */
+LqrRetVal lqr_carver_swoosh (LqrCarver * r);    /* flatten and transpose the multisize image */
 
 /* readout */
 void lqr_carver_scan_reset (LqrCarver * r);

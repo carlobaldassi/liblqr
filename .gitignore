@@ -1,6 +1,6 @@
 .*.swp
 Makefile
-*/Makefile
+lqr/Makefile
 */.deps
 */.libs
 */*.l[oa]
@@ -14,4 +14,6 @@ libtool
 lqr-1.pc
 stamp-h1
 examples/*.png
+examples/liquidrescale
+examples/liquidrescale-basic
 experiments/*

@@ -40,15 +40,15 @@ struct _LqrVMap
 
 typedef struct _LqrVMap LqrVMap;
 
-typedef gboolean (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
+typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 
 /* LQR_VMAP FUNCTIONS */
 
 LqrVMap* lqr_vmap_new (gint *buffer, gint width, gint heigth, gint depth, gint orientation);
 void lqr_vmap_destroy (LqrVMap *vmap);
 
-gboolean lqr_vmap_flush (LqrCarver *r);
-gboolean lqr_vmap_load (LqrCarver *r, LqrVMap *vmap);
+LqrRetVal lqr_vmap_flush (LqrCarver *r);
+LqrRetVal lqr_vmap_load (LqrCarver *r, LqrVMap *vmap);
 
 
 #endif /* __LQR_VMAP__ */

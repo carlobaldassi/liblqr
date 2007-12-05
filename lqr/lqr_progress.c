@@ -41,77 +41,77 @@ lqr_progress_new(void)
   return progress;
 }
 
-gboolean
+LqrRetVal
 lqr_progress_init(LqrProgress * p, const gchar * message)
 {
-  TRY_N_F (p);
+  CATCH_F (p != NULL);
   if (p->init)
     {
       return p->init(message);
     }
   else
     {
-      return TRUE;
+      return LQR_OK;
     }
 }
 
-gboolean
+LqrRetVal
 lqr_progress_update(LqrProgress * p, gdouble percentage)
 {
-  TRY_N_F (p);
+  CATCH_F (p != NULL);
   if (p->init)
     {
       return p->update(percentage);
     }
   else
     {
-      return TRUE;
+      return LQR_OK;
     }
 }
 
-gboolean
+LqrRetVal
 lqr_progress_end(LqrProgress * p, const gchar * message)
 {
-  TRY_N_F (p);
+  CATCH_F (p != NULL);
   if (p->init)
     {
       return p->end(message);
     }
   else
     {
-      return TRUE;
+      return LQR_OK;
     }
 }
 
-gboolean
+LqrRetVal
 lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message)
 {
-  TRY_N_F (p);
+  CATCH_F (p);
   strncpy(p->init_width_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message)
 {
-  TRY_N_F (p);
+  CATCH_F (p != NULL);
   strncpy(p->init_height_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message)
 {
-  TRY_N_F (p);
+  CATCH_F (p != NULL);
   strncpy(p->end_width_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_progress_set_end_height_message(LqrProgress *p, const gchar * message)
 {
-  TRY_N_F (p);
+  CATCH_F (p != NULL);
   strncpy(p->end_height_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
-  return TRUE;
+  return LQR_OK;
 }
 

@@ -53,7 +53,7 @@ lqr_vmap_destroy (LqrVMap * vmap)
 }
 
 /* flush the visibility level of the image */
-gboolean
+LqrRetVal
 lqr_vmap_flush (LqrCarver * r)
 {
   LqrVMap * vmap;
@@ -75,7 +75,7 @@ lqr_vmap_flush (LqrCarver * r)
 
   bpp = 4;
 
-  TRY_N_F (buffer = g_try_new (gint, w * h));
+  CATCH_MEM (buffer = g_try_new (gint, w * h));
 
   lqr_cursor_reset (r->c);
   for (y = 0; y < r->h; y++)
@@ -107,15 +107,15 @@ lqr_vmap_flush (LqrCarver * r)
   lqr_carver_set_width (r, w1);
   lqr_cursor_reset (r->c);
 
-  TRY_N_F (vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
+  CATCH_MEM (vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
 
-  TRY_N_F (r->flushed_vs = lqr_vmap_list_append(r->flushed_vs, vmap));
+  CATCH_MEM (r->flushed_vs = lqr_vmap_list_append(r->flushed_vs, vmap));
 
-  return TRUE;
+  return LQR_OK;
 }
 
 
-gboolean
+LqrRetVal
 lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
 {
   gint w, h;
@@ -131,18 +131,18 @@ lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
 
   if (!r->transposed)
     {
-      TRY_F_F ((r->w_start == w ) && (r->h_start == h));
+      CATCH_F ((r->w_start == w ) && (r->h_start == h));
     }
   else
     {
-      TRY_F_F ((r->w_start == h ) && (r->h_start == w));
+      CATCH_F ((r->w_start == h ) && (r->h_start == w));
     }
 
-  TRY_F_F (lqr_carver_flatten(r));
+  CATCH (lqr_carver_flatten(r));
 
   if (vmap->orientation != r->transposed)
     {
-      TRY_F_F (lqr_carver_transpose (r));
+      CATCH (lqr_carver_transpose (r));
     }
 
   for (y = 0; y < r->h; y++)
@@ -163,11 +163,11 @@ lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
 	}
     }
 
-  TRY_F_F (lqr_carver_inflate(r, vmap->depth));
+  CATCH (lqr_carver_inflate(r, vmap->depth));
 
   lqr_cursor_reset (r->c);
 
-  return TRUE;
+  return LQR_OK;
 }
 
 

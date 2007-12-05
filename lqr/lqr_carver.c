@@ -117,18 +117,18 @@ lqr_carver_destroy (LqrCarver * r)
 
 /*** initialization ***/
 
-gboolean
+LqrRetVal
 lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
   gint y, x;
 
-  TRY_N_F (r->en = g_try_new (gdouble, r->w * r->h));
-  TRY_N_F (r->bias = g_try_new0 (gdouble, r->w * r->h));
-  TRY_N_F (r->m = g_try_new (gdouble, r->w * r->h));
-  TRY_N_F (r->least = g_try_new (gint, r->w * r->h));
+  CATCH_MEM (r->en = g_try_new (gdouble, r->w * r->h));
+  CATCH_MEM (r->bias = g_try_new0 (gdouble, r->w * r->h));
+  CATCH_MEM (r->m = g_try_new (gdouble, r->w * r->h));
+  CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
 
-  TRY_N_F (r->_raw = g_try_new (gint, r->h_start * r->w_start));
-  TRY_N_F (r->raw = g_try_new (gint *, r->h_start));
+  CATCH_MEM (r->_raw = g_try_new (gint, r->h_start * r->w_start));
+  CATCH_MEM (r->raw = g_try_new (gint *, r->h_start));
 
   for (y = 0; y < r->h; y++)
     {
@@ -139,8 +139,8 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 	}
     }
 
-  TRY_N_F (r->vpath = g_try_new (gint, r->h));
-  TRY_N_F (r->vpath_x = g_try_new (gint, r->h));
+  CATCH_MEM (r->vpath = g_try_new (gint, r->h));
+  CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
 
   /* set rigidity map */
   r->delta_x = delta_x;
@@ -156,7 +156,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
   r->active = TRUE;
 
-  return TRUE;
+  return LQR_OK;
 }
 
 /*** set attributes ***/
@@ -193,13 +193,14 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 }
 
 /* attach layers to be scaled along with the main one */
-gboolean
+LqrRetVal
 lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
-  TRY_F_F (r->w0 == aux->w0);
-  TRY_F_F (r->h0 == aux->h0);
-  TRY_N_F (r->attached_list = lqr_carver_list_append (r->attached_list, aux));
-  return TRUE;
+  CATCH_F (r->w0 == aux->w0);
+  CATCH_F (r->h0 == aux->h0);
+  /* lqr_carver_copy_vsmap (r, aux); */
+  CATCH_MEM (r->attached_list = lqr_carver_list_append (r->attached_list, aux));
+  return LQR_OK;
 }
 
 /* set the seam output flag */
@@ -228,7 +229,7 @@ lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 
 /* build multisize image up to given depth
  * it is progressive (can be called multilple times) */
-gboolean
+LqrRetVal
 lqr_carver_build_maps (LqrCarver * r, gint depth)
 {
 #ifdef __LQR_DEBUG__
@@ -239,7 +240,7 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
   /* only go deeper if needed */
   if (depth > r->max_level)
     {
-      TRY_F_F (r->active);
+      CATCH_F (r->active);
       /* set to minimum width reached so far */
       lqr_carver_set_width (r, r->w_start - r->max_level + 1);
 
@@ -248,9 +249,9 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
       lqr_carver_build_mmap (r);
 
       /* compute visibility map */
-      TRY_F_F (lqr_carver_build_vsmap (r, depth));
+      CATCH (lqr_carver_build_vsmap (r, depth));
     }
-  return TRUE;
+  return LQR_OK;
 }
 
 /* compute energy map */
@@ -356,7 +357,7 @@ lqr_carver_build_mmap (LqrCarver * r)
 
 /* compute (vertical) visibility map up to given depth
  * (it also calls inflate() to add image enlargment information) */
-gboolean
+LqrRetVal
 lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 {
   gint l;
@@ -440,29 +441,26 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
   lqr_carver_list_foreach (r->attached_list,  lqr_carver_copy_vsmap1, data_tok);
 
   /* insert seams for image enlargement */
-  TRY_F_F (lqr_carver_inflate (r, depth - 1));
+  CATCH (lqr_carver_inflate (r, depth - 1));
 
   /* reset image size */
   lqr_carver_set_width (r, r->w_start);
-
-  /* repeat the above steps for auxiliary layers */
-  data_tok.integer = depth - 1;
-  TRY_F_F (lqr_carver_list_foreach (r->attached_list, lqr_carver_inflate1, data_tok));
+  /* repeat for auxiliary layers */
   data_tok.integer = r->w_start;
-  TRY_F_F (lqr_carver_list_foreach (r->attached_list, lqr_carver_set_width1, data_tok));
+  CATCH (lqr_carver_list_foreach (r->attached_list, lqr_carver_set_width1, data_tok));
 
 #ifdef __LQR_VERBOSE__
   printf ("[ visibility map OK ]\n");
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
-  return TRUE;
+  return LQR_OK;
 }
 
 /* enlarge the image by seam insertion
  * visibility map is updated and the resulting multisize image
  * is complete in both directions */
-gboolean
+LqrRetVal
 lqr_carver_inflate (LqrCarver * r, gint l)
 {
   gint w1, z0, vs, k;
@@ -471,6 +469,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   guchar *new_rgb;
   gint *new_vs;
   gdouble *new_bias = NULL;
+  LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
   printf ("  [ inflating (active=%i) ]\n", r->active);
@@ -489,11 +488,11 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   w1 = r->w0 + l - r->max_level + 1;
 
   /* allocate room for new maps */
-  TRY_N_F (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->bpp));
-  TRY_N_F (new_vs = g_try_new0 (gint, w1 * r->h0));
+  CATCH_MEM (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->bpp));
+  CATCH_MEM (new_vs = g_try_new0 (gint, w1 * r->h0));
   if (r->active)
     {
-      TRY_N_F (new_bias = g_try_new0 (gdouble, w1 * r->h0));
+      CATCH_MEM (new_bias = g_try_new0 (gdouble, w1 * r->h0));
     }
 
   /* span the image with a cursor
@@ -594,8 +593,8 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   if (r->active)
     {
       r->bias = new_bias;
-      TRY_N_F (r->en = g_try_new0 (gdouble, w1 * r->h0));
-      TRY_N_F (r->m = g_try_new0 (gdouble, w1 * r->h0));
+      CATCH_MEM (r->en = g_try_new0 (gdouble, w1 * r->h0));
+      CATCH_MEM (r->m = g_try_new0 (gdouble, w1 * r->h0));
     }
 
   /* set new widths & levels (w_start is kept for reference) */
@@ -607,16 +606,19 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   /* reset seam path and cursors */
   lqr_cursor_destroy (r->c);
   r->c = lqr_cursor_create (r, r->vs);
+  
+  data_tok.integer = l;
+  CATCH (lqr_carver_list_foreach (r->attached_list, lqr_carver_inflate1, data_tok));
 
 #ifdef __LQR_VERBOSE__
   printf ("  [ inflating OK ]\n");
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data)
 {
   return lqr_carver_inflate (r, data.integer);
@@ -987,11 +989,11 @@ lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest)
     }
 }
 
-gboolean
+LqrRetVal
 lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data)
 {
   lqr_carver_copy_vsmap (data.carver, r);
-  return TRUE;
+  return LQR_OK;
 }
 
 
@@ -1010,24 +1012,25 @@ lqr_carver_set_width (LqrCarver * r, gint w1)
   r->level = r->w0 - w1 + 1;
 }
 
-gboolean
+LqrRetVal
 lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data)
 {
   lqr_carver_set_width (r, data.integer);
-  return TRUE;
+  return LQR_OK;
 }
 
 
 
 /* flatten the image to its current state
  * (all maps are reset, invisible points are lost) */
-gboolean
+LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
   guchar *new_rgb;
   gdouble *new_bias = NULL;
   gint x, y, k;
   gint z0;
+  LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
   printf ("    [ flattening (active=%i) ]\n", r->active);
@@ -1040,15 +1043,15 @@ lqr_carver_flatten (LqrCarver * r)
   g_free (r->least);
 
   /* allocate room for new map */
-  TRY_N_F (new_rgb = g_try_new0 (guchar, r->w * r->h * r->bpp));
+  CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w * r->h * r->bpp));
   if (r->active)
     {
-      TRY_N_F (new_bias = g_try_new0 (gdouble, r->w * r->h));
+      CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w * r->h));
 
       g_free (r->_raw);
       g_free (r->raw);
-      TRY_N_F (r->_raw = g_try_new (gint, r->w * r->h));
-      TRY_N_F (r->raw = g_try_new (gint *, r->h));
+      CATCH_MEM (r->_raw = g_try_new (gint, r->w * r->h));
+      CATCH_MEM (r->raw = g_try_new (gint *, r->h));
     }
 
 
@@ -1088,12 +1091,12 @@ lqr_carver_flatten (LqrCarver * r)
 
   /* init the other maps */
   g_free (r->vs);
-  TRY_N_F (r->vs = g_try_new0 (gint, r->w * r->h));
+  CATCH_MEM (r->vs = g_try_new0 (gint, r->w * r->h));
   if (r->active)
     {
-      TRY_N_F (r->en = g_try_new0 (gdouble, r->w * r->h));
-      TRY_N_F (r->m = g_try_new0 (gdouble, r->w * r->h));
-      TRY_N_F (r->least = g_try_new (gint, r->w * r->h));
+      CATCH_MEM (r->en = g_try_new0 (gdouble, r->w * r->h));
+      CATCH_MEM (r->m = g_try_new0 (gdouble, r->w * r->h));
+      CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
     }
 
   /* reset widths, heights & levels */
@@ -1108,29 +1111,40 @@ lqr_carver_flatten (LqrCarver * r)
   lqr_cursor_destroy (r->c);
   r->c = lqr_cursor_create (r, r->vs);
 
+  /* call flatten on auxiliary layers */
+  data_tok.integer = 0;
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_flatten1, data_tok));
+
+
 #ifdef __LQR_VERBOSE__
   printf ("    [ flattening OK ]\n");
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
+lqr_carver_flatten1(LqrCarver *r, LqrDataTok data)
+{
+  return lqr_carver_flatten(r);
+}
+
+LqrRetVal
 lqr_carver_swoosh (LqrCarver * r)
 {
-  TRY_F_F (lqr_carver_flatten (r));
+  CATCH (lqr_carver_flatten (r));
   if (r->transposed)
     {
-      TRY_F_F (lqr_carver_transpose (r));
+      CATCH (lqr_carver_transpose (r));
     }
-  return TRUE;
+  return LQR_OK;
 }
 
 
 /* transpose the image, in its current state
  * (all maps and invisible points are lost) */
-gboolean
+LqrRetVal
 lqr_carver_transpose (LqrCarver * r)
 {
   gint x, y, k;
@@ -1147,7 +1161,7 @@ lqr_carver_transpose (LqrCarver * r)
 
   if (r->level > 1)
     {
-      TRY_F_F (lqr_carver_flatten (r));
+      CATCH (lqr_carver_flatten (r));
     }
 
   /* free non needed maps first */
@@ -1157,15 +1171,15 @@ lqr_carver_transpose (LqrCarver * r)
   g_free (r->least);
 
   /* allocate room for the new maps */
-  TRY_N_F (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->bpp));
+  CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->bpp));
   if (r->active)
     {
-      TRY_N_F (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
+      CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
 
       g_free (r->_raw);
       g_free (r->raw);
-      TRY_N_F (r->_raw = g_try_new0 (gint, r->h0 * r->w0));
-      TRY_N_F (r->raw = g_try_new0 (gint *, r->w0));
+      CATCH_MEM (r->_raw = g_try_new0 (gint, r->h0 * r->w0));
+      CATCH_MEM (r->raw = g_try_new0 (gint *, r->w0));
     }
 
   /* compute trasposed maps */
@@ -1201,12 +1215,12 @@ lqr_carver_transpose (LqrCarver * r)
     }
 
   /* init the other maps */
-  TRY_N_F (r->vs = g_try_new0 (gint, r->w0 * r->h0));
+  CATCH_MEM (r->vs = g_try_new0 (gint, r->w0 * r->h0));
   if (r->active)
     {
-      TRY_N_F (r->en = g_try_new0 (gdouble, r->w0 * r->h0));
-      TRY_N_F (r->m = g_try_new0 (gdouble, r->w0 * r->h0));
-      TRY_N_F (r->least = g_try_new (gint, r->w0 * r->h0));
+      CATCH_MEM (r->en = g_try_new0 (gdouble, r->w0 * r->h0));
+      CATCH_MEM (r->m = g_try_new0 (gdouble, r->w0 * r->h0));
+      CATCH_MEM (r->least = g_try_new (gint, r->w0 * r->h0));
     }
 
   /* switch widths & heights */
@@ -1226,9 +1240,9 @@ lqr_carver_transpose (LqrCarver * r)
   if (r->active)
     {
       g_free (r->vpath);
-      TRY_N_F (r->vpath = g_try_new (gint, r->h));
+      CATCH_MEM (r->vpath = g_try_new (gint, r->h));
       g_free (r->vpath_x);
-      TRY_N_F (r->vpath_x = g_try_new (gint, r->h));
+      CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
     }
   lqr_cursor_destroy (r->c);
   r->c = lqr_cursor_create (r, r->vs);
@@ -1247,17 +1261,17 @@ lqr_carver_transpose (LqrCarver * r)
   r->transposed = (r->transposed ? 0 : 1);
 
   /* call transpose on auxiliary layers */
-  lqr_carver_list_foreach (r->attached_list,  lqr_carver_transpose1, data_tok);
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_transpose1, data_tok));
 
 #ifdef __LQR_VERBOSE__
   printf ("[ transpose OK ]\n");
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data)
 {
   return lqr_carver_transpose(r);
@@ -1267,7 +1281,7 @@ lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data)
  * They automatically determine the depth of the map
  * according to the desired size, can be called multiple
  * times, transpose the image as necessasry */
-gboolean
+LqrRetVal
 lqr_carver_resize_width (LqrCarver * r, gint w1)
 {
   LqrDataTok data_tok;
@@ -1290,10 +1304,10 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
     {
       if (r->transposed)
         {
-          TRY_F_F (lqr_carver_transpose (r));
+          CATCH (lqr_carver_transpose (r));
         }
       lqr_progress_init (r->progress, r->progress->init_width_message);
-      TRY_F_F (lqr_carver_build_maps (r, delta + 1));
+      CATCH (lqr_carver_build_maps (r, delta + 1));
       lqr_carver_set_width (r, w1);
 
       data_tok.integer = w1;
@@ -1301,14 +1315,14 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
 
       if (r->dump_vmaps)
         {
-          TRY_F_F (lqr_vmap_flush (r));
+          CATCH (lqr_vmap_flush (r));
         }
       lqr_progress_end (r->progress, r->progress->end_width_message);
     }
-  return TRUE;
+  return LQR_OK;
 }
 
-gboolean
+LqrRetVal
 lqr_carver_resize_height (LqrCarver * r, gint h1)
 {
   LqrDataTok data_tok;
@@ -1328,10 +1342,10 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
     {
       if (!r->transposed)
         {
-          TRY_F_F (lqr_carver_transpose (r));
+          CATCH (lqr_carver_transpose (r));
         }
       lqr_progress_init (r->progress, r->progress->init_height_message);
-      TRY_F_F (lqr_carver_build_maps (r, delta + 1));
+      CATCH (lqr_carver_build_maps (r, delta + 1));
       lqr_carver_set_width (r, h1);
 
       data_tok.integer = h1;
@@ -1339,16 +1353,16 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       
       if (r->dump_vmaps)
         {
-          TRY_F_F (lqr_vmap_flush (r));
+          CATCH (lqr_vmap_flush (r));
         }
       lqr_progress_end (r->progress, r->progress->end_height_message);
     }
 
-  return TRUE;
+  return LQR_OK;
 }
 
 /* liquid rescale public method */
-gboolean
+LqrRetVal
 lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 {
 #ifdef __LQR_VERBOSE__
@@ -1358,12 +1372,12 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
   switch (r->resize_order)
     {
       case LQR_RES_ORDER_HOR:
-	TRY_F_F (lqr_carver_resize_width(r, w1));
-	TRY_F_F (lqr_carver_resize_height(r, h1));
+	CATCH (lqr_carver_resize_width(r, w1));
+	CATCH (lqr_carver_resize_height(r, h1));
 	break;
       case LQR_RES_ORDER_VERT:
-	TRY_F_F (lqr_carver_resize_height(r, h1));
-	TRY_F_F (lqr_carver_resize_width(r, w1));
+	CATCH (lqr_carver_resize_height(r, h1));
+	CATCH (lqr_carver_resize_width(r, w1));
 	break;
 #ifdef __LQR_DEBUG__
       default:
@@ -1404,7 +1418,8 @@ void lqr_carver_scan_reset (LqrCarver * r)
 }
 
 /* readout all */
-gboolean lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
+gboolean
+lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
   gint k;
   if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
@@ -1424,7 +1439,8 @@ gboolean lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 }
 
 /* readout move */
-gboolean lqr_carver_read_next (LqrCarver * r)
+gboolean
+lqr_carver_read_next (LqrCarver * r)
 {
   if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
     {
@@ -1437,18 +1453,21 @@ gboolean lqr_carver_read_next (LqrCarver * r)
 
 
 /* readout coordinates */
-gint lqr_carver_read_x(LqrCarver* r)
+gint
+lqr_carver_read_x(LqrCarver* r)
 {
   return (r->transposed ? r->c->y : r->c->x);
 }
 
-gint lqr_carver_read_y(LqrCarver* r)
+gint
+lqr_carver_read_y(LqrCarver* r)
 {
   return (r->transposed ? r->c->x : r->c->y);
 }
 
 /* readout colour */
-guchar lqr_carver_read_c (LqrCarver * r, gint col)
+guchar
+lqr_carver_read_c (LqrCarver * r, gint col)
 {
   gint k = CLAMP(col, 0, r->bpp - 1);
   return r->rgb[r->c->now * r->bpp + k];

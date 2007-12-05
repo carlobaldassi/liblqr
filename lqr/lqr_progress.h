@@ -30,9 +30,9 @@ struct _LqrProgress;
 
 typedef struct _LqrProgress LqrProgress;
 
-typedef gboolean (*LqrProgressFuncInit)(const gchar*);
-typedef gboolean (*LqrProgressFuncUpdate)(gdouble);
-typedef gboolean (*LqrProgressFuncEnd)(const gchar*);
+typedef LqrRetVal (*LqrProgressFuncInit)(const gchar*);
+typedef LqrRetVal (*LqrProgressFuncUpdate)(gdouble);
+typedef LqrRetVal (*LqrProgressFuncEnd)(const gchar*);
 
 struct _LqrProgress
 {
@@ -47,14 +47,14 @@ struct _LqrProgress
 
 LqrProgress * lqr_progress_new(void);
 
-gboolean lqr_progress_init(LqrProgress * p, const gchar * message);
-gboolean lqr_progress_update(LqrProgress * p, gdouble percentage);
-gboolean lqr_progress_end(LqrProgress * p, const gchar * message);
+LqrRetVal lqr_progress_init(LqrProgress * p, const gchar * message);
+LqrRetVal lqr_progress_update(LqrProgress * p, gdouble percentage);
+LqrRetVal lqr_progress_end(LqrProgress * p, const gchar * message);
 
-gboolean lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message);
-gboolean lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message);
-gboolean lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message);
-gboolean lqr_progress_set_end_height_message(LqrProgress *p, const gchar * message);
+LqrRetVal lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message);
+LqrRetVal lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message);
+LqrRetVal lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message);
+LqrRetVal lqr_progress_set_end_height_message(LqrProgress *p, const gchar * message);
 
 #endif /* __LQR_PROGRESS_H__ */
 

@@ -27,16 +27,13 @@
 #define LQR_MAX_NAME_LENGTH (1024)
 
 #define TRY_N_N(assign) if ((assign) == NULL) { return NULL; }
-#define TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
-#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
-#define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
+//#define TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
+//#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
+//#define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
+
 
 #if 0
 #define __LQR_DEBUG__
-#endif
-
-#if 0
-#define __LQR_CLOCK__
 #endif
 
 #if 0
@@ -52,6 +49,44 @@ enum _LqrMode
 };
 
 typedef enum _LqrMode LqrMode;
+
+/**** RETURN VALUES (signals) ****/
+enum _LqrRetVal
+{
+  LQR_ERROR,		/* generic error */
+  LQR_OK,		/* ok */ 
+  LQR_NOMEM,		/* not enough memory */
+  LQR_READ_END		/* reader cursor reached the end */
+};
+
+typedef enum _LqrRetVal LqrRetVal;
+
+/* generic signal processing */
+#define CATCH(expr) G_STMT_START { \
+  LqrRetVal ret_val; \
+  if ((ret_val = (expr)) != LQR_OK) \
+    { \
+      return ret_val; \
+    } \
+} G_STMT_END
+
+/* convert a NULL assignment to an error signal */
+#define CATCH_MEM(expr) G_STMT_START { \
+  if ((expr) == NULL) \
+    { \
+      return LQR_NOMEM; \
+    } \
+} G_STMT_END
+
+/* convert a boolean value to an error signal */
+#define CATCH_F(expr) G_STMT_START { \
+  if ((expr) == FALSE) \
+    { \
+      return LQR_ERROR; \
+    } \
+} G_STMT_END
+
+
 
 /**** RESIZE ORDER ****/
 enum _LqrResizeOrder

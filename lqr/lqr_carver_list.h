@@ -38,7 +38,7 @@ union _LqrDataTok
   gpointer data;
 };
 
-typedef gboolean (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
+typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 
 
 /**** LQR_CARVER_LIST CLASS DEFINITION ****/
@@ -60,7 +60,7 @@ void lqr_carver_list_destroy (LqrCarverList * list);
 LqrCarverList * lqr_carver_list_start(LqrCarver *r);
 LqrCarver * lqr_carver_list_current(LqrCarverList *list);
 LqrCarverList * lqr_carver_list_next (LqrCarverList * list);
-gboolean lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data);
+LqrRetVal lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data);
 
 #endif /* __LQR_CARVER__ */
 

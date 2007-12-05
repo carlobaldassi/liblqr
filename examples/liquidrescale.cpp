@@ -1,115 +1,477 @@
 #include <pngwriter.h>
 #include <lqr/lqr.h>
+#include <getopt.h>
+#include "liquidrescale.h"
 
 using namespace std;
 
-/*** AUXILIARY FUNCTIONS DECLARATIONS ***/
+gchar *infile = NULL;
+gchar *outfile = NULL;
+gchar *pres_infile = NULL;
+gchar *pres_outfile = NULL;
+gchar *disc_infile = NULL;
+gchar *disc_outfile = NULL;
+gchar *vmap_infile = NULL;
+gchar *vmap_outfile = NULL;
+gint new_width = 0;
+gint new_height = 0;
+gfloat rigidity = 0;
+gint max_step = 1;
+gint pres_strength = 1000;
+gint disc_strength = 1000;
+LqrResizeOrder res_order = LQR_RES_ORDER_HOR;
 
-guchar *rgb_buffer_from_image (pngwriter * png);
-gboolean write_carver_to_image (LqrCarver * r, pngwriter * png);
-
-gboolean my_progress_init (const gchar * message);
-gboolean my_progress_update (gdouble percentage);
-gboolean my_progress_end (const gchar * message);
-void init_progress (LqrProgress * progress);
 
 /*** MAIN ***/
 
 int
 main (int argc, char **argv)
-{
-  /*** read commandline ***/
+{/*{{{*/
 
-  if (argc < 5)
-    {
-      cerr << "error: usage: " << argv[0] << " <input_file> <output_file> <x> <y>" << endl;
-      cerr << "       * files must be RGB in PNG format (no alpha channel)" << endl;
-      cerr << "       * setting <x> = 0 or <y> = 0 means keep original size"
-        << endl;
-      exit (1);
-    }
+  /*** read the command line ***/
+  TRAP (parse_command_line (argc, argv));
 
   /*** open input and output files ***/
-
-  char *infile;
-  char *outfile;
-  infile = argv[1];
-  outfile = argv[2];
-
-  /* setup outfile */
   pngwriter png (1, 1, 0, outfile);
-  /* read image */
   png.readfromfile (infile);
 
   /*** old and new size ***/
+  gint old_width = png.getwidth ();
+  gint old_height = png.getheight ();
 
-  int w0 = png.getwidth ();
-  int h0 = png.getheight ();
+  new_width = (new_width ? new_width : old_width);
+  new_height = (new_height ? new_height : old_height);
 
-  int w1 = atoi (argv[3]);
-  int h1 = atoi (argv[4]);
-  w1 = (w1 ? w1 : w0);
-  h1 = (h1 ? h1 : h0);
+  if ((new_width < 2) || (new_width >= 2 * old_width))
+    {
+      cerr << "The width should be between 2 and twice the original width" << endl;
+      exit (1);
+    }
+
+  if ((new_height < 2) || (new_height >= 2 * old_height))
+    {
+      cerr << "The height should be between 2 and twice the original height" << endl;
+      exit (1);
+    }
+
+  if ((new_height != old_height) && (new_width != old_width) && (vmap_outfile))
+    {
+      cerr << "Warning: only the first computed visibility map will be written" << endl;
+    }
 
   /*** print some information on screen ***/
+  cout << "resizing " << infile << " [" << old_width << "x" << old_height << "] into " <<
+    outfile << " [" << new_width << "x" << new_height << "]" << endl << flush;
 
-  cout << "resizing " << infile << " [" << w0 << "x" << h0 << "] into " <<
-    outfile << " [" << w1 << "x" << h1 << "]" << endl << flush;
+  if (vmap_infile)
+    {
+      cout << "reading VMap from " << vmap_infile << endl;
+    }
 
+  /*** read and check the feature masks ***/
+  pngwriter png_pmask;
+  pngwriter png_dmask;
 
+  if (pres_infile)
+    {
+      cout << "reading preservation mask from " << pres_infile << endl;
+      if (pres_outfile)
+        {
+	  cout << "will write preservarion mask to " << pres_outfile << endl;
+	  png_pmask.pngwriter_rename(pres_outfile);
+	}
+      png_pmask.readfromfile (pres_infile);
+      if (pres_outfile)
+        {
+	  if (png_pmask.getwidth () != old_width)
+	    {
+	      cerr << "Fatal error: preservation mask width does not match input file width" << endl;
+	      cerr << "cannot honour the --pres-out-file option" << endl;
+	      exit (1);
+	    }
+	  if (png_pmask.getheight () != old_height)
+	    {
+	      cerr << "Fatal error: preservation mask height does not match input file height" << endl;
+	      cerr << "cannot honour the --pres-out-file option" << endl;
+	      exit (1);
+	    }
+	}
+    }
+
+  if (disc_infile)
+    {
+      cout << "reading discard mask from " << disc_infile << endl;
+      if (disc_outfile)
+        {
+	  cout << "will write discard mask to " << disc_outfile << endl;
+	  png_dmask.pngwriter_rename(disc_outfile);
+	}
+      png_dmask.readfromfile (disc_infile);
+      if (disc_outfile)
+        {
+	  if (png_dmask.getwidth () != old_width)
+	    {
+	      cerr << "Fatal error: discard mask width does not match input file width" << endl;
+	      cerr << "cannot honour the --disc-out-file option" << endl;
+	      exit (1);
+	    }
+	  if (png_dmask.getheight () != old_height)
+	    {
+	      cerr << "Fatal error: discard mask height does not match input file height" << endl;
+	      cerr << "cannot honour the --disc-out-file option" << endl;
+	      exit (1);
+	    }
+	}
+    }
+
+  /* convert the images into rgb buffers to use them with the library */
+
+  guchar *rgb_buffer;
+  guchar *rgb_pres_buffer = NULL;
+  guchar *rgb_disc_buffer = NULL;
+
+  TRAP_N (rgb_buffer = rgb_buffer_from_image (&png));
+  if (pres_infile)
+    {
+      TRAP_N (rgb_pres_buffer = rgb_buffer_from_image (&png_pmask));
+    }
+  if (disc_infile)
+    {
+      TRAP_N (rgb_disc_buffer = rgb_buffer_from_image (&png_dmask));
+    }
+
+  
 
   /**** (I) GENERATE THE MULTISIZE REPRESENTATION ****/
 
-  /* (1) generate a buffer (this must be done outside the library) */
-  guchar *rgb_buffer;
-  rgb_buffer = rgb_buffer_from_image (&png);
+  /* (I.1) swallow the buffer in a (minimal) LqrCarver object 
+   *       (arguments are width, height and number of colour channels) */
+  LqrCarver *carver;
+  TRAP_N (carver = lqr_carver_new (rgb_buffer, old_width, old_height, 3));
 
-  /* (2) swallow the buffer in a (minimal) LqrCarver object 
-   *     (arguments are width, height and number of color channels) */
-  LqrCarver *rasta;
-  rasta = lqr_carver_new (rgb_buffer, w0, h0, 3);
+  /* (I.2) if we have to attach other images, we have to do so
+   *       immediatley after the carver construction (we might
+   *       initialize the carver first, but not load a visibility map)*/
+  LqrCarver *pres_carver;
+  if (pres_outfile)
+    {
+      TRAP_N (pres_carver = lqr_carver_new(rgb_pres_buffer, old_width, old_height, 3));
+      TRAP (lqr_carver_attach(carver, pres_carver));
+      /* note : this way the rgb_pres_buffer is lost, and we will have
+       *        to read it again in order to use it as a bias (this could
+       *        be avoided but the code would be harder to read) */
+    }
 
-  /* (3) initialize the carver (with default values),
-   *     so that we can do the resizing
-   *     (arguments are max seam step and seam rigidity) */
-  lqr_carver_init (rasta, 1, 0);
+  LqrCarver *disc_carver;
+  if (disc_outfile)
+    {
+      TRAP_N (disc_carver = lqr_carver_new(rgb_disc_buffer, old_width, old_height, 3));
+      TRAP (lqr_carver_attach(carver, disc_carver));
+    }
+
+  /* (I.3) next step depends on whether we have a pre-computed
+   *       map to use or not*/
+  if (!vmap_infile)
+    {
+      /* (I.3a.1) initialize the carver (with default values),
+       *          so that we can do the resizing */
+      TRAP (lqr_carver_init (carver, max_step, rigidity));
+      /* (I.3a.2) add the bias (positive to preserve, negative
+       *          to discard) */
+      if (pres_infile)
+	{
+	  TRAP_N (rgb_pres_buffer = rgb_buffer_from_image (&png_pmask));
+	  TRAP (lqr_carver_bias_add_rgb (carver, rgb_pres_buffer, pres_strength, 3)); 
+	}
+      if (disc_infile)
+	{
+	  TRAP_N (rgb_disc_buffer = rgb_buffer_from_image (&png_dmask));
+	  TRAP (lqr_carver_bias_add_rgb (carver, rgb_disc_buffer, -disc_strength, 3)); 
+	}
+    }
+  else
+    {
+      /* (I.3b.1) read a visibility map from a file */
+      LqrVMap * vmap;
+      vmap = load_vmap_from_file (vmap_infile);
+      if (vmap == NULL)
+        {
+	  cerr << "Unable to load vmap, aborting" << endl;
+	  exit (1);
+        }  
+      /* (I.3b.2) load it in the carver */
+      TRAP (lqr_vmap_load (carver, vmap));
+    }
+
+  /* (I.4) if we want to access the visibility maps, we have
+   *       to set it in the carver before rescaling occurs */
+  if (vmap_outfile)
+    {
+      lqr_carver_set_dump_vmaps (carver);
+    }
 
 
-  /**** (II) SET UP THE PROGRESS INDICATOR (OPTIONAL) ****/
 
-  /* (1) generate a progress with default values */
-  LqrProgress *progress = lqr_progress_new ();
-  /* (2) set up with custom commands */
+  /**** (II) SET UP THE PROGRESS INDICATOR ****/
+
+  /* (II.1) generate a progress with default values */
+  LqrProgress *progress;
+  TRAP_N (progress = lqr_progress_new ());
+  /* (II.2) set up with custom commands */
   init_progress (progress);
-  /* (3) attach the progress to out multisize image */
-  lqr_carver_set_progress (rasta, progress);
+  /* (II.3) attach the progress to out multisize image */
+  lqr_carver_set_progress (carver, progress);
 
 
   /**** (III) LIQUID RESCALE ****/
 
-  lqr_carver_resize (rasta, w1, h1);
+  /* (III.1) set the rescaling order */
+  lqr_carver_set_resize_order (carver, res_order);
+  /* (III.2) invoke the rescaling function */
+  TRAP (lqr_carver_resize (carver, new_width, new_height));
 
 
-  /**** (IV) READOUT THE MULTISIZE IMAGE ****/
+  /**** (IV) SAVE THE VISIBILITY MAP ****/
 
-  write_carver_to_image (rasta, &png);
+  LqrVMapList * vmap_list = lqr_vmap_list_start(carver);
+  if (vmap_outfile)
+    {
+      TRAP (save_vmap_to_file (lqr_vmap_list_current(vmap_list), vmap_outfile));
+      lqr_vmap_list_next(vmap_list);
+    }
+
+
+  /**** (V) READOUT THE MULTISIZE IMAGE ****/
+
+  /* (V.1) readout the main image */
+  TRAP (write_carver_to_image (carver, &png));
+  /* (V.2) readout the atteched images */
+  LqrCarverList *carver_list = lqr_carver_list_start(carver);
+  if (pres_outfile)
+    {
+      TRAP (write_carver_to_image (lqr_carver_list_current(carver_list), &png_pmask));
+      lqr_carver_list_next(carver_list);
+    }
+  if (disc_outfile)
+    {
+      TRAP (write_carver_to_image (lqr_carver_list_current(carver_list), &png_dmask));
+    }
 
 
 
-
-  /*** close file (write the image on disk) ***/
+  /*** close files (write the images on disk) ***/
 
   png.close ();
+  if (pres_outfile)
+    {
+      png_pmask.close();
+    }
+  if (disc_outfile)
+    {
+      png_dmask.close();
+    }
+
 
   return 0;
-}
+}/*}}}*/
+
+/*** PARSE COMMAND LINE ***/
+
+LqrRetVal parse_command_line (int argc, char **argv)
+{/*{{{*/
+  int i;
+  int c;
+  struct option lopts[]= {
+    {"file", required_argument, NULL, 'f'},
+    {"out-file", required_argument, NULL, 'o'},
+    {"width", required_argument, NULL, 'w'},
+    {"height", required_argument, NULL, 'h'},
+    {"rigidity", required_argument, NULL, 'r'},
+    {"max-step", required_argument, NULL, 's'},
+    {"pres-file", required_argument, NULL, 'p'},
+    {"pres-out-file", required_argument, NULL, 'P'},
+    {"pres-strength", required_argument, NULL, 'z'},
+    {"disc-file", required_argument, NULL, 'd'},
+    {"disc-out-file", required_argument, NULL, 'D'},
+    {"disc-strength", required_argument, NULL, 'x'},
+    {"vmap-out-file", required_argument, NULL, 'v'},
+    {"vmap-in-file", required_argument, NULL, 'V'},
+    {"vertical-first", no_argument, NULL, 't'},
+    {"help", no_argument, NULL, '#'},
+    {NULL,0,NULL,0}
+  };
+
+
+
+  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,v:,V:,t", lopts, &i)) != EOF) {
+    switch (c)
+    {
+      case 'f':
+	infile = optarg;
+	break;
+      case 'o':
+	outfile = optarg;
+	break;
+      case 'w':
+	new_width = atoi(optarg);
+	break;
+      case 'h':
+	new_height = atoi(optarg);
+	break;
+      case 'r':
+	rigidity = atof(optarg);
+	break;
+      case 's':
+	max_step = atoi(optarg);
+	break;
+      case 'p':
+	pres_infile = optarg;
+	break;
+      case 'P':
+	pres_outfile = optarg;
+	break;
+      case 'z':
+	pres_strength = atoi(optarg);
+	break;
+      case 'd':
+	disc_infile = optarg;
+	break;
+      case 'D':
+	disc_outfile = optarg;
+	break;
+      case 'x':
+	disc_strength = atoi (optarg);
+	break;
+      case 'v':
+	vmap_infile = optarg;
+	break;
+      case 'V':
+	vmap_outfile = optarg;
+	break;
+      case 't':
+	res_order = LQR_RES_ORDER_VERT;
+	break;
+      case '#':
+	help(argv[0]);
+	exit (0);
+      default:
+	cerr << "Error parsing command line. Use " << argv[0] << " --help for usage instructions." << endl;
+	return LQR_ERROR;
+    }
+  }
+
+  if (!infile)
+    {
+     cerr << "Input file missing." << endl;
+     return LQR_ERROR;
+    }
+  
+  if (!outfile)
+    {
+     cerr << "Output file missing." << endl;
+     return LQR_ERROR;
+    } 
+
+  if (!new_width && !new_height)
+    {
+      cerr << "Either --width or --height has to be specified." << endl;
+      return LQR_ERROR;
+    }
+
+  if (pres_outfile && !pres_infile)
+    {
+      cerr << "Option --pres-out-file can't be used without --pres-in-file." << endl;
+      return LQR_ERROR;
+    }
+
+  if (disc_outfile && !disc_infile)
+    {
+      cerr << "Option --disc-out-file can't be used without --disc-in-file." << endl;
+      return LQR_ERROR;
+    }
+
+  if (pres_strength < 0)
+    {
+      cerr << "Preservation strength cannot be negative." << endl;
+      return LQR_ERROR;
+    }
+
+  if (disc_strength < 0)
+    {
+      cerr << "Discard strength cannot be negative." << endl;
+      return LQR_ERROR;
+    }
+
+  if (rigidity < 0)
+    {
+      cerr << "Rigidity cannot be negative." << endl;
+      return LQR_ERROR;
+    }
+
+  if (max_step < 0)
+    {
+      cerr << "Max step cannot be negative." << endl;
+      return LQR_ERROR;
+    }
+
+
+  return LQR_OK;
+}/*}}}*/
+
+void help(char *command)
+{/*{{{*/
+  cout << "Usage: " << command << " -f <file> -o <out-file> [ -w <width> | -h <height> ] [ ... ]" << endl;
+  cout << "  Options:" << endl;
+  cout << "    -f <file> or --file <file>" << endl;
+  cout << "        Specifies input file. Must be in PNG format, in RGB without alpha channel" << endl;
+  cout << "    -o <out-file> or --out-file <out-file>" << endl;
+  cout << "        Specifies the output file." << endl;
+  cout << "    -w <width> or --width <width>" << endl;
+  cout << "        The new width. It must be between 2 and twice the origianl width." << endl;
+  cout << "        If it is 0, or it is not given, the width is unchanged." << endl;
+  cout << "    -h <height> or --height <height>" << endl;
+  cout << "        The new height. It must be between 2 and twice the origianl height." << endl;
+  cout << "        If it is 0, or it is not given, the height is unchanged." << endl;
+  cout << "    -r <rigidity> or --rigidity < rigidity>" << endl;
+  cout << "        Seams rigidity. Any non-negative value is allowed. Defaults to 0." << endl;
+  cout << "    -s <max-step> or --max-step <mask-step>" << endl;
+  cout << "        Maximum seam transversal step. Default value is 1." << endl;
+  cout << "    -p <pres-file> or --pres-file <pres-file>" << endl;
+  cout << "        File to be used as a mask for features preservation. It must be in the" << endl;
+  cout << "        same format as the input file." << endl;
+  cout << "    -P <pres-out-file> or --pres-out-file <pres-out-file>" << endl;
+  cout << "        If specified, the preservation mask will be rescaled along with the" << endl;
+  cout << "        input file, and the output will be written in the specified file." << endl;
+  cout << "        The size of the preservation mask has to match that of the original" << endl;
+  cout << "        image." << endl;
+  cout << "    -z <pres-strength> or --pres-strength <pres-strength>" << endl;
+  cout << "        Preservation mask strength. Any integer non-negative value is allowed." << endl;
+  cout << "        Defaults to 1000." << endl;
+  cout << "    -d <disc-file> or --disc-file <disc-file>" << endl;
+  cout << "        File to be used as a mask for features discard. It must be in the" << endl;
+  cout << "        same format as the input file." << endl;
+  cout << "    -D <disc-out-file> or --disc-out-file <disc-out-file>" << endl;
+  cout << "        Same as -P for the discard mask." << endl;
+  cout << "    -x <disc-strength> or --disc-strength <disc-strength>" << endl;
+  cout << "        Same as -z for the discard mask." << endl;
+  cout << "    -v <vmap-file> or --vmap-file <vmap-file>" << endl;
+  cout << "        Reads the visibility map from the specified file. The rescaling will fail" << endl;
+  cout << "        if it is asked to go beyond the depth of the map." << endl;
+  cout << "    -V <vmap-out-file> or --vmap-out-file <vmap-out-file>" << endl;
+  cout << "        Writes the visibility map in the specified file. Currently, only the first one." << endl;
+  cout << "    -t or --vertical-first" << endl;
+  cout << "        Rescale vertically first" << endl;
+  cout << "    --help" << endl;
+  cout << "        This help." << endl;
+}/*}}}*/
+  
 
 /*** AUXILIARY I/O FUNCTIONS ***/
 
 /* convert the image in the right format */
 guchar *
 rgb_buffer_from_image (pngwriter * png)
-{
+{/*{{{*/
   gint x, y, k, bpp;
   gint w, h;
   guchar *buffer;
@@ -123,7 +485,7 @@ rgb_buffer_from_image (pngwriter * png)
   buffer = g_try_new (guchar, bpp * w * h);
   g_assert (buffer != NULL);
 
-  /* start iteration (always y first, then x, then colors) */
+  /* start iteration (always y first, then x, then colours) */
   for (y = 0; y < h; y++)
     {
       for (x = 0; x < w; x++)
@@ -140,19 +502,19 @@ rgb_buffer_from_image (pngwriter * png)
     }
 
   return buffer;
-}
+}/*}}}*/
 
 /* readout the multizie image */
-gboolean
+LqrRetVal
 write_carver_to_image (LqrCarver * r, pngwriter * png)
-{
+{/*{{{*/
   gint x, y;
   guchar * rgb;
   gdouble red, green, blue;
   gint w, h;
 
   /* make sure the image is RGB */
-  TRY_F_F (r->bpp == 3);
+  CATCH_F (r->bpp == 3);
 
   /* resize the image canvas as needed to
    * fit for the new size
@@ -176,41 +538,246 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
       png->plot (x + 1, y + 1, red, green, blue);
     }
 
-  return TRUE;
-}
+  return LQR_OK;
+}/*}}}*/
 
 /*** PROGRESS INDICATOR ***/
 
 /* set up some simple progress functions */
-gboolean
+LqrRetVal
 my_progress_init (const gchar * message)
-{
+{/*{{{*/
   printf ("%s ", message);
   fflush (stdout);
-  return TRUE;
-}
+  return LQR_OK;
+}/*}}}*/
 
-gboolean
+LqrRetVal
 my_progress_update (gdouble percentage)
-{
+{/*{{{*/
   printf ("+");
   fflush (stdout);
-  return TRUE;
-}
+  return LQR_OK;
+}/*}}}*/
 
-gboolean
+LqrRetVal
 my_progress_end (const gchar * message)
-{
+{/*{{{*/
   printf (" %s\n", message);
   fflush (stdout);
-  return TRUE;
-}
+  return LQR_OK;
+}/*}}}*/
 
 /* setup the progress machinery (use standard messages) */
 void
 init_progress (LqrProgress * progress)
-{
+{/*{{{*/
   progress->init = my_progress_init;
   progress->update = my_progress_update;
   progress->end = my_progress_end;
-}
+}/*}}}*/
+
+/*** VISIBILTY MAPS ***/
+
+/* convert a visibility map in binary and stores it in a file */
+LqrRetVal save_vmap_to_file (LqrVMap *vmap, gchar * name)
+{/*{{{*/
+  FILE *sink;
+  gint y, x;
+  gint32 vs;
+
+  /* open file */
+  if ((sink = fopen(name, "wb")) == NULL)
+    {
+      cerr << "error opening outfile : " << name << endl;
+      return LQR_ERROR;
+    }
+
+  /* VMAP : filtype */
+  fprintf(sink, "VMAP[");
+
+  /* HEAD : the header */
+  fprintf(sink, "HEAD[");
+
+  fprintf(sink, "[width=%i]", vmap->width);
+  fprintf(sink, "[height=%i]", vmap->height);
+  fprintf(sink, "[orientation=%i]", vmap->orientation);
+  fprintf(sink, "[depth=%i]", vmap->depth);
+  fprintf(sink, "[comment=()]");
+
+  /* close HEAD */
+  fprintf(sink, "]");
+
+  /* BODY : the data */
+  fprintf(sink, "BODY[");
+
+  /* vmap is a buffer of gint's */
+  for (y = 0; y < vmap->height; y++)
+    {
+      for (x = 0; x < vmap->width; x++)
+        {
+	  vs = vmap->buffer[y * vmap->width + x];
+	  fprintf(sink, "%c%c%c%c", (vs >> 24) & 0xFF, ((vs >> 16) & 0xFF), ((vs >> 8) & 0xFF), vs & 0xFF );
+	}
+    }
+  /* close BODY */
+  fprintf(sink, "]");
+
+  /* close VMAP */
+  fprintf(sink, "]");
+
+  /* close file */
+  fclose(sink);
+
+  return LQR_OK;
+}/*}}}*/
+
+/* reads a binary file and converts it into a visibility map */
+LqrVMap * load_vmap_from_file (gchar *name)
+{/*{{{*/
+  FILE *input;
+  gint x, y, z0;
+  gint w, h, depth, orientation;
+  gint c, i;
+  guchar i1, i2, i3, i4;
+  gint32 vs;
+  gboolean w_ok, h_ok, d_ok, o_ok;
+  gchar read_buffer[RBS];
+  gchar read_tag[RBS];
+  gint *buffer;
+  LqrVMap *vmap;
+
+  /* flags */
+  w_ok = h_ok = d_ok = o_ok = FALSE;
+  
+  w = h = depth = orientation = 0;
+
+  /* open file */
+  CHECK_OR_N (((input = fopen (name, "rb")) != NULL), "can't open vmap file");
+
+  /* read filetype */
+  CHECK_OR_N (fscanf(input, "VMAP[") != EOF, "not a VMAP file");
+
+  /* read the header */
+  CHECK_OR_N (fscanf(input, "HEAD[") != EOF, "missing vmap header");
+
+  /* scan the header */
+  while (1) {
+    CHECK_OR_N ((c = getc(input)) != EOF, "corrupted vmap header");
+    if (c == ']')
+      {
+	/* the header has ended */
+	break;
+      }
+    ungetc(c, input);
+
+    /* start reading a tag */
+    CHECK_OR_N (fscanf(input, "[") != EOF, "corrupted vmap header");
+
+    /* start reading the tag name */
+    i = 0;
+    while (((c = getc(input)) != EOF) && (i < RBS))
+      {
+	if (c == '=')
+	  {
+	    /* the tag name has ended */
+	    break;
+	  }
+	read_tag[i++] = c;
+      }
+    CHECK_OR_N (i < RBS, "vmap tag name too long");
+
+    read_tag[i] = '\0';
+
+    /* start reading the tag content */
+    i = 0;
+    while (((c = getc(input)) != EOF) && (i < RBS))
+      {
+	if (c == ']')
+	  {
+	    /* the tag has ended */
+	    break;
+	  }
+	read_buffer[i++] = c;
+      }
+    CHECK_OR_N (i < RBS, "tag content too long");
+    read_buffer[i] = '\0';
+
+    /* set the corresponding variable and the flag */
+    if (strncmp(read_tag, "width", RBS) == 0)
+      {
+	w = atoi(read_buffer);
+	w_ok = TRUE;
+      }
+    else if (strncmp(read_tag, "height", RBS) == 0)
+      {
+	h = atoi(read_buffer);
+	h_ok = TRUE;
+      }
+    else if (strncmp(read_tag, "depth", RBS) == 0)
+      {
+	depth = atoi(read_buffer);
+	d_ok = TRUE;
+      }
+    else if (strncmp(read_tag, "orientation", RBS) == 0)
+      {
+	orientation = atoi(read_buffer);
+	o_ok = TRUE;
+      }
+    else if (strncmp(read_tag, "comment", RBS) == 0)
+      {
+	/* discard comments */
+      }
+    else
+      {
+	cerr << "warning : unknown tag : " << read_tag << endl;
+      }
+  }
+
+  /* check if all the needed quantities are there */
+  CHECK_OR_N (w_ok && h_ok && d_ok && o_ok, "missing vmap tags");
+
+  /* start reading the data */
+  CHECK_OR_N (fscanf(input, "BODY[") != EOF, "missing vmap body");
+
+  /* allocate memory for the vmap buffer */
+  TRY_N_N (buffer = g_try_new0(gint, w * h));
+
+  /* scan the data */
+  y = x = 0;
+  while ((y < h) && ((c = getc(input)) != EOF))
+    {
+      ungetc (c, input);
+
+      /* read a 32 bit integer */
+      CHECK_OR_N (fscanf(input, "%c%c%c%c", &i1, &i2, &i3, &i4) == 4, "vmap data corrupted");
+      vs = i4 + (i3 << 8) + (i2 << 16) + (i1 << 24);
+      
+      /* set it in the buffer */
+      z0 = y * w + x;
+      buffer[z0] = vs;
+
+      /* update the coordinates */
+      x++;
+      if (x == w)
+        {
+	  x = 0;
+	  y++;
+	}
+    }
+
+
+  /* test if the amount of data read is correct */
+  CHECK_OR_N ((x == 0) && (y == h), "vmap data corrupted");
+
+  /* end reading the data */
+  CHECK_OR_N (fscanf(input, "]") != EOF, "unterminated vmap body");
+
+  /* end reading the vmap file */
+  CHECK_OR_N (fscanf(input, "]") != EOF, "unterminated vmap file");
+
+  /* create the vmap object with all the data aquired */
+  TRY_N_N (vmap = lqr_vmap_new (buffer, w, h, depth, orientation));
+
+  return vmap;
+}/*}}}*/

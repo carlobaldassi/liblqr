@@ -31,10 +31,10 @@
 
 /** private functions **/
 
-gboolean lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp, gint width, gint height, gint x_off, gint y_off);
-gboolean lqr_carver_bias_add_rgb(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp);
-gboolean lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off);
-gboolean lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor);
+LqrRetVal lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp, gint width, gint height, gint x_off, gint y_off);
+LqrRetVal lqr_carver_bias_add_rgb(LqrCarver *r, guchar *buffer, gint bias_factor, gint bpp);
+LqrRetVal lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off);
+LqrRetVal lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor);
 
 
 #endif /* __LQR_CARVER_BIAS_H__ */

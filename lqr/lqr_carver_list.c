@@ -89,15 +89,15 @@ lqr_carver_list_current (LqrCarverList * list)
   return list->current;
 }
 
-gboolean
+LqrRetVal
 lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data)
 {
   LqrCarverList * now = list;
   if (now != NULL)
     {
-      TRY_F_F (func(now->current, data));
+      CATCH (func(now->current, data));
       return lqr_carver_list_foreach (now->next, func, data);
     }
-  return TRUE;
+  return LQR_OK;
 }
 
