@@ -38,8 +38,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = lqr
-DIST_COMMON = $(lqr_include_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in
+DIST_COMMON = $(lqr_include0_HEADERS) $(lqr_include_HEADERS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -53,7 +53,8 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)"
+am__installdirs = "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)" \
+	"$(DESTDIR)$(lqr_include0dir)"
 lqrLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lqr_LTLIBRARIES)
 liblqr_1_la_LIBADD =
@@ -75,7 +76,8 @@ LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 SOURCES = $(liblqr_1_la_SOURCES)
 DIST_SOURCES = $(liblqr_1_la_SOURCES)
 lqr_includeHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(lqr_include_HEADERS)
+lqr_include0HEADERS_INSTALL = $(INSTALL_HEADER)
+HEADERS = $(lqr_include_HEADERS) $(lqr_include0_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -241,8 +243,9 @@ AM_CPPFLAGS = \
 	-I$(includedir)
 
 LDADD = $(GLIB_LIBS) -lm
-lqr_include_HEADERS = lqr.h \
-		      lqr_base.h \
+lqr_include0_HEADERS = lqr.h
+lqr_include0dir = $(includedir)/@LIBRARY_SNAME@
+lqr_include_HEADERS = lqr_base.h \
 		      lqr_gradient_pub.h \
 		      lqr_cursor_pub.h \
 		      lqr_carver_pub.h \
@@ -378,6 +381,23 @@ uninstall-lqr_includeHEADERS:
 	  echo " rm -f '$(DESTDIR)$(lqr_includedir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(lqr_includedir)/$$f"; \
 	done
+install-lqr_include0HEADERS: $(lqr_include0_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(lqr_include0dir)" || $(mkdir_p) "$(DESTDIR)$(lqr_include0dir)"
+	@list='$(lqr_include0_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(lqr_include0HEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(lqr_include0dir)/$$f'"; \
+	  $(lqr_include0HEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(lqr_include0dir)/$$f"; \
+	done
+
+uninstall-lqr_include0HEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lqr_include0_HEADERS)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(lqr_include0dir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(lqr_include0dir)/$$f"; \
+	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -458,7 +478,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)"; do \
+	for dir in "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)" "$(DESTDIR)$(lqr_include0dir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -506,7 +526,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-lqrLTLIBRARIES install-lqr_includeHEADERS
+install-data-am: install-lqrLTLIBRARIES install-lqr_include0HEADERS \
+	install-lqr_includeHEADERS
 
 install-exec-am:
 
@@ -535,7 +556,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-info-am uninstall-lqrLTLIBRARIES \
-	uninstall-lqr_includeHEADERS
+	uninstall-lqr_include0HEADERS uninstall-lqr_includeHEADERS
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-lqrLTLIBRARIES ctags distclean \
@@ -543,12 +564,13 @@ uninstall-am: uninstall-info-am uninstall-lqrLTLIBRARIES \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-exec \
 	install-exec-am install-info install-info-am \
-	install-lqrLTLIBRARIES install-lqr_includeHEADERS install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-info-am uninstall-lqrLTLIBRARIES \
+	install-lqrLTLIBRARIES install-lqr_include0HEADERS \
+	install-lqr_includeHEADERS install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-info-am \
+	uninstall-lqrLTLIBRARIES uninstall-lqr_include0HEADERS \
 	uninstall-lqr_includeHEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

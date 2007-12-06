@@ -1,5 +1,5 @@
 #include <pngwriter.h>
-#include <lqr/lqr.h>
+#include <lqr.h>
 #include <getopt.h>
 #include "liquidrescale.h"
 
@@ -606,7 +606,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
 LqrRetVal
 my_progress_init (const gchar * message)
 {/*{{{*/
-  printf ("%s --------------------  0.00%% (00:00:00.00)", message);
+  printf ("%s --------------------  0.00%% (00:00.00)", message);
   fflush (stdout);
   clock_start = clock();
   return LQR_OK;
@@ -617,7 +617,7 @@ my_progress_update (gdouble percentage)
 {/*{{{*/
   gint i;
   gfloat p;
-  for (i = 0; i < 41; i++) {
+  for (i = 0; i < 38; i++) {
     printf("\b");
   }
   for (i = 0; i < 20 * percentage; i++) {
@@ -635,13 +635,12 @@ my_progress_update (gdouble percentage)
 
   i = (gint) t;
 
-  gint hrs, min, sec, cent;
+  gint min, sec, cent;
 
-  hrs = i / 3600;
-  min = (i % 3600) / 60;
+  min = i / 60;
   sec = i % 60;
   cent = (gint) ((t - i) * 100);
-  printf (" (%s%i:%s%i:%s%i:%s%i)", hrs < 10 ? "0" : "", hrs, min < 10 ? "0" : "", min, sec < 10 ? "0" : "", sec, cent < 10 ? "0" : "", cent);
+  printf (" (%s%i:%s%i.%s%i)", min < 10 ? "0" : "", min, sec < 10 ? "0" : "", sec, cent < 10 ? "0" : "", cent);
   fflush (stdout);
   return LQR_OK;
 }/*}}}*/
@@ -650,15 +649,10 @@ LqrRetVal
 my_progress_end (const gchar * message)
 {/*{{{*/
   gint i;
-  for (i = 0; i < 41; i++) {
+  for (i = 0; i < 38; i++) {
     printf("\b");
   }
-  printf ("******************** %s", message);
-
-  for (i = 0; i < (gint) (6 - strnlen(message, 6)); i++)
-    {
-      printf(" ");
-    }
+  printf ("********************   %s", message);
 
   gfloat t;
   clock_now = clock();
@@ -666,13 +660,12 @@ my_progress_end (const gchar * message)
 
   i = (gint) t;
 
-  gint hrs, min, sec, cent;
+  gint min, sec, cent;
 
-  hrs = i / 3600;
-  min = (i % 3600) / 60;
+  min = i / 60;
   sec = i % 60;
   cent = (gint) ((t - i) * 100);
-  printf (" (%s%i:%s%i:%s%i:%s%i)\n", hrs < 10 ? "0" : "", hrs, min < 10 ? "0" : "", min, sec < 10 ? "0" : "", sec, cent < 10 ? "0" : "", cent);
+  printf (" (%s%i:%s%i.%s%i)\n", min < 10 ? "0" : "", min, sec < 10 ? "0" : "", sec, cent < 10 ? "0" : "", cent);
 
   fflush (stdout);
   return LQR_OK;
@@ -685,7 +678,7 @@ init_progress (LqrProgress * progress)
   progress->init = my_progress_init;
   progress->update = my_progress_update;
   progress->end = my_progress_end;
-  lqr_progress_set_init_width_message(progress, "Resizing width :");
+  lqr_progress_set_init_width_message(progress, "Resizing width  :");
   lqr_progress_set_init_height_message(progress, "Resizing height :");
   lqr_progress_set_end_width_message(progress, "done");
   lqr_progress_set_end_height_message(progress, "done");

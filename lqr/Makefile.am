@@ -51,8 +51,11 @@ AM_CPPFLAGS = \
 
 LDADD = $(GLIB_LIBS) -lm
 
-lqr_include_HEADERS = lqr.h \
-		      lqr_base.h \
+lqr_include0_HEADERS = lqr.h
+
+lqr_include0dir = $(includedir)/@LIBRARY_SNAME@
+
+lqr_include_HEADERS = lqr_base.h \
 		      lqr_gradient_pub.h \
 		      lqr_cursor_pub.h \
 		      lqr_carver_pub.h \

@@ -1,5 +1,5 @@
 #include <pngwriter.h>
-#include <lqr/lqr.h>
+#include <lqr.h>
 #include <getopt.h>
 #include "liquidrescale-basic.h"
 
