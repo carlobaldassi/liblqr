@@ -52,11 +52,11 @@ struct _LqrProgress
 
 LqrProgress * lqr_progress_new(void);
 
-LqrRetVal lqr_progress_init(LqrProgress * p, const gchar * message);
-LqrRetVal lqr_progress_update(LqrProgress * p, gdouble percentage);
-LqrRetVal lqr_progress_end(LqrProgress * p, const gchar * message);
-
 LqrRetVal lqr_progress_set_update_step(LqrProgress *p, gfloat update_step);
+
+LqrRetVal lqr_progress_set_init(LqrProgress * p, LqrProgressFuncInit init_func);
+LqrRetVal lqr_progress_set_update(LqrProgress * p, LqrProgressFuncUpdate update_func);
+LqrRetVal lqr_progress_set_end(LqrProgress * p, LqrProgressFuncEnd end_func);
 
 LqrRetVal lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message);
 LqrRetVal lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message);

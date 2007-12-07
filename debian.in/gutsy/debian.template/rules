@@ -92,7 +92,7 @@ binary-arch: build install
 #	dh_installman
 	dh_link
 	dh_strip
-	dh_compress
+	dh_compress -X.cpp
 	dh_fixperms
 #	dh_makeshlibs
 	dh_installdeb

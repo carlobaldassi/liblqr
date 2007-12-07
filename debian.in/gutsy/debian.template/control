@@ -15,7 +15,8 @@ Description: Liquid Rescale library
  algorithm by Shai Avidan and Ariel Shamir.
  .
  This package contains the header files needed
- for development with liblqr. 
+ for development with liblqr, documentation and
+ examples
 
 Package: liblqr1
 Section: libs

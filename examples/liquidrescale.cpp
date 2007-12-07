@@ -1,3 +1,25 @@
+/* LiquidRescaling Library DEMO program
+ * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@yahoo.it>.
+ * All Rights Reserved.
+ *
+ * This library implements the algorithm described in the paper
+ * "Seam Carving for Content-Aware Image Resizing"
+ * by Shai Avidan and Ariel Shamir
+ * which can be found at http://www.faculty.idc.ac.il/arik/imret.pdf
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 3 dated June, 2007.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/> 
+ */
+
 #include <pngwriter.h>
 #include <lqr.h>
 #include <getopt.h>
@@ -572,7 +594,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   gint w, h;
 
   /* make sure the image is RGB */
-  CATCH_F (r->bpp == 3);
+  CATCH_F (lqr_carver_get_bpp(r) == 3);
 
   /* resize the image canvas as needed to
    * fit for the new size
@@ -675,9 +697,9 @@ my_progress_end (const gchar * message)
 void
 init_progress (LqrProgress * progress)
 {/*{{{*/
-  progress->init = my_progress_init;
-  progress->update = my_progress_update;
-  progress->end = my_progress_end;
+  lqr_progress_set_init (progress, my_progress_init);
+  lqr_progress_set_update (progress, my_progress_update);
+  lqr_progress_set_end (progress, my_progress_end);
   lqr_progress_set_init_width_message(progress, "Resizing width  :");
   lqr_progress_set_init_height_message(progress, "Resizing height :");
   lqr_progress_set_end_width_message(progress, "done");
@@ -692,8 +714,16 @@ init_progress (LqrProgress * progress)
 LqrRetVal save_vmap_to_file (LqrVMap *vmap, gchar * name)
 {/*{{{*/
   FILE *sink;
+  gint *buffer;
+  gint width, height, depth, orientation;
   gint y, x;
   gint32 vs;
+
+  buffer = lqr_vmap_get_data(vmap);
+  width = lqr_vmap_get_width(vmap);
+  height = lqr_vmap_get_height(vmap);
+  depth = lqr_vmap_get_depth(vmap);
+  orientation = lqr_vmap_get_orientation(vmap);
 
   /* open file */
   if ((sink = fopen(name, "wb")) == NULL)
@@ -708,10 +738,10 @@ LqrRetVal save_vmap_to_file (LqrVMap *vmap, gchar * name)
   /* HEAD : the header */
   fprintf(sink, "HEAD[");
 
-  fprintf(sink, "[width=%i]", vmap->width);
-  fprintf(sink, "[height=%i]", vmap->height);
-  fprintf(sink, "[orientation=%i]", vmap->orientation);
-  fprintf(sink, "[depth=%i]", vmap->depth);
+  fprintf(sink, "[width=%i]", width);
+  fprintf(sink, "[height=%i]", height);
+  fprintf(sink, "[orientation=%i]", orientation);
+  fprintf(sink, "[depth=%i]", depth);
   fprintf(sink, "[comment=()]");
 
   /* close HEAD */
@@ -721,11 +751,11 @@ LqrRetVal save_vmap_to_file (LqrVMap *vmap, gchar * name)
   fprintf(sink, "BODY[");
 
   /* vmap is a buffer of gint's */
-  for (y = 0; y < vmap->height; y++)
+  for (y = 0; y < height; y++)
     {
-      for (x = 0; x < vmap->width; x++)
+      for (x = 0; x < width; x++)
         {
-	  vs = vmap->buffer[y * vmap->width + x];
+	  vs = buffer[y * width + x];
 	  fprintf(sink, "%c%c%c%c", (vs >> 24) & 0xFF, ((vs >> 16) & 0xFF), ((vs >> 8) & 0xFF), vs & 0xFF );
 	}
     }

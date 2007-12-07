@@ -3,8 +3,14 @@
 SUBDIRS = lqr
 
 EXTRA_DIST = \
-	BUGS			\
-	autogen.sh
+	docs		\
+	examples/liquidrescale.cpp \
+	examples/liquidrescale.h   \
+	examples/liquidrescale-basic.cpp \
+	examples/liquidrescale-basic.h   \
+	examples/Makefile \
+	BUGS		\
+	autogen.sh	
 
 DISTCLEANFILES = \
 		 autom4te.cache

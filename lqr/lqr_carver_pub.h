@@ -120,13 +120,10 @@ LqrRetVal lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image 
 void lqr_carver_scan_reset (LqrCarver * r);
 gboolean lqr_carver_scan (LqrCarver *r, gint *x, gint *y, guchar ** rgb);
 gboolean lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb);
+gboolean lqr_carver_scan_by_row (LqrCarver *r);
 gint lqr_carver_get_bpp (LqrCarver *r);
 gint lqr_carver_get_width (LqrCarver * r);
 gint lqr_carver_get_height (LqrCarver * r);
-gint lqr_carver_read_x (LqrCarver * r);
-gint lqr_carver_read_y (LqrCarver * r);
-gboolean lqr_carver_read_next (LqrCarver * r);
-guchar lqr_carver_read_c (LqrCarver * r, gint col);
 
 
 #endif /* __LQR_CARVER_PUB_H__ */

@@ -26,7 +26,10 @@
 
 /* LQR_PROGRESS CLASS PRIVATE FUNCTIONS */
 
-/* no private functions currently */
+LqrRetVal lqr_progress_init(LqrProgress * p, const gchar * message);
+LqrRetVal lqr_progress_update(LqrProgress * p, gdouble percentage);
+LqrRetVal lqr_progress_end(LqrProgress * p, const gchar * message);
+
 
 #endif /* __LQR_PROGRESS_PRIV_H__ */
 

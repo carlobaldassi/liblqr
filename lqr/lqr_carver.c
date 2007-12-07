@@ -1311,7 +1311,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
 
       if (r->dump_vmaps)
         {
-          CATCH (lqr_vmap_flush (r));
+          CATCH (lqr_vmap_dump (r));
         }
       lqr_progress_end (r->progress, r->progress->end_width_message);
     }
@@ -1349,7 +1349,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       
       if (r->dump_vmaps)
         {
-          CATCH (lqr_vmap_flush (r));
+          CATCH (lqr_vmap_dump (r));
         }
       lqr_progress_end (r->progress, r->progress->end_height_message);
     }
@@ -1436,6 +1436,12 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 
 /* readout all, by line */
 gboolean
+lqr_carver_scan_by_row (LqrCarver *r)
+{
+  return r->transposed ? FALSE : TRUE;
+}
+
+gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {
   gint k, x;
@@ -1462,42 +1468,6 @@ lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 
   (*rgb) = r->rgb_ro_buffer;
   return TRUE;
-}
-
-
-/* readout move */
-gboolean
-lqr_carver_read_next (LqrCarver * r)
-{
-  if ((r->c->x == r->w - 1) && (r->c->y == r->h - 1))
-    {
-      lqr_carver_scan_reset (r);
-      return FALSE;
-    }
-  lqr_cursor_next (r->c);
-  return TRUE;
-}
-
-
-/* readout coordinates */
-gint
-lqr_carver_read_x(LqrCarver* r)
-{
-  return (r->transposed ? r->c->y : r->c->x);
-}
-
-gint
-lqr_carver_read_y(LqrCarver* r)
-{
-  return (r->transposed ? r->c->x : r->c->y);
-}
-
-/* readout colour */
-guchar
-lqr_carver_read_c (LqrCarver * r, gint col)
-{
-  gint k = CLAMP(col, 0, r->bpp - 1);
-  return r->rgb[r->c->now * r->bpp + k];
 }
 
 /**** END OF LQR_CARVER CLASS FUNCTIONS ****/

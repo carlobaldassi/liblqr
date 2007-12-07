@@ -52,9 +52,36 @@ lqr_vmap_destroy (LqrVMap * vmap)
   g_free (vmap);
 }
 
-/* flush the visibility level of the image */
+gint *
+lqr_vmap_get_data (LqrVMap *vmap)
+{
+  return vmap->buffer;
+}
+
+gint lqr_vmap_get_width (LqrVMap *vmap)
+{
+  return vmap->width;
+}
+
+gint lqr_vmap_get_height (LqrVMap *vmap)
+{
+  return vmap->height;
+}
+
+gint lqr_vmap_get_depth (LqrVMap *vmap)
+{
+  return vmap->depth;
+}
+
+gint lqr_vmap_get_orientation (LqrVMap *vmap)
+{
+  return vmap->orientation;
+}
+
+
+/* dump the visibility level of the image */
 LqrRetVal
-lqr_vmap_flush (LqrCarver * r)
+lqr_vmap_dump (LqrCarver * r)
 {
   LqrVMap * vmap;
   gint w, h, w1, x, y, z0, vs;
@@ -124,10 +151,7 @@ lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
   w = vmap->width;
   h = vmap->height;
 
-  if (r->active)
-    {
-      return FALSE;
-    }
+  CATCH_F (!r->active);
 
   if (!r->transposed)
     {

@@ -60,7 +60,7 @@ LqrRetVal
 lqr_progress_update(LqrProgress * p, gdouble percentage)
 {
   CATCH_F (p != NULL);
-  if (p->init)
+  if (p->update)
     {
       return p->update(percentage);
     }
@@ -74,7 +74,7 @@ LqrRetVal
 lqr_progress_end(LqrProgress * p, const gchar * message)
 {
   CATCH_F (p != NULL);
-  if (p->init)
+  if (p->end)
     {
       return p->end(message);
     }
@@ -82,6 +82,26 @@ lqr_progress_end(LqrProgress * p, const gchar * message)
     {
       return LQR_OK;
     }
+}
+
+LqrRetVal
+lqr_progress_set_init(LqrProgress * p, LqrProgressFuncInit init_func)
+{
+  p->init = init_func;
+  return LQR_OK;
+}
+
+LqrRetVal
+lqr_progress_set_update(LqrProgress * p, LqrProgressFuncUpdate update_func)
+{
+  p->update = update_func;
+  return LQR_OK;
+}
+
+LqrRetVal lqr_progress_set_end(LqrProgress * p, LqrProgressFuncEnd end_func)
+{
+  p->end = end_func;
+  return LQR_OK;
 }
 
 LqrRetVal
