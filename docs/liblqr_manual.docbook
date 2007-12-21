@@ -1,0 +1,2391 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DOcBook XML V4.5//EN" "/usr/share/xml/docbook/schema/dtd/4.5/docbookx.dtd" [
+	<!ENTITY lqr "Liquid Rescale">
+	<!ENTITY lqrl "&lqr; library">
+	<!ENTITY carv_obj "<classname>LqrCarver</classname>">
+	<!ENTITY vmap_obj "<classname>LqrVMap</classname>">
+	<!ENTITY prog_obj "<classname>LqrProgress</classname>">
+	<!ENTITY ret_true "<literal><returnvalue>TRUE</returnvalue></literal>">
+	<!ENTITY ret_false "<literal><returnvalue>FALSE</returnvalue></literal>">
+	<!ENTITY ret_null "<literal><returnvalue>NULL</returnvalue></literal>">
+	<!ENTITY param_w "<parameter>width</parameter>">
+	<!ENTITY param_h "<parameter>height</parameter>">
+	<!ENTITY param_bpp "<parameter>bpp</parameter>">
+	<!ENTITY param_depth "<parameter>depth</parameter>">
+	<!ENTITY err_ok "<literal><errorcode>LQR_OK</errorcode></literal>">
+	<!ENTITY err_err "<literal><errorcode>LQR_ERROR</errorcode></literal>">
+	<!ENTITY err_nomem "<literal><errorcode>LQR_NOMEM</errorcode></literal>">
+	]>
+
+
+<book id="liblqr-manual" lang="en">
+
+	<bookinfo>
+		<title>The &lqrl; Manual</title>
+	</bookinfo>
+
+	<chapter id="Introduction">
+
+		<title>Introduction</title>
+
+		<sect1 id="about-this-doc">
+			<title>About this document</title>
+			<para>
+				This manual describes in detail the &lqrl; API, starting
+				from a brief overview on seam carving, the internal image representation,
+				a minimal list of basic methods and the full explanation of all the
+				library public methods.
+			</para>
+			<para>
+				In the `<filename>examples</filename>' directory, you will find a minimal example program,
+				which only uses basic methods, and a full-featured demo program,
+				which uses almost all of the methods described in this document.
+				Both programs are fully commented, see also the <filename>README</filename>
+				file in the `<filename>examples</filename>' directory.
+			</para>
+
+			<para>
+				Refer to the <filename>README</filename> file for information about intalling
+				and compiling.
+			</para>
+			<note>
+				The manual reference is not complete yet.
+			</note>
+		</sect1>
+
+		<sect1 id="seam-carve">
+			<title>Seam carving in brief</title>
+			<para>
+				Basically, the algorithm tries to find out which parts
+				of the image are important, and which are not, based on the contrast
+				between adjacent pixels; then, the image is resized through the
+				elimination or insertion of continuous paths, called `seams'.
+				The seams connect the top of the image with the bottom when
+				rescaling horizontally, or they connect the left side with the right
+				side when rescaling vertically.
+				In the seam carving process, seams are removed in sequence.
+				The seam insertion process mirrors the seam carving process,
+				introducing interpolated seams in regions where they would have
+				been carved.
+			</para>
+			<para>
+				It often happens that the automatic feature detection fails
+				to identify as significant some image regions; in these cases
+				a preservation mask can be specified, which marks those regions.
+				In fact, the feature recognition process can be manually driven
+				quite easily to its full extent. 
+			</para>
+			<para>
+				See also the <link linkend="references">References</link> section for
+				more information about the algorithm.
+			</para>
+
+			<sect2 id="about-enlarge">
+				<title>About enlarging</title>
+				<para>
+					As mentioneed above, the enlargment process mirrors the carving
+					process. More precisely, in order to enlarge the image by a given
+					amount of pixels, say N, the library first computes which would be
+					the first N seams to be removed; then, it inserts new seams
+					nearby those.
+				</para>
+				<para>
+					This means that it is clearly not possible to go beyond twice the
+					original size in a single step. It also means that doubling the
+					image size in this way is just equivalent to standard scaling, since
+					the result is that each seam is just duplicated. All in all, it is
+					not advisable to enlarge too much in a single step.
+				</para>
+				<para>
+					This same issue also affects in a tricky way the preservation of image
+					areas when enlarging: suppose your image is 1000 pixels wide,
+					and you have protected an area which is 800 pixels wide. It is then
+					clear that you cannot shrink the image to less than 800 pixels without
+					affecting the preserved area, but the same is true when enlarging,
+					so you should not go beyond 1200 pixels (= 1000 + (1000 - 800)).
+				</para>
+			</sect2>
+		</sect1>
+
+
+		<sect1 id="overview">
+			<title>Overview of the library</title>
+			<para>
+				The &lqrl; is written in C, but can be used into C++ programs without
+				any modification.
+				It has an object-oriented design, so that the terminology is borrowed
+				from C++. The central class of the library is called &carv_obj;.
+				Carver objects can generate and store multi-size images, or load
+				them, and read them out at the desired size.
+			</para>
+			<para>
+				Internally, multi-size images are stored simply as plain images with the addition
+				of a visibility map. Each pixel in the image has its own visibility level.
+				We decide whether to display a pixel or not simply by comparing each pixel's
+				visibility with a given global visibility level. In this way, we can read
+				out images of different sizes, simply by setting properly a global visibility
+				level.
+			</para>
+			<para>
+				Once the visibility map has been computed, it allows effortless,
+				real-time scaling.
+				However, visibility maps also necessarily have an orientation, either
+				horizontal or vertical. If we want to resize on the other direction, the
+				visibility map has to be computed afresh, and the previous visibility map
+				becomes useless, because the two maps are not consistent one with the other.
+			</para>
+			<para>
+				This also implies that the resizing order affects the final result: rescaling
+				horizontally first, then vertically, does not yield the same result as following
+				the reverse order. Moreover, one could choose an intermediate way, e.g. by
+				rescaling by one pixel in one direction, one in the other, then iterating as
+				needed to reach the final size.
+			</para>
+			<para>
+				The default behaviour of the library is to rescale horizontally first, then
+				vertically, but this order can be reversed.
+			</para>
+			<para>
+				Visibility maps can be stored in objects of type &vmap_obj;.
+				When a &carv_obj; object is created from an input image, the
+				visibility of each pixel is uninitialized. At this point, one could either
+				import a previously computed &vmap_obj;, or activate the &carv_obj; so
+				that it creates one afresh when asked.
+			</para>
+			<para>
+				In either case, there's a single method to call, specifiying the new
+				desired size; all the rest will automatically be computed as necessary.
+				By default, the visibility maps are only computed up to the extent to which
+				they are needed for resizing.
+			</para>
+		</sect1>
+
+		<sect1 id="basic">
+			<title>Basic methods</title>
+			<para>
+				Following is a list of the basic public methods associated
+				with the &carv_obj; objects:
+			</para>
+			<para>
+				<itemizedlist>
+					<listitem>
+						<para>
+							constructor and destructor
+						</para>
+						<para>
+							<programlisting>
+LqrCarver * lqr_carver_new (guchar *buffer, gint width, gint height, gint bpp);
+void lqr_carver_destroy (LqrCarver *carver);
+							</programlisting>
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							initialization
+						</para>
+						<para>
+							<programlisting>
+LqrRetVal lqr_carver_init (LqrCarver *carver, gint delta_x, gfloat rigidity);
+							</programlisting>
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							image manipulations
+						</para>
+						<para>
+							<programlisting>
+LqrRetVal lqr_carver_resize (LqrCarver *carver, gint new_width, gint new_width);
+LqrRetVal lqr_carver_flatten (LqrCarver *carver);
+							</programlisting>
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							readout
+						</para>
+						<para>
+							<programlisting>
+gboolean lqr_carver_scan (LqrCarver *carver, gint *x, gint *y, guchar **carvergb);
+gboolean lqr_carver_scan_by_row (LqrCarver *carver);
+gboolean lqr_carver_scan_line (LqrCarver *carver, gint *n, guchar **carvergb);
+							</programlisting>
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							get values
+						</para>
+						<para>
+							<programlisting>
+gint lqr_carver_get_width (LqrCarver *carver);
+gint lqr_carver_get_height (LqrCarver *carver);
+gint lqr_carver_get_bpp (LqrCarver *carver);
+							</programlisting>
+						</para>
+					</listitem>
+
+				</itemizedlist>
+			</para>
+			<para>
+				The fastest way to see how they work is having a look at the code
+				of <filename>examples/liquidrescale-basic.cpp</filename>, which is
+				a very simple and fully commented demostrative program.
+			</para>
+			<para>
+				The return value of many functions is of type <classname>LqrRetVal</classname>. This is just an
+				enum type which can be used for signal handling, see <link linkend="signals">this section</link>.
+			</para>
+			<para>
+				The other classes are optional: the class &vmap_obj; is used to hold the
+				carving information (and the class <classname>LqrVMapList</classname> is used to retrieve it
+				from the &carv_obj; ojects); the class &prog_obj; is used to customize
+				progress report from the resizing engine (by default is turned off).
+			</para>
+			<para>
+				A complete list of the library public method can be found at the
+				end of this document
+			</para>
+		</sect1>
+	</chapter>
+
+	<chapter id="api-manual">
+
+		<title>API user manual</title>
+
+		<sect1 id="signals">
+			<title>Signal handling</title>
+			<para>
+				Many library functions return a value of type <classname>LqrRetVal</classname>. This is an enum
+				type which can hold the values:
+				<variablelist>
+					<varlistentry>
+						<term>&err_ok;</term>
+						<listitem>
+							<para>
+								everyting OK
+							</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>&err_err;</term>
+						<listitem>
+							<para>
+								generic <errortype>fatal</errortype> error
+							</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term>&err_nomem;</term>
+						<listitem>
+							<para>
+								not enough memory
+							</para>
+						</listitem>
+					</varlistentry>
+				</variablelist>
+			</para>
+			<para>
+				At top level, the user should handle this values explicitely, because
+				the library doesn't do anything else than stopping and returning an
+				error signal in case of errors. An easy way is setting up some macros
+				and wrap each function call with those, as shown in the example files.
+			</para>
+			<para>
+				Below top level, the library provides some convenient macros which can be used
+				to wrap function calls, in order to propagate these signals:
+				<variablelist>
+					<varlistentry>
+						<term><literal><function>CATCH</function> (<parameter>expr</parameter>)</literal></term>
+						<listitem>
+							<para>
+								if <parameter>expr</parameter> is equal to &err_ok;	
+								it does nothing, otherwise it returns <parameter>expr</parameter>
+								(or the result of the execution of <parameter>expr</parameter>
+								if it happens to be a function)
+							</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term><literal><function>CATCH_F</function> (<parameter>expr</parameter>)</literal></term>
+						<listitem>
+							<para>
+								returns &err_err; if
+								<parameter>expr</parameter> is <literal>FALSE</literal>
+							</para>
+						</listitem>
+					</varlistentry>
+					<varlistentry>
+						<term><literal><function>CATCH_MEM</function> (<parameter>expr</parameter>)</literal></term>
+						<listitem>
+							<para>
+								returns &err_nomem; if
+								<parameter>expr</parameter> is <literal>NULL</literal>
+							</para>
+						</listitem>
+					</varlistentry>
+				</variablelist>
+			</para>
+		</sect1>
+
+		<sect1 id="generate-multi-size">
+			<title>Generating the multi-size image</title>
+
+			<sect2 id="carver-new">
+				<title>Carver object creation</title>
+				<para>
+					The &carv_obj; objects are initialized from a plain buffer of unsigned
+					chars representing an image, in which each colour channel takes a value
+					between 0 and 255, through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrCarver * <function>lqr_carver_new</function></funcdef>
+							<paramdef> guchar * <parameter>buffer</parameter></paramdef>
+							<paramdef> gint <parameter>width</parameter></paramdef>
+							<paramdef> gint <parameter>height</parameter></paramdef>
+							<paramdef> gint <parameter>bpp</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Here, <parameter>buffer</parameter> is the array representing an image of size
+					<parameter>width</parameter> by <parameter>height</parameter> width
+					<parameter>bpp</parameter> colour channels per pixels.
+					Thus, the overall buffer size has to be of
+					<literal><parameter>widht</parameter> * <parameter>height</parameter> * <parameter>bpp</parameter>
+					</literal>
+					unsigned characters, and ordered such that
+					the <literal><symbol>k</symbol></literal>-th colour of the pixel at row
+					<literal><symbol>y</symbol></literal> and column
+					<literal><symbol>x</symbol></literal> is found at:
+					<programlisting>buffer[(y * width + x) * bpp + k]</programlisting>
+					(this assumes that <literal><symbol>x</symbol></literal>, <literal><symbol>y</symbol></literal>
+					and <literal><symbol>k</symbol></literal> all start from <literal>0</literal>
+					and reach the maximum values
+					<literal><symbol>widht</symbol>-1</literal>,
+					<literal><symbol>height</symbol>-1</literal>
+					and <literal><symbol>bpp</symbol>-1</literal>, respectively)
+				</para>
+				<para>
+					The function returns a pointer to the newly allocated &carv_obj; upon 
+					success, or <literal><returnvalue>NULL</returnvalue></literal> in case of insufficient memory.
+				</para>
+				<important>
+					<para>
+						The buffer will be incorporated into the &carv_obj; object and
+						must not be accessed directly any more.
+					</para>
+				</important>
+			</sect2>
+
+			<sect2 id="carver-init">
+				<title>Carver activation</title>
+				<para>
+					The newly created &carv_obj; consists only of the image buffer plus
+					an uninitialized visibility map. If one had a previously computed
+					visibility map, it could be imported into the &carv_obj; and that would be
+					enough (see the <link linkend="import-vmap">Importing a visibility map
+							in a carver</link> section).
+
+					If the visibility map has to be computed, the &carv_obj; needs to be
+					initialized through this function:
+
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_init</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+							<paramdef> gint <parameter>delta_x</parameter></paramdef>
+							<paramdef> gfloat <parameter>rigidity</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Here, <parameter>delta_x</parameter> is the maximum allowed transversal step of the
+					seams (0 means straight seams, the standard value is 1), while
+					the <parameter>rigidity</parameter> parameter can be used to introduce
+					a bias for non-straight seams (the standard value is 0).
+			</para>
+				<important>
+					<para>
+						It is currently an error to initalize a carver object
+						if a visibility map has been imported already.
+					</para>
+				</important>
+			</sect2>
+
+
+		</sect1>
+
+		<sect1 id="lqr">
+			<title>Liquid rescaling</title>
+
+			<sect2 id="lqr-resize">
+				<title>The resizing method</title>
+				<para>
+					Once initialized, or if a visibility map has been loaded, the image can be
+					resized through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_resize</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+							<paramdef> gint <parameter>new_width</parameter></paramdef>
+							<paramdef> gint <parameter>new_height</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					This function decides automatically whether it can use the already computed
+					visibility map, it has to update it or waste it completely and start
+					afresh. This last event occurs when the map was computed for horizontal
+					resizing and a vertical resize has been requested, or vice versa.
+					Note that only initialized carvers can update or change the visibility
+					map; if this is not the case, an error is returned.
+				</para>
+				<para>
+					The function also takes advantage of the fact that the enlargment process
+					mirrors the shrink process. For example, if the original size of the image
+					is <literal>(<symbol>w0</symbol>, <symbol>h0</symbol>)</literal> and
+					<function>lqr_carver_resize</function> is invoked with
+					<literal>(<symbol>w0</symbol> - 100, <symbol>h0</symbol>)</literal> as an
+					argument, then subsequent calls to the function will allow on-the-fly
+					resizing in the whole range from
+					<literal>(<symbol>w0</symbol> - 100, <symbol>h0</symbol>)</literal> to
+					<literal>(<symbol>w0</symbol> + 100, <symbol>h0</symbol>)</literal>.
+				</para>
+				<important>
+					<para>
+						It is an error to ask for a size greater than twice the initial
+						size in one step. See also the section
+						<link linkend="about-enlarge">About enlarging</link>.
+					</para>
+				</important>
+			</sect2>
+
+			<sect2 id="flatten">
+				<title>Flattening</title>
+				<para>
+					In order to resize in more than one step, the image can be flattened in
+					its current state, thrugh this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_flatten</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The return value is &ret_false; in case
+					of insufficient memory, &ret_true; otherwise.
+				</para>
+				<para>
+					This function destroys the current visibility map and reinitializes
+					the multi-size image from its current state.
+				</para>
+				<note>
+					<para>
+						Every time that the image is flattened (including when changing
+						the resize direction) the original image is lost.
+					</para>
+				</note>
+			</sect2>
+		</sect1>
+
+		<sect1 id="read-out">
+			<title>Reading the multi-size image</title>
+
+			<sect2 id="px-by-px">
+				<title>Pixel by pixel</title>
+
+				<para>
+					Once you have rescaled the image, you can read out the result through
+					this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan</function></funcdef>
+							<paramdef> gint* <parameter>x</parameter></paramdef>
+							<paramdef> gint* <parameter>y</parameter></paramdef>
+							<paramdef> guchar** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+
+				</para>
+				<para>
+					Here, <parameter>x</parameter> and <parameter>y</parameter> are pointers to
+					the varaibles which will hold the pixel coordinate, while 
+					<parameter>rgb</parameter> is a pointer to an array which will
+					contain the pixel colour information.
+				</para>
+				<para>
+					The return value is &ret_false; when the end of the image is reached,
+					&ret_true; otherwise.
+				</para>
+				<para>
+					Each time this function is invoked, it will store
+					the coordinates and rgb information in the output pointers
+					and move to the next pixel. If it reaches the end, it
+					resets the reader and returns &ret_false;.
+				</para>
+				<para>
+					Here is a sample code usage:
+					<example id="ex-read-out">
+						<title>A simple readout example</title>
+						<programlisting>
+gint x, y;
+guchar *rgb;
+
+while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
+  {
+    my_plot (x, y, rgb[0], rgb[1], rgb[2]);
+  }
+						</programlisting>
+					</example>
+
+					In this example, it is assumed that the image has 3 colour
+					channels, and that there exist some function
+					<function>my_plot</function> which writes out the pixels somewhere.
+				</para>
+				<important>
+					<para>
+						The <parameter>rgb</parameter> array is internal
+						to the carver object, so it doesn't need initialization
+						(but don't use pointers to it or its elements, always copy
+						the contents as in the example).
+					</para>
+				</important>
+			</sect2>
+
+			<sect2 id="line-by-line">
+				<title>One line at a time</title>
+
+				<para>
+					The image can also be read one line at a time, but it is
+					not possible to freely decide if it is to be read by row or
+					by column. Instead, this has to be queried by calling this
+					function: 
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_by_row</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+
+				<para>
+					The function returns &ret_true; if the image is read by row, and &ret_false;
+					if it is read by column.
+				</para>
+				<para>
+					Then, the image can be read through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_line</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>n</parameter></paramdef>
+							<paramdef>guchar** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					This function works exactly the same way as <function>lqr_carver_scan</function>, but
+					only one coordinate is stored (either the row or the column number),
+					and the <parameter>rgb</parameter> array will contain a whole line.
+				</para>
+				<para>
+					Here is a sample code usage:
+					<example id="ex-scan-line">
+						<title>Line-by-line readout example</title>
+						<programlisting>
+gint n;
+guchar *rgb;
+gboolean by_row;
+
+by_row = lqr_carver_scan_by_row (carver);
+
+while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
+  {
+    by_row ? my_plot_row (n, rgb) : my_plot_col (n, rgb);
+  }
+						</programlisting>
+					</example>
+
+					where, as before, it is assumed that the
+					<function>my_plot_row</function> and
+					<function>my_plot_col</function> functions
+					have been previously defined and "know what to do".
+				</para>
+			</sect2>
+
+			<sect2 id="reset">
+				<title>Resetting</title>
+
+				<para>
+					Normally, it is not needed to reset the image scan. However, if the
+					scan has been stopped at same intermediate step for some reason, the
+					following function can be used to restart from the beginning:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_scan_reset</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+			</sect2>
+		</sect1>
+
+		<sect1 id="bias">
+			<title>Adding a bias</title>
+
+			<sect2 id="foreword">
+				<title>Foreword</title>
+
+				<para>
+					The automatic feature detection can be driven manually by
+					adding a bias to the pixels of the image.
+				</para>
+				<para>
+					For example, it is possible to protect regions of the image by
+					adding a positive bias to the corresponding pixels. This will
+					make the seams more unlikely to cross those regions, thus
+					avoiding distortion (but increasing distortion of the other
+					regions).
+				</para>
+				<para>
+					It is also possible to make the seams more likely to cross some
+					regions by adding a negative bias to them. In this case, reducing
+					the size of the image will tend to erase those regions, while
+					(possibly) keeping the rest of the image in a consistent state. 
+				</para>
+				<important>
+					<para>
+						The bias has to be added always <emphasis>after</emphasis>
+						the &carv_obj; initialization and <emphasis>before</emphasis>
+						resizing takes place.
+					</para>
+				</important>
+				<note>
+					<para>
+						In all of the bias-related functions, the bias is
+						added on top of the existing one, so that all of the functions
+						can be called multiple times.
+					</para>
+				</note>
+				<para>
+
+					(See also the section "Additional notes" in the README file for
+					situations where the behaviour of biased regions can be
+					counter-intuitive.) [XXX]
+				</para>
+			</sect2>
+
+			<sect2 id="float-bias">
+				<title>Using an array of floating-point values</title>
+
+				<para>
+					The bias values are stored as an array of floating points.
+					It is possible to use directly one such array through
+					this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Here, <parameter>buffer</parameter> is an array contining the bias values,
+					and it is assumed to have the same size as the image loaded in
+					<parameter>carver</parameter>, while <parameter>bias_factor</parameter> is an
+					overall bias factor, which can be used to affect the global
+					bias level: if the elements of buffer are of order 1, a standard
+					choice for the bias_factor would be between 100 and 1000.
+				</para>
+				<note>
+					<para>
+						This function, and all the following, will not swallow
+						the buffer (to the contrary of what happens e.g. when creating
+						a new &carv_obj; object).
+					</para>
+				</note>
+			</sect2>
+
+			<sect2 id="bias-rgb">
+				<title>Using another image</title>
+
+				<para>
+					The bias can also be read from an rgb buffer. This buffer
+					has to be in the same format as the one used in the LqrCarver
+					constructor (but may have a different number of colour per
+					channel). The function is:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>bpp</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					As in the previous case, <parameter>buffer</parameter> is assumed to
+					hold and image of the same size as the one in the <parameter>carver</parameter>.
+				</para>
+				<para>
+					The <parameter>buffer</parameter> contents will be transformed into
+					floating-points by averaging the colour components and multiplying the
+					result by the alpha channel (transparency) value.
+				</para>
+				<important>
+					<para>
+						The existence of an alpha channel is inferred from the
+						<parameter>bpp</parameter> value: if this is 1 or 3, no alpha
+						channel is assumed, if it is 2 or 4, it is assumed that the last
+						channel is holds the alpha value.
+					</para>
+				</important>
+			</sect2>
+
+			<sect2 id="areas">
+				<title>Operating on a specific area</title>
+
+				<para>
+					The above functions operate on the whole &carv_obj; image.
+					It is also possible to access specific image regions; for
+					the floating point use:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					while for the rgb image use:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					In both functions, &param_w; and &param_h;
+					are used to specify the size of the area of interest, while
+					<parameter>x_off</parameter> and <parameter>y_off</parameter>
+					specify its offset.
+					For the rest, both functions work in the same way as their global couterpart.
+				</para>
+				<para>
+					The provided buffers have to be of size
+					<literal>&param_w; * &param_h;</literal>
+					(or <literal>&param_w; * &param_h; * &param_bpp;</literal> for the rgb case)
+					but the specified areas need not to be strictly included inside the
+					&carv_obj; image area : only the parts which overlap with it will be used.
+					For example, the offsets can also be negative.
+				</para>
+			</sect2>
+		</sect1>
+
+		<sect1 id="tuning">
+			<title>Tuning</title>
+
+			<para>
+				The behaviour can be tuned through some additional functions.
+			</para>
+
+
+			<sect2 id="gradient">
+				<title>Choosing a gradient function</title>
+
+				<para>
+					The automatic feature detection relies on the computation
+					of the gradient in each pixel of the image. The function to use
+					can be set through:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_gradient_function</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrGradFuncType <parameter>gf_ind</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The possible values for gf_ind are:
+					<variablelist>
+						<varlistentry>
+							<term><literal>LQR_GF_XABS</literal></term>
+							<listitem>
+								<para>
+									transversal absolute value (this is the default)
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><literal>LQR_GF_NORM</literal></term>
+							<listitem>
+								<para>
+									gradient norm
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><literal>LQR_GF_SUMABS</literal></term>
+							<listitem>
+								<para>
+									sum of absolute values
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><literal>LQR_GF_NULL</literal></term>
+							<listitem>
+								<para>
+									null
+								</para>
+							</listitem>
+						</varlistentry>
+					</variablelist>
+				</para>
+				<para>
+					The null value can be used to override completely the automatic
+					feature detection (see the <link linkend="bias">Adding a bias</link>
+					section).
+				</para>
+			</sect2>
+
+			<sect2 id="res-order">
+				<title>Choosing the resize order</title>
+
+				<para>
+					When <function>lqr_carver_resize</function> is asked to resize along both directions
+					in a single step, it has to choose which direction to resize first.
+					The resize order can be changed through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_resize_order</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrResizeOrder <parameter>resize_order</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The possible values for resize_order are:
+					<variablelist>
+						<varlistentry>
+							<term><literal>LQR_RES_ORDER_HOR</literal></term>
+							<listitem>
+								<para>
+									resize horizonally first (this is the default) 
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><literal>LQR_RES_ORDER_VERT</literal></term>
+							<listitem>
+								<para>
+									resize vertically first
+								</para>
+							</listitem>
+						</varlistentry>
+					</variablelist>
+				</para>
+			</sect2>
+		</sect1>
+
+		<sect1 id="vmaps">
+			<title>Dealing with the visibility maps (the seams)</title>
+
+			<sect2 id="vmap-dump">
+				<title>Dumping the visibility map</title>
+
+				<para>
+					The visibility map can be saved at any moment by
+					calling the function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrVMap* <function>lqr_vmap_dump</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					This function will return a pointer to a newly allocated &vmap_obj; object,
+					or &ret_null; in case of failure. See also the section
+					"<link linkend="vmaps-objs">The visibility map objects</link>".
+				</para>
+			</sect2>
+
+			<sect2 id="activate-dump">
+				<title>Storing the visibility maps</title>
+
+				<para>
+					By default, the computed visibility maps are wasted. Instead
+					of saving them individually, it is possible to automatically
+					dump them at the end of the carving process, attaching them
+					to their associated &carv_obj;. In order to activate
+					this feature, the following function has to be called:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_dump_vmaps</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					This will have the effect of dumping the visibility
+					map each time <function>lqr_carver_resize</function>
+					is invoked, and storing it internally.
+					When resizing along both directions,
+					two maps will be dumped, one for each direction.
+				</para>
+				<para>
+					Alternatively, the internal storage mechanism
+					can be called over the current visibility map
+					at any given moment by calling this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_vmap_internal_dump</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The dumped maps are stored inside &vmap_obj;
+					objects, and these are attached to their corresponing
+					&carv_obj; object through a linked list, whose
+					type is <classname>LqrVMapList</classname>.
+				</para>
+			</sect2>
+
+			<sect2 id="access-vmap">
+				<title>Accessing the internally attached visibility maps</title>
+
+				<para>
+					To access the maps attached to a carver one has
+					first to obtain the pointer to the list, with the
+					function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrVMapList* <function>lqr_vmap_list_start</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Then, one can iterate through the attached maps by using
+					these two functions:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrVMap* <function>lqr_vmap_list_current</function></funcdef>
+							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrVMapList* <function>lqr_vmap_list_next</function></funcdef>
+							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Here is a sample code usage:
+					<example id="ex-vmaplist1">
+						<title>Accessing visibility maps #1</title>
+
+						<programlisting>
+
+LqrVMap *vmap;
+LqrVMapList *list;
+
+list = lqr_vmap_list_start (carver);
+while (list)
+  {
+    vmap = lqr_vmap_list_current (list);
+    [ ... do something on vmap ... ]
+    list = lqr_vmap_list_next (list);
+  }
+						</programlisting>
+					</example>
+				</para>
+				<para>
+					The maps will always be accessed in the order in which they were dumped.
+				</para>
+				<para>
+					Alternatively, one can apply a function to all the elements of
+					the list, through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_vmap_list_foreach</function></funcdef>
+							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
+							<paramdef>LqrVMapFunc <parameter>func</parameter></paramdef>
+							<paramdef>gpointer <parameter>data</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					To use this second method, you'll need to define a function first, as in this
+					sample code:
+					<example id="ex-vmaplist2">
+						<title>Accessing visibility maps #2</title>
+						<programlisting>
+LqrRetVal my_func (LqrVMap vmap, gpointer data)
+  {
+    [... do something on vmap ... ]
+    return LQR_OK;
+  }
+
+LqrVMapList *list;
+
+list = lqr_vmap_list_start (carver);
+lqr_vmap_list_foreach (list, my_func, NULL);
+						</programlisting>
+					</example>
+				</para>
+				<para>
+					In the above example, no data is actually passed on to the
+					function.
+				</para>
+				<note>
+					<para>
+						In actual code the call to <function>lqr_vmap_list_foreach</function>
+						should be protected to test its return value, which is 
+						&err_ok; if all <function>my_func</function> calls have been successful,
+						or it will hold the first non-successful return value from
+						<function>my_func</function>.
+					</para>
+				</note>
+			</sect2>
+
+			<sect2 id="vmaps-objs">
+				<title>The visibility map objects</title>
+
+				<para>
+					The &vmap_obj; objects contain an int buffer
+					with the actual map data (plain array, ordered by row),
+					plus all the information needed to be able to recover it from scratch.
+				</para>
+				<para>
+					The information can be extracted with these functions:
+
+					<programlisting>
+gint* <function>lqr_vmap_get_data</function> (&vmap_obj;* <parameter>vmap</parameter>);
+gint <function>lqr_vmap_get_width</function> (&vmap_obj;* <parameter>vmap</parameter>);
+gint <function>lqr_vmap_get_height</function> (&vmap_obj;* <parameter>vmap</parameter>);
+gint <function>lqr_vmap_get_orientation</function> (&vmap_obj;* <parameter>vmap</parameter>);
+gint <function>lqr_vmap_get_depth</function> (&vmap_obj;* <parameter>vmap</parameter>);
+					</programlisting>
+
+				</para>
+				<para>
+					The first one returns a pointer to the data buffer.
+				</para>
+				<para>
+					The orientation of the map is 0 if the map is to be used for
+					horizontal rescaling, 1 otherwise.
+				</para>
+				<para>
+					The depth of the map is the maximum amount of rescaling
+					possible with that map, either shrinking or enlarging.
+				</para>
+				<para>
+					<example id="vmap-data">
+						<title>Reading visibility maps data</title>
+						<para>
+							If we have a &vmap_obj; pointer called
+							<parameter>vmap</parameter>,
+							we could access the value at
+							<literal>(<symbol>x</symbol>,<symbol>y</symbol>)</literal>
+							by:
+						</para>
+						<programlisting>
+gint *buffer;
+gint width;
+gint vis;
+
+buffer = lqr_vmap_get_data (vmap);
+width = lqr_vmap_get_width (vmap);
+vis =  buffer[y * width + x];
+						</programlisting>
+						<para>
+							Uninitialized points will yield
+							<literal><symbol>vis</symbol> = 0</literal>.
+							For initialized points, <symbol>vis</symbol> will store a
+							positive value between <literal>1</literal> (least visible points,
+							the first to be carved away or to be duplicated) and
+							<literal>(&param_depth; + 1)</literal>
+							(most visible points, the last to be carved away or to
+							be duplicated).
+						</para>
+						<para>
+							If the orientation is 0, the map allows resizing in the
+							whole range form <literal>(&param_w; - &param_depth;)</literal>
+							to <literal>(&param_w; + &param_depth;)</literal>.
+							If the orientation is 1, the analogue formula holds
+							with &param_h; in place of &param_w;.
+						</para>
+					</example>
+				</para>
+			</sect2>
+
+			<sect2 id="import-vmap">
+				<title>Importing a visibility map in a carver</title>
+
+				<para>
+					Having an &vmap_obj; object, one can load it in a &carv_obj;
+					simply by calling this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_vmap_load</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The carver must not to be initialized.
+				</para>
+				<note>
+					<para>
+						This implies that the map cannot be updated, and
+						that it will only be possible to resize the carver by an
+						amount &param_depth; along the orientation
+						given by <function>lqr_vmap_orientation</function>.
+						Invoking <function>lqr_carver_resize</function> with an
+						out-of-bounds argument results in a <errortype>fatal</errortype> error
+						(i.e. it returns &err_err;)
+					</para>
+				</note>
+				<note>
+					<para>
+						Do not attach other carvers after you have loaded
+						a visibility map (see also the
+						<link linkend="attach-images">Attaching extra images</link>
+						section).
+					</para>
+				</note>
+			</sect2>
+
+			<sect2 id="save-load-vmaps">
+				<title>Saving and loading visibility maps to/from files</title>
+
+				<para>
+					The library does not include methods to load/save
+					visibility maps to/from files. However, a way to do so
+					is included in the demo program
+					`<application>liquidrescale</application>' in the
+					`<filename>examples</filename>' directory.
+				</para>
+			</sect2>
+		</sect1>
+
+		<sect1 id="attach-images">
+			<title>Attaching extra images</title>
+
+			<sect2 id="attach-carver">
+				<title>Attaching a carver</title>
+
+				<para>
+					Given an &carv_obj; object, it is possible to attach an
+					arbitrary number of extra carvers to it: these will
+					passively undergo the same carving process as the root
+					carver. In order for this to be possible, the carvers
+					must be all of the same size.
+				</para>
+				<para>
+					The function to use is simply:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_attach</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrCarver* <parameter>aux</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					This attaches <parameter>aux</parameter> to
+					<parameter>carver</parameter>.
+				</para>
+				<para>
+					It is not necessary that the parent &carv_obj; is activated. In
+					fact, a carver can be attached to a carver which is itself
+					attached to another one.
+				</para>
+				<para>
+					Needless to say, no resizing operation should be done directly
+					on a &carv_obj; once it has been attached to another &carv_obj;.
+				</para>
+				<important>
+					<para>
+						The carvers always have to be attached
+						<emphasis>before</emphasis> loading
+						visibility maps.
+					</para>
+				</important>
+			</sect2>
+
+			<sect2 id="access-attached">
+				<title>Accessing attached carvers</title>
+
+				<para>
+					Attached carvers can be read-out in the same way as their parents.
+					There are however also methods to span all them, in a way very similar
+					to that in which internally dumped &vmap_obj;'s are accessed, but
+					<classname>LqrVMapList</classname>
+					objects are substitued in this case by
+					<classname>LqrCarverList</classname> objects.
+				</para>
+				<para>
+					First, the starting point of the list has to be retreived through:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrCarverList* <function>lqr_carver_list_start</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Then, one can iterate through the attached carvers by using
+					these two functions:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrCarver* <function>lqr_carver_list_current</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrCarverList* <function>lqr_carver_list_next</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Here is a sample code usage:
+					<example id="ex-attach-list1">
+						<title>Accessing attached carvers #1</title>
+						<programlisting>
+
+LqrCarver *aux;
+LqrCarverList *list;
+
+list = lqr_carver_list_start (carver);
+while (list)
+  {
+    aux = lqr_carver_list_current (list);
+    [ ... do something on aux ... ]
+    list = lqr_carver_list_next (list);
+  }
+						</programlisting>
+					</example>
+				</para>
+				<para>
+					The carvers will always be accessed in the order in which they were dumped.
+				</para>
+				<para>
+					Alternatively, one can apply a function to all the elements of
+					the list, through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_list_foreach</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+							<paramdef>LqrCarverFunc <parameter>func</parameter></paramdef>
+							<paramdef>LqrDataTok <parameter>data</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					To use this second method, you'll need to define a function first, as in the
+					following sample code:
+					<example id="ex-attach-list2">
+						<title>Accessing attached carvers #2</title>
+						<programlisting>
+LqrRetVal my_func (LqrCarver *aux, LqrDataTok data)
+  {
+    [... do something on aux ... ]
+    return LQR_OK;
+  }
+
+LqrCarverList *list;
+LqrDataTok data_tok;
+
+list = lqr_carver_list_start (carver);
+data_tok->data = NULL;
+lqr_carver_list_foreach (list, my_func, data_tok);
+						</programlisting>
+					</example>
+				</para>
+				<para>
+					The data to be passed on to the LqrCarverFunc is of type
+					<structname>LqrDataTok</structname>.
+					This is defined as a union, with the following
+					fields:
+					<itemizedlist>
+						<listitem>
+							<para>&carv_obj;* <structfield>carver</structfield></para>
+						</listitem>
+						<listitem>
+							<para><type>gint</type> <structfield>integer</structfield></para>
+						</listitem>
+						<listitem>
+							<para><type>gpointer</type> <structfield>data</structfield></para> 
+						</listitem>
+					</itemizedlist>
+				</para>
+				<para>
+					In the above example, no data is actually passed on to the
+					function.
+				</para>
+				<note>
+					<para>
+						In actual code, the call to
+						<function>lqr_carver_list_foreach</function> should
+						be protected to test its return value, which is
+						&err_ok; if all
+						my_func calls have been successful, or it will hold the first
+						non-successful return value from
+						<function>my_func</function>.
+					</para>
+				</note>
+			</sect2>
+		</sect1>
+
+		<sect1 id="progress">
+			<title>Progress indicators</title>
+
+			<para>
+				By default, the resizing performed silently. However,
+				it is possible to define progress report functions, to receive
+				feedback while the resizing is in progress.
+				This is done through the &prog_obj; objects. 
+			</para>
+			<sect2 id="progress-init">
+				<title>Creating and attaching a progress report object</title>
+				<para> 
+					A &prog_obj; object
+					is created through the function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrProgress* <function>lqr_progress_new</function></funcdef>
+							<void></void>
+						</funcprototype>
+					</funcsynopsis>
+					and can be associated to a &carv_obj; object through this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_progress</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+			</sect2>
+
+			<sect2 id="progress-set-up">
+				<title>Setting up progress hooks</title>
+				<para>
+					Newly created progress objects are inactive, and need to be set up.
+				</para>
+				<para>
+					First, hook functions have to be set, which specify the action
+					to take as the rescaling process starts, progresses, and ends, by using
+					the functions:
+					<programlisting>
+LqrRetVal <function>lqr_progress_set_init</function> (&prog_obj; * <parameter>p</parameter>, LqrProgressFuncInit <parameter>init_func</parameter>)
+LqrRetVal <function>lqr_progress_set_update</function> (&prog_obj; * <parameter>p</parameter>, LqrProgressFuncUpdate <parameter>update_func</parameter>)
+LqrRetVal <function>lqr_progress_set_end</function> (&prog_obj; * <parameter>p</parameter>, LqrProgressFuncEnd <parameter>end_func</parameter>)
+					</programlisting>
+					as in this sample piece of code:
+					<example id="ex-set-progress">
+						<title>Setting progress hooks</title>
+						<programlisting>
+LqrProgress *p;
+
+p = lqr_progress_new();
+lqr_progress_set_init (p, my_init);
+lqr_progress_set_update (p, my_update);
+lqr_progress_set_end (p, my_end);
+						</programlisting>
+					</example>
+				</para>
+				<para>
+					The above example requires that the hook functions
+					<function>my_init</function>, <function>my_update</function> and 
+					<function>my_end</function>
+					are defined as in the following sample declarations:
+					<example id="ex-hook-decl">
+						<title>Progress hooks declaration</title>
+						<programlisting>
+LqrRetVal my_init (const gchar *init_message);
+LqrRetVal my_update (gdouble percentage);
+LqrRetVal my_end (const gchar *end_message);
+						</programlisting>
+					</example>
+				</para>
+			</sect2>
+
+			<sect2 id="progress-messages">
+				<title>Progress report messages</title>
+				<para>
+					The init and end messages that will be passed to the hooks will change,
+					depending if the resizing is occurring in the horizontal or in the
+					vertical direction. The defaults are:
+					<table id="progress-mess-def">
+						<title>Default progress messages</title>
+						<tgroup cols="3">
+							<thead>
+								<row>
+									<entry></entry>
+									<entry>init</entry>
+									<entry>end</entry>
+								</row>
+							</thead>
+							<tbody>
+								<row>
+									<entry>width</entry>
+									<entry><computeroutput>"Resizing width..."</computeroutput></entry>
+									<entry><computeroutput>"done"</computeroutput></entry>
+								</row>
+								<row>
+									<entry>height</entry>
+									<entry><computeroutput>"Resizing height..."</computeroutput></entry>
+									<entry><computeroutput>"done"</computeroutput></entry>
+								</row>
+							</tbody>
+						</tgroup>
+					</table>
+
+					These can be changed with these functions:
+					<programlisting>
+LqrRetVal <function>lqr_progress_set_init_width_message</function> (&prog_obj; *<parameter>p</parameter>, const gchar * <parameter>message</parameter>)
+LqrRetVal <function>lqr_progress_set_init_height_message</function> (&prog_obj; *<parameter>p</parameter>, const gchar * <parameter>message</parameter>)
+LqrRetVal <function>lqr_progress_set_end_width_message</function> (&prog_obj; *<parameter>p</parameter>, const gchar * <parameter>message</parameter>)
+LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *<parameter>p</parameter>, const gchar * <parameter>message</parameter>)
+					</programlisting>
+				</para>
+			</sect2>
+
+			<sect2 id="progress-upd-step">
+				<title>Progress update step</title>
+				<para>
+					The update hook will receive as an argument the completion percentage.
+				</para>
+				<para>
+					The update step can be specified through:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_update_step</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>gfloat <parameter>update_step</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The default step is 0.02 (i.e. 2%).
+				</para>
+			</sect2>
+		</sect1>
+
+		<sect1 id="release">
+			<title>Releasing the memory</title>
+
+			<para>
+				&carv_obj; objects can be destroyed using this function:
+				<funcsynopsis>
+					<funcprototype>
+						<funcdef>void <function>lqr_carver_destroy</function></funcdef>
+						<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+					</funcprototype>
+				</funcsynopsis>
+			</para>
+			<para>
+				This function also destroys any attached object, thus it should never
+				be called on attached carvers.
+			</para>
+			<para>
+				&vmap_obj; objects can be destroyed using this function:
+				<funcsynopsis>
+					<funcprototype>
+						<funcdef>void <function>lqr_vmap_destroy</function></funcdef>
+						<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+					</funcprototype>
+				</funcsynopsis>
+			</para>
+				
+			
+		</sect1>
+	</chapter>
+
+	<chapter id="ref-pages">
+		<title>API reference</title>
+
+		<sect1 id="ref-carve">
+			<title>Carver objects</title>
+
+			<refentry id="ref-lqr-carver-new-destroy">
+				<refmeta>
+					<refentrytitle>&carv_obj; constructor and destructor</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_new</refname>
+					<refname>lqr_carver_destroy</refname>
+					<refpurpose>the &carv_obj; object constructor and destructor</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrCarver* <function>lqr_carver_new</function></funcdef>
+							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>bpp</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_destroy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Constructor</title>
+
+					<refsect2>
+						<title>Description</title>
+						<para>
+							The function <function>lqr_carver_new</function> creates a new
+							&carv_obj; object from an RGB image of size &param_w; * &param_h;
+							with &param_bpp; colour channels.
+						</para>
+						<para>
+							The image must be stored in 
+							<parameter>buffer</parameter> as a plain array of <type>unsigned chars</type>,
+							ordered by row, then by column, then by colour channel.
+						</para>
+						<para>
+							The buffer will be incorporated into the &carv_obj; object and
+							must not be accessed any more
+						</para>
+					</refsect2>
+					<refsect2>
+						<title>Return value</title>
+						<para>
+							The return value is the address of the newly created &carv_obj; object, or
+							<returnvalue>NULL</returnvalue> in case of failure.
+						</para>
+					</refsect2>
+				</refsect1>
+
+				<refsect1>
+					<title>Destructor</title>
+
+					<refsect2>
+						<title>Description</title>
+						<para>
+							The function <function>lqr_carver_destroy</function> destroys the &carv_obj;
+							object pointed to by <parameter>carver</parameter>, and all of its attched
+							components (visibility maps and attached carvers).
+						</para>
+					</refsect2>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-init">
+				<refmeta>
+					<refentrytitle>&carv_obj; initialization</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_init</refname>
+					<refpurpose>activates a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_init</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint <parameter>delta_x</parameter></paramdef>
+							<paramdef>gfloat <parameter>rigidity</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_init</function> initializes
+						the &carv_obj; pointed to by <parameter>carver</parameter>, so
+						that it can compute the visibility maps as
+						needed upon calls of <function>lqr_carver_resize</function>.
+					</para>
+					<para>
+						The parameter <parameter>delta_x</parameter> controls the maximum
+						transversal step a seam can make. A value of 0 means straight seams.
+						Normally, it is set to 1.
+					</para>
+					<para>
+						The parameter <parameter>rigidity</parameter> can be used to add 
+						a negative bias to non-straight seams, and it is normally set to 0.
+					</para>
+					<para>
+						Visibility maps must not be loaded when using this function,
+						neither before nor after.
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the lqr library signalling system.
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-resize-flatten">
+				<refmeta>
+					<refentrytitle>&carv_obj; resize and flatten</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_resize</refname>
+					<refname>lqr_carver_flatten</refname>
+					<refpurpose>manipulate a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_resize</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint <parameter>new_width</parameter></paramdef>
+							<paramdef>gint <parameter>new_heigth</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_flatten</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the lqr library signalling system.
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-scan">
+				<refmeta>
+					<refentrytitle>&carv_obj; readout</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_scan_reset</refname>
+					<refname>lqr_carver_scan</refname>
+					<refname>lqr_carver_scan_by_row</refname>
+					<refname>lqr_carver_scan_line</refname>
+					<refpurpose>read out a multi-size image</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_scan_reset</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>x</parameter></paramdef>
+							<paramdef>gint* <parameter>y</parameter></paramdef>
+							<paramdef>gint** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_by_row</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_line</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>n</parameter></paramdef>
+							<paramdef>gint** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get">
+				<refmeta>
+					<refentrytitle>Get &carv_obj; values</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_width</refname>
+					<refname>lqr_carver_get_height</refname>
+					<refname>lqr_carver_get_bpp</refname>
+					<refpurpose>get various &carv_obj; object quantities</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_width</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_heigth</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_bpp</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set">
+				<refmeta>
+					<refentrytitle>Set &carv_obj; values</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_gradient_function</refname>
+					<refname>lqr_carver_set_resize_order</refname>
+					<refname>lqr_carver_set_dump_vmaps</refname>
+					<refname>lqr_carver_set_progress</refname>
+					<refpurpose>set various &carv_obj; object attributes</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_gradient_fucntion</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrGradFuncType <parameter>gf_ind</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_resize_order</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrResizeOrder <parameter>resize_order</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_dump_vmaps</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_progress</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-attach">
+				<refmeta>
+					<refentrytitle>Attach carvers</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_attach</refname>
+					<refpurpose>attach a &carv_obj; to another &carv_obj;</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_attach</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the lqr library signalling system.
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-lists">
+				<refmeta>
+					<refentrytitle>Get attached carvers</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_list_start</refname>
+					<refname>lqr_carver_list_current</refname>
+					<refname>lqr_carver_list_next</refname>
+					<refname>lqr_carver_list_foreach</refname>
+					<refpurpose>get &carv_obj; objects attached to another &carv_obj;</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrCarverList* <function>lqr_carver_list_start</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrCarver* <function>lqr_carver_list_current</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrCarverList <function>lqr_carver_list_next</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_list_foreach</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+							<paramdef>LqrCarverFunc <parameter>func</parameter></paramdef>
+							<paramdef>LqrDataTok <parameter>data</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+		</sect1>
+
+
+		<sect1 id="ref-vmaps">
+			<title>Visibiliy maps</title>
+
+			<refentry id="ref-lqr-vmap-new">
+				<refmeta>
+					<refentrytitle>&vmap_obj; constructor and destructor</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_new</refname>
+					<refname>lqr_vmap_destroy</refname>
+					<refpurpose>the &vmap_obj; object constructor and destructor</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrVMap* <function>lqr_vmap_new</function></funcdef>
+							<paramdef>gint* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>heigth</parameter></paramdef>
+							<paramdef>gint <parameter>depth</parameter></paramdef>
+							<paramdef>gint <parameter>orientation</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>void <function>lqr_vmap_destroy</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-get">
+				<refmeta>
+					<refentrytitle>Get &vmap_obj; values</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_get_data</refname>
+					<refname>lqr_vmap_get_width</refname>
+					<refname>lqr_vmap_get_height</refname>
+					<refname>lqr_vmap_get_depth</refname>
+					<refname>lqr_vmap_get_orientation</refname>
+					<refpurpose>get varous &vmap_obj; object quantities</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint* <function>lqr_vmap_get_data</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_vmap_get_width</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_vmap_get_height</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_vmap_get_depth</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_vmap_get_orientation</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-dump">
+				<refmeta>
+					<refentrytitle>&vmap_obj; dump and load</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_dump</refname>
+					<refname>lqr_vmap_internal_dump</refname>
+					<refname>lqr_vmap_load</refname>
+					<refpurpose>dump and load &vmap_obj; objects</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrVMap* <function>lqr_vmap_dump</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_vmap_internal_dump</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_vmap_load</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-lists">
+				<refmeta>
+					<refentrytitle>Get dumped &vmap_obj;</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_list_start</refname>
+					<refname>lqr_vmap_list_current</refname>
+					<refname>lqr_vmap_list_next</refname>
+					<refname>lqr_vmap_list_foreach</refname>
+					<refpurpose>get &vmap_obj; objects from a &carv_obj;</refpurpose>
+				</refnamediv>
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrVMapList* <function>lqr_vmap_list_start</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrVMap <function>lqr_vmap_list_current</function></funcdef>
+							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrVMapList <function>lqr_vmap_list_next</function></funcdef>
+							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_vmap_list_foreach</function></funcdef>
+							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
+							<paramdef>LqrVMapFunc <parameter>func</parameter></paramdef>
+							<paramdef>gpointer <parameter>data</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+		</sect1>
+
+		<sect1 id="ref-bias">
+			<title>Bias</title>
+
+			<refentry id="ref-lqr-bias-add">
+				<refmeta>
+					<refentrytitle>Add a bias to a &carv_obj;</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_bias_add</refname>
+					<refname>lqr_carver_bias_add_area</refname>
+					<refpurpose>update a &carv_obj; bias by reading a buffer</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-bias-add-rgb">
+				<refmeta>
+					<refentrytitle>Read the bias from an image</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_bias_add_rgb</refname>
+					<refname>lqr_carver_bias_add_rgb_area</refname>
+					<refpurpose>update a &carv_obj; bias by reading an RGB image</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>bpp</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+		</sect1>
+
+		<sect1 id="ref-progress">
+			<title>Progress reports</title>
+
+			<refentry id="ref-lqr-progress-new">
+				<refmeta>
+					<refentrytitle>&prog_obj; constructor</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_new</refname>
+					<refpurpose>the &prog_obj; object constructor</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrProgress* <function>lqr_progress_new</function></funcdef>
+							<void></void>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-hooks">
+				<refmeta>
+					<refentrytitle>Set &prog_obj; hooks</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_init</refname>
+					<refname>lqr_progress_set_update</refname>
+					<refname>lqr_progress_set_end</refname>
+					<refpurpose>execude custom code during the resizing operations</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_init</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>LqrProgressFuncInit <parameter>init_func</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_update</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>LqrProgressFuncUpdate <parameter>update_func</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_end</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>LqrProgressFuncEnd <parameter>end_func</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-params">
+				<refmeta>
+					<refentrytitle>Set &prog_obj; parameters</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_update_step</refname>
+					<refname>lqr_progress_set_init_width_message</refname>
+					<refname>lqr_progress_set_end_width_message</refname>
+					<refname>lqr_progress_set_init_height_message</refname>
+					<refname>lqr_progress_set_end_height_message</refname>
+					<refpurpose>setup update step and output messages</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_update_step</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>gfloat <parameter>update_step</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_init_width_message</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>const guchar* <parameter>message</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_end_width_message</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>const guchar* <parameter>message</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_init_width_message</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>const guchar* <parameter>message</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_end_height_message</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>const guchar* <parameter>message</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+		</sect1>
+	</chapter>
+
+
+	<chapter id="references">
+		<title>References</title>
+
+		<para>
+			The library implements the algorithm described in the paper
+			"Seam Carving for Content-Aware Image Resizing"
+			by Shai Avidan and Ariel Shamir, which can be found at
+			<ulink url="http://www.faculty.idc.ac.il/arik/imret.pdf">here</ulink>
+		</para>
+	</chapter>
+
+	<chapter id="copyright">
+		<title>Copyright</title>
+
+		<para>
+			Copyright (C) 2007 Carlo Baldassi <email>&lt;carlobaldassi@yahoo.it></email>
+		</para>
+	</chapter>
+
+</book>
+		
+

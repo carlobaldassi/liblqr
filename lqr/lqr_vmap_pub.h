@@ -53,7 +53,8 @@ gint lqr_vmap_get_height (LqrVMap *vmap);
 gint lqr_vmap_get_depth (LqrVMap *vmap);
 gint lqr_vmap_get_orientation (LqrVMap *vmap);
 
-LqrRetVal lqr_vmap_dump (LqrCarver *r);
+LqrRetVal lqr_vmap_internal_dump (LqrCarver *r);
+LqrVMap* lqr_vmap_dump (LqrCarver *r);
 LqrRetVal lqr_vmap_load (LqrCarver *r, LqrVMap *vmap);
 
 

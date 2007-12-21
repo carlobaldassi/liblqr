@@ -112,7 +112,7 @@ main (int argc, char **argv)
 
   if ((new_height != old_height) && (new_width != old_width) && (vmap_outfile))
     {
-      cerr << "Warning: only the first computed visibility map will be written" << endl;
+      cerr << "Warning: only the last computed visibility map will be written" << endl;
     }
 
 
@@ -290,12 +290,22 @@ main (int argc, char **argv)
 
   /**** (IV) SAVE THE VISIBILITY MAP ****/
 
+  if (vmap_outfile)
+    {
+      LqrVMap *vmap;
+      TRAP_N (vmap = lqr_vmap_dump(carver));
+      TRAP (save_vmap_to_file (vmap, vmap_outfile));
+    }
+
+#if 0
+  /* alternative way */
   LqrVMapList * vmap_list = lqr_vmap_list_start(carver);
   if (vmap_outfile)
     {
       TRAP (save_vmap_to_file (lqr_vmap_list_current(vmap_list), vmap_outfile));
       lqr_vmap_list_next(vmap_list);
     }
+#endif
 
 
   /**** (V) READOUT THE MULTISIZE IMAGE ****/
@@ -507,12 +517,12 @@ void help(char *command)
   cout << "        The new width. It must be between 2 and twice the origianl width." << endl;
   cout << "        If it is 0, or it is not given, the width is unchanged." << endl;
   cout << "        If it is followed by a %, it is interpreted as a percentage with" << endl;
-  cout << "        respect to the original width (and needs not being an integer)." << endl;
+  cout << "        respect to the original width (and needs not to be an integer)." << endl;
   cout << "    -h <height> or --height <height>" << endl;
   cout << "        Same as -w for the height." << endl;
   cout << "    -r <rigidity> or --rigidity < rigidity>" << endl;
   cout << "        Seams rigidity. Any non-negative value is allowed. Defaults to 0." << endl;
-  cout << "    -s <max-step> or --max-step <mask-step>" << endl;
+  cout << "    -s <max-step> or --max-step <max-step>" << endl;
   cout << "        Maximum seam transversal step. Default value is 1." << endl;
   cout << "    -p <pres-file> or --pres-file <pres-file>" << endl;
   cout << "        File to be used as a mask for features preservation. It must be in the" << endl;

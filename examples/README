@@ -1,0 +1,29 @@
+LiquidRescale Library Examples
+==============================
+
+The examples directory contains two C++ programs,
+liquidrescale and liquidrescale-basic. The first one
+is a full-featured command-line application, while the
+second one is just a minimalistic version of the first.
+
+These programs are meant to be used as reference code,
+and to integrate the documentation, and they are fully
+commented. The provided Makefile is also meant to
+demonstrate the required compilation options, and it is
+commented as well.
+
+In order to compile the two programs, you will need the
+pngwriter library to be properly installed on your system.
+If your distribution doesn't include it, you can download
+it from:
+
+http://pngwriter.sourceforge.net/
+
+Once compiled, you can see the command line options by
+issuing:
+
+./liquidrescale --help
+
+or
+
+./liquidrescale-basic --help

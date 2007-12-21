@@ -78,10 +78,71 @@ gint lqr_vmap_get_orientation (LqrVMap *vmap)
   return vmap->orientation;
 }
 
+/* dump the visibility level of the image */
+LqrVMap*
+lqr_vmap_dump (LqrCarver * r)
+{
+  LqrVMap * vmap;
+  gint w, h, w1, x, y, z0, vs;
+  gint * buffer;
+  gint depth; 
+  gint bpp;
+
+  /* save current size */
+  w1 = r->w;
+
+  /* temporarily set the size to the original */
+  lqr_carver_set_width (r, r->w_start);
+
+  w = lqr_carver_get_width (r);
+  h = lqr_carver_get_height (r);
+  depth = r->w0 - r->w_start;
+
+
+  bpp = 4;
+
+  TRY_N_N (buffer = g_try_new (gint, w * h));
+
+  lqr_cursor_reset (r->c);
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+        {
+          vs = r->vs[r->c->now];
+	  if (!r->transposed)
+	    {
+	      z0 = y * r->w + x;
+	    }
+	  else
+	    {
+	      z0 = x * r->h + y;
+	    }
+	  if (vs == 0)
+	    {
+	      buffer[z0] = 0;
+	    }
+	  else
+	    {
+	      buffer[z0] = vs - depth;
+	    }
+          lqr_cursor_next (r->c);
+        }
+    }
+
+  /* recover size */
+  lqr_carver_set_width (r, w1);
+  lqr_cursor_reset (r->c);
+
+  TRY_N_N (vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
+
+  return vmap;
+}
+
+
 
 /* dump the visibility level of the image */
 LqrRetVal
-lqr_vmap_dump (LqrCarver * r)
+lqr_vmap_internal_dump (LqrCarver * r)
 {
   LqrVMap * vmap;
   gint w, h, w1, x, y, z0, vs;

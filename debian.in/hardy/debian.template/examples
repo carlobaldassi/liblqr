@@ -3,3 +3,4 @@ examples/liquidrescale.h
 examples/liquidrescale-basic.cpp
 examples/liquidrescale-basic.h
 examples/Makefile
+examples/README

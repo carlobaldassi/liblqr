@@ -5,16 +5,11 @@ LiquidRescale library
 Table of contents
 -----------------
   * Introduction
-    + Seam carving in brief
     + Library features
   * Installation
     + Requirements
     + Normal setup
   * Using the library
-  * Additional notes
-    + About the carving information
-    + About rescaling in both directions
-    + About enlarging
   * References
   * Copyright
 
@@ -25,21 +20,6 @@ Table of contents
 The LiquidRescale (lqr) library provides a C/C++ API for
 performing non-uniform resizing of images by the seam-carving
 technique.
-
-++ Seam carving in brief
-
-Basically, an algorithm tries to find out which parts
-of the image are important, and which are not; then, the image
-is resized through the elimination or insertion of continuous
-paths, called `seams'. The seams connect the top of the image
-with the bottom when rescaling horizontally, or they connect
-the left side with the right side when rescaling vertically.
-In the seam carving process, seams are removed in sequence.
-The seam insertion process mirrors the seam carving process,
-introducing interpolated seams in regions where they would have
-been carved.
-See the sections "Additional notes" and "References" for more
-information.
 
 ++ Library features
 
@@ -115,64 +95,11 @@ flags.
 
 See the README file in that directory for more information.
 
-The complete description of the library functions can be found in
-the manual.txt file under the `docs' directory.
-
-
-
-+ Additional notes
-------------------
-
-++ About the carving information
-
-When rescaling along a direction, the library only needs to compute
-the operations once, because it stores the information internally in
-a "visibility map". This information can be read out and used at a
-later time. Note, however, that this is no longer possible when rescaling
-in both directions at a time, see below.
-See also the demo program in the examples directory for an
-interface example, and the manual for more details.
-
-++ About rescaling in both directions
-
-Rescaling can be done both horizontally and vertically.
-However, when resizing in both directions at the same time,
-multiple choices are possible, because the order of the
-rescale operations do matter: rescaling horizontally first,
-then vertically, does not yield the same result as following
-the reverse order. Moreover, one could choose an intermediate
-way, e.g. by rescaling by one pixel in one direction, one 
-in the other, then iterating as needed to reach the final size.
-
-As a consequence of this, real-time rescaling is only possible
-when rescaling in a single direction at a time, because every
-time that the rescaling direction is changed, the visibility
-map has to be reset, since it would otherwise become inconsistent.
-
-The default behavior of the library is to rescale horizontally
-first, then vertically. This order can be reversed. See the
-manual for more information.
-
-++ About enlarging
-
-As mentioneed above, the enlargment process mirrors the carving
-process. More precisely, in order to enlarge the image by a given
-amount of pixels, say N, the library first computes which would be
-the first N seams to be removed; then, it inserts new seams
-nearby those.
-
-This means that it is clearly not possible to go beyond twice the
-original size in a single step. It also means that doubling the
-image size in this way is just equivalent to standard scaling, since
-the result is that each seam is just duplicated. All in all, it is
-not advisable to enlarge too much in a single step.
-
-This same issue also affects the preservation of image areas when
-enlarging in a tricky way: suppose your image is 1000 pixels wide,
-and you have protected an area which is 800 pixels wide. It is then
-clear that you cannot shrink the image to less than 800 pixels without
-affecting the preserved area, but the same is true when enlarging,
-so you should not go beyond 1200 pixels (= 1000 + (1000 - 800)).
+The complete description of the library functions, together with
+some additional notes, can be found in the `docs' directory in
+docbook format. The makefile in that directory (hopefully)
+generates the html version, using docbook2html;
+you'll find the index named after `liblqr_manual_index.html'
 
 
 

@@ -3,12 +3,17 @@
 SUBDIRS = lqr
 
 EXTRA_DIST = \
-	docs		\
+	docs/liblqr_manual.docbook \
+	docs/lqr_style.xsl \
+	docs/redir-html \
+	docs/Makefile \
+	docs/README \
 	examples/liquidrescale.cpp \
 	examples/liquidrescale.h   \
 	examples/liquidrescale-basic.cpp \
 	examples/liquidrescale-basic.h   \
 	examples/Makefile \
+	examples/README \
 	BUGS		\
 	autogen.sh	
 

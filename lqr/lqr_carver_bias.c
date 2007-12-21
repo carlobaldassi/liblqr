@@ -20,6 +20,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
+#include <stdio.h>
+
 #include <lqr/lqr_all.h>
 
 #ifdef __LQR_DEBUG__
@@ -78,7 +80,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint b
 {
   gint x, y, k, c_bpp;
   gboolean has_alpha;
-  gint x1, y1, x2, y2;
+  gint x0, y0, x1, y1, x2, y2;
   gint transposed = 0;
   gint sum;
   gdouble bias;
@@ -99,6 +101,8 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint b
   has_alpha = (bpp == 2 || bpp >= 4);
   c_bpp = bpp - (has_alpha ? 1 : 0);
 
+  x0 = MIN (0, x_off);
+  y0 = MIN (0, y_off);
   x1 = MAX (0, x_off);
   y1 = MAX (0, y_off);
   x2 = MIN (r->w0, width + x_off);
@@ -111,13 +115,13 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint b
           sum = 0;
           for (k = 0; k < c_bpp; k++)
             {
-              sum += rgb[(y * width + x) * bpp + k];
+              sum += rgb[((y - y0) * width + (x - x0)) * bpp + k];
             }
 
           bias = (double) bias_factor * sum / (2 * 255 * c_bpp);
           if (has_alpha)
             {
-	      bias *= (gdouble) rgb[(y * width + x + 1) * bpp - 1] / 255;
+	      bias *= (gdouble) rgb[((y - y0) * width + (x - x0) + 1) * bpp - 1] / 255;
             }
 
           r->bias[(y + y1) * r->w0 + (x + x1)] += bias;

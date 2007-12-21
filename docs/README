@@ -1,0 +1,14 @@
+LiquidRescale Library Manual
+============================
+
+The library manual is provided in docbook format.
+You can compile an html version of it by just issuing `make'.
+
+However, this assumes that your html specification is located at:
+
+/usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl
+
+If this is not the case, edit the file `lqr_style' accordingly.
+
+After compilation, the file `liblqr_manual.html' will point to
+the manual index.

@@ -1,6 +1,8 @@
 .*.swp
 Makefile
-lqr/Makefile
+!docs/Makefile
+!examples/Makefile
+docs/html
 */.deps
 */.libs
 */*.l[oa]

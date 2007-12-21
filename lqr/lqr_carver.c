@@ -1311,7 +1311,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
 
       if (r->dump_vmaps)
         {
-          CATCH (lqr_vmap_dump (r));
+          CATCH (lqr_vmap_internal_dump (r));
         }
       lqr_progress_end (r->progress, r->progress->end_width_message);
     }
@@ -1349,7 +1349,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       
       if (r->dump_vmaps)
         {
-          CATCH (lqr_vmap_dump (r));
+          CATCH (lqr_vmap_internal_dump (r));
         }
       lqr_progress_end (r->progress, r->progress->end_height_message);
     }
