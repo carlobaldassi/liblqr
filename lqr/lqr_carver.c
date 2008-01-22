@@ -63,6 +63,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   r->vpath = NULL;
   r->vpath_x = NULL;
   r->rigidity_map = NULL;
+  r->rigidity_mask = NULL;
   r->delta_x = 1;
 
   r->h = height;
@@ -107,6 +108,7 @@ lqr_carver_destroy (LqrCarver * r)
       r->rigidity_map -= r->delta_x;
       g_free (r->rigidity_map);
     }
+  g_free (r->rigidity_mask);
   lqr_vmap_list_destroy(r->flushed_vs);
   lqr_carver_list_destroy(r->attached_list);
   g_free (r->progress);
@@ -124,6 +126,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
   CATCH_MEM (r->en = g_try_new (gdouble, r->w * r->h));
   CATCH_MEM (r->bias = g_try_new0 (gdouble, r->w * r->h));
+  CATCH_MEM (r->rigidity_mask = g_try_new (gdouble, r->w * r->h));
   CATCH_MEM (r->m = g_try_new (gdouble, r->w * r->h));
   CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
 
@@ -136,6 +139,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
       for (x = 0; x < r->w_start; x++)
         {
 	  r->raw[y][x] = y * r->w_start + x;
+	  r->rigidity_mask[y * r->w_start + x] = 1;
 	}
     }
 
@@ -151,7 +155,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
   for (x = -r->delta_x; x <= r->delta_x; x++)
     {
       r->rigidity_map[x] =
-        (gdouble) r->rigidity * exp (0.75 * log (x * x)) / r->h;
+        (gdouble) r->rigidity * pow(fabs(x), 1.5) / r->h;
     }
 
   r->active = TRUE;
@@ -192,7 +196,7 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
     }
 }
 
-/* attach layers to be scaled along with the main one */
+/* attach carvers to be scaled along with the main one */
 LqrRetVal
 lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
@@ -217,11 +221,18 @@ lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
   r->resize_order = resize_order;
 }
 
+/* set progress reprot */
 void
 lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 {
   g_free(r->progress);
   r->progress = p;
+}
+
+/* set rigidity mask */
+void
+lqr_carver_set_rigidity_mask (LqrCarver *r)
+{
 }
 
 

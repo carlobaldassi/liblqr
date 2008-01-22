@@ -70,12 +70,13 @@ struct _LqrCarver
 
   gfloat rigidity;              /* rigidity value (can straighten seams) */
   gdouble *rigidity_map;        /* the rigidity function */
+  gdouble *rigidity_mask;	/* the rigidity mask */
   gint delta_x;                 /* max displacement of seams (currently is only meaningful if 0 or 1 */
 
   guchar *rgb;                  /* array of rgb points */
   gint *vs;                     /* array of visibility levels */
   gdouble *en;                  /* array of energy levels */
-  gdouble *bias;                /* array of energy levels */
+  gdouble *bias;                /* bias mask */
   gdouble *m;                   /* array of auxiliary energy values */
   gint *least;                  /* array of pointers */
   gint *_raw;                   /* array of array-coordinates, for seam computation */

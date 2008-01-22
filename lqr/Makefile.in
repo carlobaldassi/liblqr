@@ -59,8 +59,8 @@ lqrLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lqr_LTLIBRARIES)
 liblqr_1_la_LIBADD =
 am_liblqr_1_la_OBJECTS = lqr_gradient.lo lqr_cursor.lo lqr_carver.lo \
-	lqr_carver_list.lo lqr_carver_bias.lo lqr_vmap.lo \
-	lqr_vmap_list.lo lqr_progress.lo
+	lqr_carver_list.lo lqr_carver_bias.lo lqr_carver_rigmask.lo \
+	lqr_vmap.lo lqr_vmap_list.lo lqr_progress.lo
 liblqr_1_la_OBJECTS = $(am_liblqr_1_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -222,6 +222,10 @@ liblqr_1_la_SOURCES = \
 	lqr_carver_bias.h    \
 	lqr_carver_bias_pub.h    \
 	lqr_carver_bias_priv.h    \
+	lqr_carver_rigmask.c    \
+	lqr_carver_rigmask.h    \
+	lqr_carver_rigmask_pub.h    \
+	lqr_carver_rigmask_priv.h    \
 	lqr_vmap.c \
 	lqr_vmap.h \
 	lqr_vmap_pub.h \
@@ -328,6 +332,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_carver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_carver_bias.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_carver_list.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_carver_rigmask.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_cursor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_gradient.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_progress.Plo@am__quote@

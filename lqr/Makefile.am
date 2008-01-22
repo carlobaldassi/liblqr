@@ -28,6 +28,10 @@ liblqr_1_la_SOURCES = \
 	lqr_carver_bias.h    \
 	lqr_carver_bias_pub.h    \
 	lqr_carver_bias_priv.h    \
+	lqr_carver_rigmask.c    \
+	lqr_carver_rigmask.h    \
+	lqr_carver_rigmask_pub.h    \
+	lqr_carver_rigmask_priv.h    \
 	lqr_vmap.c \
 	lqr_vmap.h \
 	lqr_vmap_pub.h \
