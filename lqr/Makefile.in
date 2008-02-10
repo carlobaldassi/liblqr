@@ -255,6 +255,7 @@ lqr_include_HEADERS = lqr_base.h \
 		      lqr_carver_pub.h \
 		      lqr_carver_list_pub.h \
 		      lqr_carver_bias_pub.h    \
+		      lqr_carver_rigmask_pub.h    \
 		      lqr_vmap_pub.h \
 		      lqr_vmap_list_pub.h \
 		      lqr_progress_pub.h

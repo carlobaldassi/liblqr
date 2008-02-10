@@ -36,6 +36,7 @@ G_BEGIN_DECLS
 #include <lqr/lqr_vmap_list_pub.h>
 #include <lqr/lqr_carver_list_pub.h>
 #include <lqr/lqr_carver_bias_pub.h>
+#include <lqr/lqr_carver_rigmask_pub.h>
 #include <lqr/lqr_carver_pub.h>
 
 G_END_DECLS

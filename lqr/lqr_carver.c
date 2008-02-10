@@ -229,12 +229,6 @@ lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
   r->progress = p;
 }
 
-/* set rigidity mask */
-void
-lqr_carver_set_rigidity_mask (LqrCarver *r)
-{
-}
-
 
 /*** compute maps (energy, minpath & visibility) ***/
 
@@ -297,7 +291,7 @@ lqr_carver_build_mmap (LqrCarver * r)
   gint data;
   gint data_down;
   gint x1_min, x1_max, x1;
-  gdouble m, m1;
+  gdouble m, m1, r_fact;
 
 
   /* span first row */
@@ -322,19 +316,21 @@ lqr_carver_build_mmap (LqrCarver * r)
 	  /* watch for boundaries */
           x1_min = MAX (-x, -r->delta_x);
           x1_max = MIN (r->w - 1 - x, r->delta_x);
+	  r_fact = r->rigidity_mask[data];
+
 	  /* we use the data_down pointer to be able to
 	   * track the seams later (needed for rigidity) */  
           data_down = r->raw[y - 1][x + x1_min];
           r->least[data] = data_down;
           if (r->rigidity)
             {
-              m = r->m[data_down] + r->rigidity_map[x1_min];
+              m = r->m[data_down] + r_fact * r->rigidity_map[x1_min];
               for (x1 = x1_min + 1; x1 <= x1_max; x1++)
                 {
                   data_down = r->raw[y - 1][x + x1];
                   /* find the min among the neighbors
                    * in the last row */
-                  m1 = r->m[data_down] + r->rigidity_map[x1];
+                  m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
                   if (m1 < m)
                     {
                       m = m1;
@@ -760,7 +756,7 @@ lqr_carver_update_mmap (LqrCarver * r)
   gint x1;
   gint x1_min, x1_max;
   gint data, data_down, least;
-  gdouble m, m1;
+  gdouble m, m1, r_fact;
   gint stop;
 
   /* span first row */
@@ -788,6 +784,7 @@ lqr_carver_update_mmap (LqrCarver * r)
       for (x = x_min; x <= x_max; x++)
         {
           data = r->raw[y][x];
+	  r_fact = r->rigidity_mask[data];
 
 	  /* find the minimum in the previous rows
 	   * as in build_mmap() */
@@ -797,11 +794,11 @@ lqr_carver_update_mmap (LqrCarver * r)
           least = data_down;
           if (r->rigidity)
             {
-              m = r->m[data_down] + r->rigidity_map[x1_min];
+              m = r->m[data_down] + r_fact * r->rigidity_map[x1_min];
               for (x1 = x1_min + 1; x1 <= x1_max; x1++)
                 {
                   data_down = r->raw[y - 1][x + x1];
-                  m1 = r->m[data_down] + r->rigidity_map[x1];
+                  m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
                   if (m1 < m)
                     {
                       m = m1;
