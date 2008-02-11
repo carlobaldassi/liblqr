@@ -1041,6 +1041,7 @@ lqr_carver_flatten (LqrCarver * r)
 {
   guchar *new_rgb;
   gdouble *new_bias = NULL;
+  gdouble *new_rigmask = NULL;
   gint x, y, k;
   gint z0;
   LqrDataTok data_tok;
@@ -1060,6 +1061,7 @@ lqr_carver_flatten (LqrCarver * r)
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w * r->h));
+      CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w * r->h));
 
       g_free (r->_raw);
       g_free (r->raw);
@@ -1087,6 +1089,7 @@ lqr_carver_flatten (LqrCarver * r)
           if (r->active)
             {
               new_bias[z0] = r->bias[r->c->now];
+              new_rigmask[z0] = r->rigidity_mask[r->c->now];
               r->raw[y][x] = z0;
             }
           lqr_cursor_next (r->c);
@@ -1100,6 +1103,8 @@ lqr_carver_flatten (LqrCarver * r)
     {
       g_free (r->bias);
       r->bias = new_bias;
+      g_free (r->rigidity_mask);
+      r->rigidity_mask = new_rigmask;
     }
 
   /* init the other maps */
@@ -1153,6 +1158,7 @@ lqr_carver_transpose (LqrCarver * r)
   gint d;
   guchar *new_rgb;
   gdouble *new_bias = NULL;
+  gdouble *new_rigmask = NULL;
   LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
@@ -1177,6 +1183,7 @@ lqr_carver_transpose (LqrCarver * r)
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
+      CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w0 * r->h0));
 
       g_free (r->_raw);
       g_free (r->raw);
@@ -1202,6 +1209,7 @@ lqr_carver_transpose (LqrCarver * r)
           if (r->active)
             {
               new_bias[z1] = r->bias[z0];
+	      new_rigmask[z1] = r->rigidity_mask[z0];
               r->raw[x][y] = z1;
             }
         }
@@ -1213,7 +1221,9 @@ lqr_carver_transpose (LqrCarver * r)
   if (r->active)
     {
       g_free (r->bias);
+      g_free (r->rigidity_mask);
       r->bias = new_bias;
+      r->rigidity_mask = new_rigmask;
     }
 
   /* init the other maps */

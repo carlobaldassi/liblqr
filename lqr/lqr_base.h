@@ -32,11 +32,11 @@
 //#define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
 
 
-#if 0
+#if 1
 #define __LQR_DEBUG__
 #endif
 
-#if 0
+#if 1
 #define __LQR_VERBOSE__
 #endif
 
