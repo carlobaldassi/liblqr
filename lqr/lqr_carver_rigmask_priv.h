@@ -27,6 +27,7 @@
 #error "lqr_base.h must be included prior to lqr_carver_rigmask_priv.h"
 #endif /* __LQR_BASE_H__ */
 
-/* no private functions  currently */
+
+LqrRetVal lqr_carver_rigmask_init (LqrCarver *r);
 
 #endif /* __LQR_CARVER_RIGMASK_PRIV_H__ */

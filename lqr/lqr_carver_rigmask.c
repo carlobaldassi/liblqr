@@ -31,12 +31,37 @@
 /**** LQR_CARVER_RIGMASK STRUCT FUNTIONS ****/
 
 LqrRetVal
+lqr_carver_rigmask_init (LqrCarver *r)
+{
+  gint y, x;
+
+  CATCH_F (r->active == TRUE);
+
+  CATCH_MEM (r->rigidity_mask = g_try_new (gdouble, r->w * r->h));
+
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w_start; x++)
+        {
+	  r->rigidity_mask[y * r->w_start + x] = 1;
+	}
+    }
+  return LQR_OK;
+}
+
+
+LqrRetVal
 lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint height, gint x_off, gint y_off)
 {
   gint x, y;
   gint x1, y1, x2, y2;
 
   CATCH_F (r->active);
+  if (r->rigidity_mask == NULL)
+    {
+      CATCH (lqr_carver_rigmask_init(r));
+    }
+
 
   if (r->rigidity == 0)
     {
@@ -83,6 +108,10 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint bpp, gint width,
   gdouble rigmask;
 
   CATCH_F (r->active);
+  if (r->rigidity_mask == NULL)
+    {
+      CATCH (lqr_carver_rigmask_init(r));
+    }
 
   if (r->rigidity == 0)
     {

@@ -57,7 +57,7 @@ struct _LqrCarver
                                  * since levels are shifted upon inflation
                                  */
 
-  gint bpp;                     /* number of bpp of the image */
+  gint bpp;                     /* number of bytes-per-pixel of the image */
 
   gint transposed;              /* flag to set transposed state */
   gboolean active;              /* flag to set if carver is active */

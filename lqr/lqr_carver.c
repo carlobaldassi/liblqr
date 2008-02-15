@@ -126,7 +126,6 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
   CATCH_MEM (r->en = g_try_new (gdouble, r->w * r->h));
   CATCH_MEM (r->bias = g_try_new0 (gdouble, r->w * r->h));
-  CATCH_MEM (r->rigidity_mask = g_try_new (gdouble, r->w * r->h));
   CATCH_MEM (r->m = g_try_new (gdouble, r->w * r->h));
   CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
 
@@ -139,7 +138,6 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
       for (x = 0; x < r->w_start; x++)
         {
 	  r->raw[y][x] = y * r->w_start + x;
-	  r->rigidity_mask[y * r->w_start + x] = 1;
 	}
     }
 
@@ -316,7 +314,11 @@ lqr_carver_build_mmap (LqrCarver * r)
 	  /* watch for boundaries */
           x1_min = MAX (-x, -r->delta_x);
           x1_max = MIN (r->w - 1 - x, r->delta_x);
-	  r_fact = r->rigidity_mask[data];
+	  if (r->rigidity_mask) {
+		  r_fact = r->rigidity_mask[data];
+	  } else {
+		  r_fact = 1;
+	  }
 
 	  /* we use the data_down pointer to be able to
 	   * track the seams later (needed for rigidity) */  
@@ -477,6 +479,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   guchar *new_rgb;
   gint *new_vs;
   gdouble *new_bias = NULL;
+  gdouble *new_rigmask = NULL;
   LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
@@ -501,6 +504,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, w1 * r->h0));
+      if (r->rigidity_mask)
+	{
+	  CATCH_MEM (new_rigmask = g_try_new (gdouble, w1 * r->h0));
+	}
     }
 
   /* span the image with a cursor
@@ -538,6 +545,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
           if (r->active)
             {
               new_bias[z0] = (r->bias[c_left] + r->bias[r->c->now]) / 2;
+	      if (r->rigidity_mask)
+	        {
+		  new_rigmask[z0] = (r->rigidity_mask[c_left] + r->rigidity_mask[r->c->now]) / 2;
+		}
             }
           /* the first time inflate() is called
            * the new visibility should be -vs + 1 but we shift it
@@ -554,6 +565,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
       if (r->active)
         {
           new_bias[z0] = r->bias[r->c->now];
+	  if (r->rigidity_mask)
+	    {
+	      new_rigmask[z0] = r->rigidity_mask[r->c->now];
+	    }
         }
       if (vs != 0)
         {
@@ -593,15 +608,17 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   g_free (r->rgb);
   g_free (r->vs);
   g_free (r->en);
-  g_free (r->bias);
   g_free (r->m);
   g_free (r->least);
+  g_free (r->bias);
+  g_free (r->rigidity_mask);
 
   r->rgb = new_rgb;
   r->vs = new_vs;
   if (r->active)
     {
       r->bias = new_bias;
+      r->rigidity_mask = new_rigmask;
       CATCH_MEM (r->en = g_try_new0 (gdouble, w1 * r->h0));
       CATCH_MEM (r->m = g_try_new0 (gdouble, w1 * r->h0));
       CATCH_MEM (r->least = g_try_new0 (gint, w1 * r->h0));
@@ -784,7 +801,11 @@ lqr_carver_update_mmap (LqrCarver * r)
       for (x = x_min; x <= x_max; x++)
         {
           data = r->raw[y][x];
-	  r_fact = r->rigidity_mask[data];
+	  if (r->rigidity_mask) {
+		  r_fact = r->rigidity_mask[data];
+	  } else {
+		  r_fact = 1;
+	  }
 
 	  /* find the minimum in the previous rows
 	   * as in build_mmap() */
@@ -1061,14 +1082,15 @@ lqr_carver_flatten (LqrCarver * r)
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w * r->h));
-      CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w * r->h));
+      if (r->rigidity_mask) {
+	      CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w * r->h));
+      }
 
       g_free (r->_raw);
       g_free (r->raw);
       CATCH_MEM (r->_raw = g_try_new (gint, r->w * r->h));
       CATCH_MEM (r->raw = g_try_new (gint *, r->h));
     }
-
 
   /* span the image with the cursor and copy
    * it in the new array  */
@@ -1089,7 +1111,11 @@ lqr_carver_flatten (LqrCarver * r)
           if (r->active)
             {
               new_bias[z0] = r->bias[r->c->now];
-              new_rigmask[z0] = r->rigidity_mask[r->c->now];
+	      if (r->rigidity_mask) {
+		      //printf("  uno z0=%i r->c->now=%i size=%i\n", z0, r->c->now, r->w * r->h); fflush(stdout);
+		      new_rigmask[z0] = r->rigidity_mask[r->c->now];
+		      //printf("  due\n"); fflush(stdout);
+	      }
               r->raw[y][x] = z0;
             }
           lqr_cursor_next (r->c);
@@ -1103,8 +1129,10 @@ lqr_carver_flatten (LqrCarver * r)
     {
       g_free (r->bias);
       r->bias = new_bias;
-      g_free (r->rigidity_mask);
-      r->rigidity_mask = new_rigmask;
+      if (r->rigidity_mask) {
+	      g_free (r->rigidity_mask);
+	      r->rigidity_mask = new_rigmask;
+      }
     }
 
   /* init the other maps */
@@ -1183,8 +1211,10 @@ lqr_carver_transpose (LqrCarver * r)
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
-      CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w0 * r->h0));
-
+      if (r->rigidity_mask)
+        {
+	  CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w0 * r->h0));
+	}
       g_free (r->_raw);
       g_free (r->raw);
       CATCH_MEM (r->_raw = g_try_new0 (gint, r->h0 * r->w0));
@@ -1209,7 +1239,9 @@ lqr_carver_transpose (LqrCarver * r)
           if (r->active)
             {
               new_bias[z1] = r->bias[z0];
-	      new_rigmask[z1] = r->rigidity_mask[z0];
+	      if (r->rigidity_mask) {
+		      new_rigmask[z1] = r->rigidity_mask[z0];
+	      }
               r->raw[x][y] = z1;
             }
         }
@@ -1221,9 +1253,11 @@ lqr_carver_transpose (LqrCarver * r)
   if (r->active)
     {
       g_free (r->bias);
-      g_free (r->rigidity_mask);
       r->bias = new_bias;
-      r->rigidity_mask = new_rigmask;
+      if (r->rigidity_mask) {
+	      g_free (r->rigidity_mask);
+	      r->rigidity_mask = new_rigmask;
+      }
     }
 
   /* init the other maps */
