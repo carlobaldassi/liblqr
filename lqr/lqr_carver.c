@@ -77,6 +77,9 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 
   lqr_carver_set_gradient_function(r, LQR_GF_XABS);
 
+  r->leftright = 0;
+  r->lr_switch_interval = 0;
+
   r->rgb = buffer;
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
   TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->bpp * r->w));
@@ -219,6 +222,13 @@ lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
   r->resize_order = resize_order;
 }
 
+/* set leftright switch interval */
+void
+lqr_carver_set_side_switch_interval (LqrCarver *r, gint switch_interval)
+{
+  r->lr_switch_interval = switch_interval;
+}
+
 /* set progress reprot */
 void
 lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
@@ -333,7 +343,8 @@ lqr_carver_build_mmap (LqrCarver * r)
                   /* find the min among the neighbors
                    * in the last row */
                   m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
-                  if (m1 < m)
+		  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+                  //if (m1 <= m)
                     {
                       m = m1;
                       r->least[data] = data_down;
@@ -350,7 +361,8 @@ lqr_carver_build_mmap (LqrCarver * r)
                   /* find the min among the neighbors
                    * in the last row */
                   m1 = r->m[data_down];
-                  if (m1 < m)
+		  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+                  //if (m1 <= m)
                     {
                       m = m1;
                       r->least[data] = data_down;
@@ -431,8 +443,15 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
           lqr_carver_update_emap (r);
 
           /* recalculate the minpath map */
-          lqr_carver_update_mmap (r);
-          //lqr_carver_build_mmap (r);
+	  if ((r->lr_switch_interval) && ((l % r->lr_switch_interval) == 0))
+	    {
+	      r->leftright ^= 1;
+	      lqr_carver_build_mmap (r);
+	    }
+	  else
+	    {
+	      lqr_carver_update_mmap (r);
+	    }
         }
       else
         {
@@ -778,7 +797,8 @@ lqr_carver_update_mmap (LqrCarver * r)
 
   /* span first row */
   x_min = MAX (r->vpath_x[0] - r->delta_x, 0);
-  x_max = MIN (r->vpath_x[0] + r->delta_x - 1, r->w - 1);
+  //x_max = MIN (r->vpath_x[0] + r->delta_x - 1, r->w - 1);
+  x_max = MIN (r->vpath_x[0] + r->delta_x, r->w - 1);
 
   for (x = x_min; x <= x_max; x++)
     {
@@ -790,7 +810,8 @@ lqr_carver_update_mmap (LqrCarver * r)
     {
       /* make sure to include the seam */
       x_min = MIN (x_min, r->vpath_x[y]);
-      x_max = MAX (x_max, r->vpath_x[y] - 1);
+      x_max = MAX (x_max, r->vpath_x[y]);
+      //x_max = MAX (x_max, r->vpath_x[y] - 1);
 
       /* expand the affected region by delta_x */
       x_min = MAX (x_min - r->delta_x, 0);
@@ -820,7 +841,8 @@ lqr_carver_update_mmap (LqrCarver * r)
                 {
                   data_down = r->raw[y - 1][x + x1];
                   m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
-                  if (m1 < m)
+                  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+                  //if (m1 <= m)
                     {
                       m = m1;
                       least = data_down;
@@ -834,14 +856,19 @@ lqr_carver_update_mmap (LqrCarver * r)
                 {
                   data_down = r->raw[y - 1][x + x1];
                   m1 = r->m[data_down];
-                  if (m1 < m)
+                  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+                  //if (m1 <= m)
                     {
+		      //if (m1 == m) {
+			//printf("m=%g least=%i data_down=%i\n", m, least, data_down); fflush(stdout);
+		      //}
                       m = m1;
                       least = data_down;
                     }
                 }
             }
 
+//#if 0
 	  /* reduce the range if there's no difference
 	   * with the previous map */
           if (r->least[data] == least)
@@ -857,6 +884,7 @@ lqr_carver_update_mmap (LqrCarver * r)
                   x_max = x;
                 }
             }
+//#endif
 
 
           /* set current m */
@@ -895,7 +923,8 @@ lqr_carver_build_vpath (LqrCarver * r)
 #endif /* __LQR_DEBUG__ */
 
       m1 = r->m[r->raw[y][x]];
-      if (m1 < m)
+      if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+      //if (m1 <= m)
         {
           last = r->raw[y][x];
           last_x = x;
