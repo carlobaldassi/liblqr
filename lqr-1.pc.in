@@ -7,5 +7,5 @@ Name: @LIBRARY_SNAME@
 Description: LiquidRescale seam-carving library
 Requires: glib-2.0
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir}/@LIBRARY_SNAME@ -l@LIBRARY_SNAME@
+Libs: -l@LIBRARY_SNAME@
 Cflags: -I${includedir}/@LIBRARY_SNAME@

@@ -55,5 +55,5 @@ available via the Info system.
 .SH AUTHOR
 liblqr-1 was written by <upstream author>.
 .PP
-This manual page was written by Carlo Baldassi <carlobaldassi@yahoo.it>,
+This manual page was written by Carlo Baldassi <carlobaldassi@gmail.com>,
 for the Debian project (but may be used by others).

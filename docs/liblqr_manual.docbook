@@ -2382,7 +2382,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 		<title>Copyright</title>
 
 		<para>
-			Copyright (C) 2007 Carlo Baldassi <email>&lt;carlobaldassi@yahoo.it></email>
+			Copyright (C) 2007 Carlo Baldassi <email>&lt;carlobaldassi@gmail.com></email>
 		</para>
 	</chapter>
 

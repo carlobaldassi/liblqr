@@ -1,6 +1,6 @@
 Source: liblqr-1
 Priority: extra
-Maintainer: Carlo Baldassi <carlobaldassi@yahoo.it>
+Maintainer: Carlo Baldassi <carlobaldassi@gmail.com>
 Build-Depends: libglib2.0-dev (>= 2.14.1), libxml-parser-perl (>= 2.34), debhelper (>= 5), autotools-dev 
 Standards-Version: 3.7.2
 Section: libs
