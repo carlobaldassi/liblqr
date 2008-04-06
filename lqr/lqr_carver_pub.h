@@ -90,6 +90,9 @@ struct _LqrCarver
 
   LqrGradFunc gf;                    /* pointer to a gradient function */
 
+  gint leftright;		/* whether to favor left or right seams */
+  gint lr_switch_frequency;	/* interval between leftright switches */
+
   LqrProgress * progress;	/* pointer to progress update functions */
 
   LqrVMapList * flushed_vs;  /* linked list of pointers to flushed visibility maps buffers */
@@ -110,6 +113,7 @@ LqrRetVal lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
 void lqr_carver_set_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
+void lqr_carver_set_side_switch_frequency (LqrCarver *r, gint switch_interval);
 LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 

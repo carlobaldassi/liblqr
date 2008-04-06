@@ -44,6 +44,7 @@ gint max_step = 1;
 gint pres_strength = 1000;
 gint disc_strength = 1000;
 LqrResizeOrder res_order = LQR_RES_ORDER_HOR;
+gint side_switch_frequency = 0;
 
 gfloat new_width_p = 0;
 gfloat new_height_p = 0;
@@ -290,6 +291,8 @@ main (int argc, char **argv)
 	  TRAP_N (rgb_rigmask_buffer = rgb_buffer_from_image (&png_rigmask));
 	  TRAP (lqr_carver_rigmask_add_rgb (carver, rgb_rigmask_buffer, 3)); 
 	}
+      /* (I.3b.3) set the side switch frequency */
+      lqr_carver_set_side_switch_frequency(carver, side_switch_frequency);
     }
   else
     {
@@ -424,6 +427,7 @@ LqrRetVal parse_command_line (int argc, char **argv)
     {"vmap-out-file", required_argument, NULL, 'v'},
     {"vmap-in-file", required_argument, NULL, 'V'},
     {"vertical-first", no_argument, NULL, 't'},
+    {"side-switch-frequency", no_argument, NULL, 'n'},
     {"quiet", no_argument, NULL, 'q'},
     {"help", no_argument, NULL, '#'},
     {NULL,0,NULL,0}
@@ -431,7 +435,7 @@ LqrRetVal parse_command_line (int argc, char **argv)
 
 
 
-  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,k:,K:,v:,V:,tq", lopts, &i)) != EOF) {
+  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,k:,K:,v:,V:,t,n:,q", lopts, &i)) != EOF) {
     switch (c)
     {
       case 'f':
@@ -500,6 +504,9 @@ LqrRetVal parse_command_line (int argc, char **argv)
 	break;
       case 't':
 	res_order = LQR_RES_ORDER_VERT;
+	break;
+      case 'n':
+	side_switch_frequency = atoi(optarg);
 	break;
       case 'q':
 	quiet = 1;
@@ -622,6 +629,8 @@ void help(char *command)
   cout << "        Writes the visibility map in the specified file. Currently, only the first one." << endl;
   cout << "    -t or --vertical-first" << endl;
   cout << "        Rescale vertically first (instead of horizontally)." << endl;
+  cout << "    -n <frequency> or --side-switch-frequency <frequency>" << endl;
+  cout << "        Set the number of switches of the side choice for each size modification." << endl;
   cout << "    -q or --quiet" << endl;
   cout << "        Quiet mode." << endl;
   cout << "    --help" << endl;
