@@ -78,7 +78,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   lqr_carver_set_gradient_function(r, LQR_GF_XABS);
 
   r->leftright = 0;
-  r->lr_switch_interval = 0;
+  r->lr_switch_frequency = 0;
 
   r->rgb = buffer;
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
@@ -224,9 +224,9 @@ lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 
 /* set leftright switch interval */
 void
-lqr_carver_set_side_switch_interval (LqrCarver *r, gint switch_interval)
+lqr_carver_set_side_switch_frequency (LqrCarver *r, gint switch_frequency)
 {
-  r->lr_switch_interval = switch_interval;
+  r->lr_switch_frequency = switch_frequency;
 }
 
 /* set progress reprot */
@@ -384,6 +384,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 {
   gint l;
   gint update_step;
+  gint lr_switch_interval = 0;
   LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
@@ -410,6 +411,12 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 
   /* update step for progress reprt*/
   update_step = (gint) MAX ((depth - r->max_level) * r->progress->update_step, 1);
+
+  /* left-right switch interval */
+  if (r->lr_switch_frequency)
+    {
+      lr_switch_interval = (depth - r->max_level - 1) / r->lr_switch_frequency + 1;
+    }
 
   /* cycle over levels */
   for (l = r->max_level; l < depth; l++)
@@ -443,7 +450,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
           lqr_carver_update_emap (r);
 
           /* recalculate the minpath map */
-	  if ((r->lr_switch_interval) && ((l % r->lr_switch_interval) == 0))
+	  if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
 	    {
 	      r->leftright ^= 1;
 	      lqr_carver_build_mmap (r);
