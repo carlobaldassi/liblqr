@@ -98,9 +98,9 @@ lqr_carver_rigmask_add(LqrCarver *r, gdouble *buffer, gint rigmask_factor)
 }
 
 LqrRetVal
-lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint bpp, gint width, gint height, gint x_off, gint y_off)
+lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint channels, gint width, gint height, gint x_off, gint y_off)
 {
-  gint x, y, k, c_bpp;
+  gint x, y, k, c_channels;
   gboolean has_alpha;
   gint x0, y0, x1, y1, x2, y2;
   gint transposed = 0;
@@ -125,8 +125,8 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint bpp, gint width,
       CATCH (lqr_carver_transpose(r));
     }
 
-  has_alpha = (bpp == 2 || bpp >= 4);
-  c_bpp = bpp - (has_alpha ? 1 : 0);
+  has_alpha = (channels == 2 || channels >= 4);
+  c_channels = channels - (has_alpha ? 1 : 0);
 
   x0 = MIN (0, x_off);
   y0 = MIN (0, y_off);
@@ -140,15 +140,15 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint bpp, gint width,
       for (x = 0; x < x2 - x1; x++)
         {
           sum = 0;
-          for (k = 0; k < c_bpp; k++)
+          for (k = 0; k < c_channels; k++)
             {
-              sum += rgb[((y - y0) * width + (x - x0)) * bpp + k];
+              sum += rgb[((y - y0) * width + (x - x0)) * channels + k];
             }
 
-          rigmask = (gdouble) sum / (255 * c_bpp);
+          rigmask = (gdouble) sum / (255 * c_channels);
           if (has_alpha)
             {
-	      rigmask *= (gdouble) rgb[((y - y0) * width + (x - x0) + 1) * bpp - 1] / 255;
+	      rigmask *= (gdouble) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
             }
 
           r->rigidity_mask[(y + y1) * r->w0 + (x + x1)] = rigmask;
@@ -166,9 +166,9 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint bpp, gint width,
 }
 
 LqrRetVal
-lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *rgb, gint bpp)
+lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *rgb, gint channels)
 {
-  return lqr_carver_rigmask_add_rgb_area(r, rgb, bpp, r->w0, r->h0, 0, 0);
+  return lqr_carver_rigmask_add_rgb_area(r, rgb, channels, r->w0, r->h0, 0, 0);
 }
 
 

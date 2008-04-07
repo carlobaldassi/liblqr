@@ -221,17 +221,17 @@ void help(char *command)
 guchar *
 rgb_buffer_from_image (pngwriter * png)
 {/*{{{*/
-  gint x, y, k, bpp;
+  gint x, y, k, channels;
   gint w, h;
   guchar *buffer;
 
   /* get info from the image */
   w = png->getwidth ();
   h = png->getheight ();
-  bpp = 3;                      // we assume an RGB image here 
+  channels = 3;                      // we assume an RGB image here 
 
-  /* allocate memory to store w * h * bpp unsigned chars */
-  buffer = g_try_new (guchar, bpp * w * h);
+  /* allocate memory to store w * h * channels unsigned chars */
+  buffer = g_try_new (guchar, channels * w * h);
   g_assert (buffer != NULL);
 
   /* start iteration (always y first, then x, then colours) */
@@ -239,10 +239,10 @@ rgb_buffer_from_image (pngwriter * png)
     {
       for (x = 0; x < w; x++)
         {
-          for (k = 0; k < bpp; k++)
+          for (k = 0; k < channels; k++)
             {
               /* read the image channel k at position x,y */
-              buffer[(y * w + x) * bpp + k] =
+              buffer[(y * w + x) * channels + k] =
                 (guchar) (png->dread (x + 1, y + 1, k + 1) * 255);
               /* note : the x+1,y+1,k+1 on the right side are
                *        specific the pngwriter library */
@@ -263,7 +263,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   gint w, h;
 
   /* make sure the image is RGB */
-  CATCH_F (r->bpp == 3);
+  CATCH_F (lqr_carver_get_channels(r) == 3);
 
   /* resize the image canvas as needed to
    * fit for the new size

@@ -86,7 +86,6 @@ lqr_vmap_dump (LqrCarver * r)
   gint w, h, w1, x, y, z0, vs;
   gint * buffer;
   gint depth; 
-  gint bpp;
 
   /* save current size */
   w1 = r->w;
@@ -97,9 +96,6 @@ lqr_vmap_dump (LqrCarver * r)
   w = lqr_carver_get_width (r);
   h = lqr_carver_get_height (r);
   depth = r->w0 - r->w_start;
-
-
-  bpp = 4;
 
   TRY_N_N (buffer = g_try_new (gint, w * h));
 
@@ -148,7 +144,6 @@ lqr_vmap_internal_dump (LqrCarver * r)
   gint w, h, w1, x, y, z0, vs;
   gint * buffer;
   gint depth; 
-  gint bpp;
 
   /* save current size */
   w1 = r->w;
@@ -159,9 +154,6 @@ lqr_vmap_internal_dump (LqrCarver * r)
   w = lqr_carver_get_width (r);
   h = lqr_carver_get_height (r);
   depth = r->w0 - r->w_start;
-
-
-  bpp = 4;
 
   CATCH_MEM (buffer = g_try_new (gint, w * h));
 

@@ -45,6 +45,9 @@
 
 /* LQR_CARVER CLASS PRIVATE FUNCTIONS */
 
+/* constructor base */
+LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels);
+
 /* build maps */
 LqrRetVal lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */
 void lqr_carver_build_emap (LqrCarver * r);     /* energy */

@@ -34,9 +34,8 @@
 
 /*** constructor & destructor ***/
 
-/* constructor */
-LqrCarver *
-lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
+/* constructors */
+LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
 {
   LqrCarver *r;
 
@@ -68,7 +67,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 
   r->h = height;
   r->w = width;
-  r->bpp = bpp;
+  r->channels = channels;
 
   r->w0 = r->w;
   r->h0 = r->h;
@@ -80,9 +79,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
   r->leftright = 0;
   r->lr_switch_frequency = 0;
 
-  r->rgb = buffer;
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
-  TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->bpp * r->w));
 
   /* initialize cursor */
 
@@ -90,6 +87,35 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 
   return r;
 }
+
+LqrCarver *
+lqr_carver_new (guchar * buffer, gint width, gint height, gint channels)
+{
+  LqrCarver *r;
+
+  TRY_N_N (r = lqr_carver_new_common (width, height, channels));
+
+  r->rgb = (void*) buffer;
+  TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->channels * r->w));
+  r->bits = 8;
+
+  return r;
+}
+
+LqrCarver *
+lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels)
+{
+  LqrCarver *r;
+
+  TRY_N_N (r = lqr_carver_new_common (width, height, channels));
+
+  r->rgb = (void*) buffer;
+  TRY_N_N (r->rgb_ro_buffer = g_try_new (guint16, r->channels * r->w));
+  r->bits = 16;
+
+  return r;
+}
+
 
 
 /* destructor */
@@ -502,8 +528,9 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   gint w1, z0, vs, k;
   gint x, y;
   gint c_left;
-  guchar *new_rgb;
+  void *new_rgb = NULL;
   gint *new_vs;
+  guint tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
   LqrDataTok data_tok;
@@ -525,7 +552,12 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   w1 = r->w0 + l - r->max_level + 1;
 
   /* allocate room for new maps */
-  CATCH_MEM (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->bpp));
+  switch (r->bits) {
+    case 8: CATCH_MEM (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->channels));
+       break;
+    case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, w1 * r->h0 * r->channels));
+       break;
+  }
   CATCH_MEM (new_vs = g_try_new0 (gint, w1 * r->h0));
   if (r->active)
     {
@@ -554,7 +586,8 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
           /* the new pixel value is equal to the average of its
            * left and right neighbors */
-          if (r->c->x > 0)
+
+	  if (r->c->x > 0)
             {
               c_left = lqr_cursor_left (r->c);
             }
@@ -562,12 +595,21 @@ lqr_carver_inflate (LqrCarver * r, gint l)
             {
               c_left = r->c->now;
             }
-          for (k = 0; k < r->bpp; k++)
-            {
-              new_rgb[z0 * r->bpp + k] =
-                (r->rgb[c_left * r->bpp + k] +
-                 r->rgb[r->c->now * r->bpp + k]) / 2;
-            }
+
+	  for (k = 0; k < r->channels; k++)
+	    {
+	      tmp_rgb = (R_RGB(r->rgb, c_left * r->channels + k) +
+			 R_RGB(r->rgb, r->c->now * r->channels + k)) / 2;
+	      switch (r->bits)
+		{
+		  case 8:
+		    ((guchar*)new_rgb)[z0 * r->channels + k] = (guchar)tmp_rgb;
+		    break;
+		  case 16:
+		    ((guint16*)new_rgb)[z0 * r->channels + k] = (guchar)tmp_rgb;
+		    break;
+		}
+	    }
           if (r->active)
             {
               new_bias[z0] = (r->bias[c_left] + r->bias[r->c->now]) / 2;
@@ -584,9 +626,18 @@ lqr_carver_inflate (LqrCarver * r, gint l)
           new_vs[z0] = l - vs + r->max_level;
           z0++;
         }
-      for (k = 0; k < r->bpp; k++)
+      for (k = 0; k < r->channels; k++)
         {
-          new_rgb[z0 * r->bpp + k] = r->rgb[r->c->now * r->bpp + k];
+	  tmp_rgb = R_RGB(r->rgb, r->c->now * r->channels + k);
+	  switch (r->bits)
+	    {
+	      case 8:
+		((guchar*)new_rgb)[z0 * r->channels + k] = (guchar) tmp_rgb;
+		break;
+	      case 16:
+		((guint16*)new_rgb)[z0 * r->channels + k] = (guint16) tmp_rgb;
+		break;
+	    }
         }
       if (r->active)
         {
@@ -658,7 +709,13 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   /* reset cursor and readout buffer */
   g_free (r->rgb_ro_buffer);
-  CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->bpp));
+  switch (r->bits)
+    {
+      case 8: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
+	 break;
+      case 16: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
+	 break;
+    }
   lqr_cursor_destroy (r->c);
   r->c = lqr_cursor_create (r, r->vs);
   
@@ -689,11 +746,11 @@ lqr_carver_read (LqrCarver * r, gint x, gint y)
   gdouble sum = 0;
   gint k;
   gint now = r->raw[y][x];
-  for (k = 0; k < r->bpp; k++)
+  for (k = 0; k < r->channels; k++)
     {
-      sum += r->rgb[now * r->bpp + k];
+      sum += R_RGB(r->rgb, now * r->channels + k);
     }
-  return sum / (255 * r->bpp);
+  return sum / (R_RGB_MAX * r->channels);
 }
 
 
@@ -1096,7 +1153,8 @@ lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data)
 LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
-  guchar *new_rgb;
+  void *new_rgb = NULL;
+  guint tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
   gint x, y, k;
@@ -1114,7 +1172,13 @@ lqr_carver_flatten (LqrCarver * r)
   g_free (r->least);
 
   /* allocate room for new map */
-  CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w * r->h * r->bpp));
+  switch (r->bits)
+    {
+      case 8: CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w * r->h * r->channels));
+	 break;
+      case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w * r->h * r->channels));
+	 break;
+    }
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w * r->h));
@@ -1140,9 +1204,18 @@ lqr_carver_flatten (LqrCarver * r)
       for (x = 0; x < r->w; x++)
         {
           z0 = y * r->w + x;
-          for (k = 0; k < r->bpp; k++)
+          for (k = 0; k < r->channels; k++)
             {
-              new_rgb[z0 * r->bpp + k] = r->rgb[r->c->now * r->bpp + k];
+              tmp_rgb = R_RGB(r->rgb, r->c->now * r->channels + k);
+	      switch (r->bits)
+	        {
+		  case 8:
+		    ((guchar*)new_rgb)[z0 * r->channels + k] = (guchar) tmp_rgb;
+		    break;
+		  case 16:
+		    ((guint16*)new_rgb)[z0 * r->channels + k] = (guint16) tmp_rgb;
+		    break;
+		}
             }
           if (r->active)
             {
@@ -1220,7 +1293,8 @@ lqr_carver_transpose (LqrCarver * r)
   gint x, y, k;
   gint z0, z1;
   gint d;
-  guchar *new_rgb;
+  void *new_rgb = NULL;
+  guint tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
   LqrDataTok data_tok;
@@ -1243,7 +1317,14 @@ lqr_carver_transpose (LqrCarver * r)
   g_free (r->rgb_ro_buffer);
 
   /* allocate room for the new maps */
-  CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->bpp));
+  switch (r->bits)
+    {
+      case 8: CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->channels));
+	 break;
+      case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w0 * r->h0 * r->channels));
+	 break;
+    }
+
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
@@ -1268,9 +1349,18 @@ lqr_carver_transpose (LqrCarver * r)
         {
           z0 = y * r->w0 + x;
           z1 = x * r->h0 + y;
-          for (k = 0; k < r->bpp; k++)
+          for (k = 0; k < r->channels; k++)
             {
-              new_rgb[z1 * r->bpp + k] = r->rgb[z0 * r->bpp + k];
+              tmp_rgb = R_RGB(r->rgb, z0 * r->channels + k);
+	      switch (r->bits)
+	        {
+		  case 8:
+		    ((guchar*)new_rgb)[z1 * r->channels + k] = (guchar) tmp_rgb;
+		    break;
+		  case 16:
+		    ((guint16*)new_rgb)[z1 * r->channels + k] = (guint16) tmp_rgb;
+		    break;
+		}
             }
           if (r->active)
             {
@@ -1329,7 +1419,13 @@ lqr_carver_transpose (LqrCarver * r)
   lqr_cursor_destroy (r->c);
   r->c = lqr_cursor_create (r, r->vs);
 
-  CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->bpp));
+  switch (r->bits)
+    {
+      case 8: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
+	 break;
+      case 16: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
+	 break;
+    }
 
   /* rescale rigidity */
 
@@ -1489,9 +1585,14 @@ gint lqr_carver_get_height(LqrCarver* r)
 }
 
 /* get colour channels */
+gint lqr_carver_get_channels (LqrCarver * r)
+{
+  return r->channels;
+}
+
 gint lqr_carver_get_bpp (LqrCarver * r)
 {
-  return r->bpp;
+  return lqr_carver_get_channels(r);
 }
 
 
@@ -1506,6 +1607,10 @@ gboolean
 lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
   gint k;
+  if (r->bits != 8)
+    {
+      return FALSE;
+    }
   if (r->c->eoc)
     {
       lqr_carver_scan_reset (r);
@@ -1513,11 +1618,35 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
     }
   (*x) = (r->transposed ? r->c->y : r->c->x);
   (*y) = (r->transposed ? r->c->x : r->c->y);
-  for (k = 0; k < r->bpp; k++)
+  for (k = 0; k < r->channels; k++)
     {
-      r->rgb_ro_buffer[k] = r->rgb[r->c->now * r->bpp + k];
+      ((guchar*)r->rgb_ro_buffer)[k] = R_RGB(r->rgb, r->c->now * r->channels + k);
     }
-  (*rgb) = r->rgb_ro_buffer;
+  (*rgb) = (guchar*)r->rgb_ro_buffer;
+  lqr_cursor_next(r->c);
+  return TRUE;
+}
+
+gboolean
+lqr_carver_scan_16 (LqrCarver * r, gint * x, gint * y, guint16 ** rgb)
+{
+  gint k;
+  if (r->bits != 16)
+    {
+      return FALSE;
+    }
+  if (r->c->eoc)
+    {
+      lqr_carver_scan_reset (r);
+      return FALSE;
+    }
+  (*x) = (r->transposed ? r->c->y : r->c->x);
+  (*y) = (r->transposed ? r->c->x : r->c->y);
+  for (k = 0; k < r->channels; k++)
+    {
+      ((guint16*)r->rgb_ro_buffer)[k] = R_RGB(r->rgb, r->c->now * r->channels + k);
+    }
+  (*rgb) = (guint16*)r->rgb_ro_buffer;
   lqr_cursor_next(r->c);
   return TRUE;
 }
@@ -1533,6 +1662,10 @@ gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {
   gint k, x;
+  if (r->bits != 8)
+    {
+      return FALSE;
+    }
   if (r->c->eoc)
     {
       lqr_carver_scan_reset (r);
@@ -1547,14 +1680,47 @@ lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
     }
   for (x = 0; x < r->w; x++)
     {
-      for (k = 0; k < r->bpp; k++)
+      for (k = 0; k < r->channels; k++)
 	{
-	  r->rgb_ro_buffer[x * r->bpp + k] = r->rgb[r->c->now * r->bpp + k];
+	  ((guchar*)r->rgb_ro_buffer)[x * r->channels + k] = R_RGB(r->rgb, r->c->now * r->channels + k);
 	}
       lqr_cursor_next(r->c);
     }
 
-  (*rgb) = r->rgb_ro_buffer;
+  (*rgb) = (guchar*)r->rgb_ro_buffer;
+  return TRUE;
+}
+
+gboolean
+lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb)
+{
+  gint k, x;
+  if (r->bits != 16)
+    {
+      return FALSE;
+    }
+  if (r->c->eoc)
+    {
+      lqr_carver_scan_reset (r);
+      return FALSE;
+    }
+  x = r->c->x;
+  (*n) = r->c->y;
+  while (x > 0)
+    {
+      lqr_cursor_prev(r->c);
+      x = r->c->x;
+    }
+  for (x = 0; x < r->w; x++)
+    {
+      for (k = 0; k < r->channels; k++)
+	{
+	  ((guint16*)r->rgb_ro_buffer)[x * r->channels + k] = R_RGB(r->rgb, r->c->now * r->channels + k);
+	}
+      lqr_cursor_next(r->c);
+    }
+
+  (*rgb) = (guint16*)r->rgb_ro_buffer;
   return TRUE;
 }
 

@@ -29,8 +29,8 @@
 
 /* PUBLIC RIGMASK-RELATED FUNCTIONS */
 
-LqrRetVal lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *buffer, gint bpp, gint width, gint height, gint x_off, gint y_off);
-LqrRetVal lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *buffer, gint bpp);
+LqrRetVal lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *buffer, gint channels, gint width, gint height, gint x_off, gint y_off);
+LqrRetVal lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *buffer, gint channels);
 LqrRetVal lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint height, gint x_off, gint y_off);
 LqrRetVal lqr_carver_rigmask_add(LqrCarver *r, gdouble *buffer);
 
