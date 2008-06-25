@@ -12,6 +12,7 @@ config.h
 config.log
 config.status
 config.guess
+config.sub
 libtool
 lqr-1.pc
 stamp-h1

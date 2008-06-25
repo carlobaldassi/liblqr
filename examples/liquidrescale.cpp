@@ -2,11 +2,6 @@
  * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
- * This library implements the algorithm described in the paper
- * "Seam Carving for Content-Aware Image Resizing"
- * by Shai Avidan and Ariel Shamir
- * which can be found at http://www.faculty.idc.ac.il/arik/imret.pdf
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; version 3 dated June, 2007.
