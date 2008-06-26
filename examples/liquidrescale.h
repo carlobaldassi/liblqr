@@ -1,4 +1,4 @@
-/* LiquidRescaling Library EXAMPLE program
+/* LiquidRescaling Library DEMO program
  * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
