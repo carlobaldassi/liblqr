@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -21,25 +21,23 @@
  */
 
 
-#ifndef __LQR_ALL_H__
-#define __LQR_ALL_H__
+#ifndef __LQR_ENERGY_PUB_H__
+#define __LQR_ENERGY_PUB_H__
 
-#include <glib.h>
+/**** gradient functions for energy evluation ****/
+typedef double (*LqrEnergyFunc) (LqrCarver*, gint, gint);
 
-G_BEGIN_DECLS
+enum _LqrEnergyFuncType
+{
+  LQR_EF_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
+  LQR_EF_NORM_BIAS,             /* gradient biased norm : sqrt(x^2 + 0.1 y^2) */
+  LQR_EF_SUMABS,                /* sum of absulte values : |x| + |y|          */
+  LQR_EF_XABS,                  /* x absolute value : |x|                     */
+  LQR_EF_YABS,                  /* y absolute value : |y|                     */
+  LQR_EF_NULL                   /* 0 */
+};
 
-#include <lqr/lqr_base.h>
-#include <lqr/lqr_gradient.h>
-#include <lqr/lqr_energy.h>
-#include <lqr/lqr_cursor.h>
-#include <lqr/lqr_progress.h>
-#include <lqr/lqr_vmap.h>
-#include <lqr/lqr_vmap_list.h>
-#include <lqr/lqr_carver_list.h>
-#include <lqr/lqr_carver_bias.h>
-#include <lqr/lqr_carver_rigmask.h>
-#include <lqr/lqr_carver.h>
+typedef enum _LqrEnergyFuncType LqrEnergyFuncType;
 
-G_END_DECLS
 
-#endif /* __LQR_ALL_H__ */
+#endif /* __LQR_ENERGY_PUB_H__ */

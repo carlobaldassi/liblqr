@@ -59,7 +59,7 @@ lqrLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lqr_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 liblqr_1_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_liblqr_1_la_OBJECTS = lqr_gradient.lo lqr_cursor.lo lqr_carver.lo \
+am_liblqr_1_la_OBJECTS = lqr_gradient.lo lqr_energy.lo lqr_cursor.lo lqr_carver.lo \
 	lqr_carver_list.lo lqr_carver_bias.lo lqr_carver_rigmask.lo \
 	lqr_vmap.lo lqr_vmap_list.lo lqr_progress.lo
 liblqr_1_la_OBJECTS = $(am_liblqr_1_la_OBJECTS)
@@ -209,6 +209,10 @@ liblqr_1_la_SOURCES = \
 	lqr_gradient.h  \
 	lqr_gradient_pub.h  \
 	lqr_gradient_priv.h  \
+	lqr_energy.c  \
+	lqr_energy.h  \
+	lqr_energy_pub.h  \
+	lqr_energy_priv.h  \
 	lqr_cursor.c    \
 	lqr_cursor.h    \
 	lqr_cursor_pub.h    \
@@ -255,6 +259,7 @@ lqr_include0_HEADERS = lqr.h
 lqr_include0dir = $(includedir)/@LIBRARY_SNAME@
 lqr_include_HEADERS = lqr_base.h \
 		      lqr_gradient_pub.h \
+		      lqr_energy_pub.h \
 		      lqr_cursor_pub.h \
 		      lqr_carver_pub.h \
 		      lqr_carver_list_pub.h \
@@ -339,6 +344,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_carver_list.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_carver_rigmask.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_cursor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_energy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_gradient.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_progress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lqr_vmap.Plo@am__quote@

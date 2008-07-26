@@ -831,6 +831,7 @@ lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data)
 
 /*** internal functions for maps computations ***/
 
+#if 0
 /* read average pixel value at x, y 
  * for energy computation */
 inline gfloat
@@ -912,6 +913,7 @@ lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
   data = r->raw[y][x];
   r->en[data] = (*(r->gf)) (gx, gy) + r->bias[data] / r->w_start;
 }
+#endif
 
 /* do the carving
  * this actually carves the raw array,

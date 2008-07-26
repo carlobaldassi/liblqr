@@ -35,6 +35,14 @@
 #error "lqr_gradient_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_GRADIENT_PUB_H__ */
 
+#ifndef __LQR_CURSOR_PUB_H__
+#error "lqr_cursor_pub.h must be included prior to lqr_carver_pub.h"
+#endif /* __LQR_CURSOR_H__ */
+
+#ifndef __LQR_PROGRESS_PUB_H__
+#error "lqr_progress_pub.h must be included prior to lqr_carver_pub.h"
+#endif /* __LQR_PROGRESS_H__ */
+
 #ifndef __LQR_CARVER_LIST_PUB_H__
 #error "lqr_carver_list_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_CARVER_LIST_PUB_H__ */

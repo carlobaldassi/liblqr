@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -21,25 +21,10 @@
  */
 
 
-#ifndef __LQR_ALL_H__
-#define __LQR_ALL_H__
+#ifndef __LQR_ENERGY_PRIV_H__
+#define __LQR_ENERGY_PRIV_H__
 
-#include <glib.h>
+inline gdouble lqr_carver_read (LqrCarver * r, gint x, gint y);
+void lqr_carver_compute_e (LqrCarver * r, gint x, gint y);
 
-G_BEGIN_DECLS
-
-#include <lqr/lqr_base.h>
-#include <lqr/lqr_gradient.h>
-#include <lqr/lqr_energy.h>
-#include <lqr/lqr_cursor.h>
-#include <lqr/lqr_progress.h>
-#include <lqr/lqr_vmap.h>
-#include <lqr/lqr_vmap_list.h>
-#include <lqr/lqr_carver_list.h>
-#include <lqr/lqr_carver_bias.h>
-#include <lqr/lqr_carver_rigmask.h>
-#include <lqr/lqr_carver.h>
-
-G_END_DECLS
-
-#endif /* __LQR_ALL_H__ */
+#endif /* __LQR_ENERGY_PRIV_H__ */
