@@ -24,7 +24,25 @@
 #ifndef __LQR_ENERGY_PRIV_H__
 #define __LQR_ENERGY_PRIV_H__
 
-inline gdouble lqr_carver_read (LqrCarver * r, gint x, gint y);
-void lqr_carver_compute_e (LqrCarver * r, gint x, gint y);
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_energy_priv.h"
+#endif /* __LQR_BASE_H__ */
+
+typedef double (*LqrReadFunc) (LqrCarver*, gint, gint);
+typedef double (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint);
+
+struct _LqrEnergy
+{
+  LqrEnergyFunc ef;
+  LqrGradFunc gf;
+  LqrReadFunc rf;
+  LqrReadFuncAbs rfabs;
+};
+
+inline gdouble lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
+double lqr_energy_std (LqrCarver * r, gint x, gint y);
+double lqr_energy_luma_and_chroma (LqrCarver * r, gint x, gint y);
+double lqr_energy_null (LqrCarver * r, gint x, gint y);
 
 #endif /* __LQR_ENERGY_PRIV_H__ */

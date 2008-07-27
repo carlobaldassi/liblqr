@@ -35,6 +35,10 @@
 #error "lqr_gradient_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_GRADIENT_PUB_H__ */
 
+#ifndef __LQR_ENERGY_PUB_H__
+#error "lqr_energy_pub.h must be included prior to lqr_carver_pub.h"
+#endif /* __LQR_ENERGY_PUB_H__ */
+
 #ifndef __LQR_CURSOR_PUB_H__
 #error "lqr_cursor_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_CURSOR_H__ */
@@ -55,6 +59,9 @@
 #error "lqr_progress_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_PROGRESS_PUB_H__ */
 
+#define R_RGB(rgb, z) ((r->bits == 8) ? ((guchar*)rgb)[z] : ((guint16*)rgb)[z])
+#define R_RGB_MAX ((1 << r->bits) - 1)
+
 
 /* LQR_CARVER CLASS PUBLIC FUNCTIONS */
 
@@ -67,7 +74,8 @@ void lqr_carver_destroy (LqrCarver * r);
 LqrRetVal lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 
 /* set attributes */
-void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
+LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type);
+LqrRetVal lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index);
 void lqr_carver_set_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_no_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
@@ -76,6 +84,9 @@ LqrRetVal lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step);
 LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 void lqr_carver_set_preserve_input_image(LqrCarver *r);
+/* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
+/* lqr_carver_set_energy_function() should be used instead */
+void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
 
 /* image manipulations */
 LqrRetVal lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */

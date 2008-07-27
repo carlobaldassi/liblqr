@@ -25,10 +25,9 @@
 #define __LQR_GRADIENT_PRIV_H__
 
 double lqr_grad_norm (double x, double y);
-double lqr_grad_norm_bias (double x, double y);
 double lqr_grad_sumabs (double x, double y);
 double lqr_grad_xabs (double x, double y);
-double lqr_grad_yabs (double x, double y);
-double lqr_grad_zero (double x, double y);
+/* the null function is only kept for back compatibility */
+double lqr_grad_null (double x, double y);
 
 #endif /* __LQR_GRADIENT_PRIV_H__ */

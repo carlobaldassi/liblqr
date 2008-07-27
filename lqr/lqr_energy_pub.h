@@ -24,20 +24,34 @@
 #ifndef __LQR_ENERGY_PUB_H__
 #define __LQR_ENERGY_PUB_H__
 
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_energy_pub.h"
+#endif /* __LQR_BASE_H__ */
+
 /**** gradient functions for energy evluation ****/
 typedef double (*LqrEnergyFunc) (LqrCarver*, gint, gint);
 
 enum _LqrEnergyFuncType
 {
-  LQR_EF_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
-  LQR_EF_NORM_BIAS,             /* gradient biased norm : sqrt(x^2 + 0.1 y^2) */
-  LQR_EF_SUMABS,                /* sum of absulte values : |x| + |y|          */
-  LQR_EF_XABS,                  /* x absolute value : |x|                     */
-  LQR_EF_YABS,                  /* y absolute value : |y|                     */
-  LQR_EF_NULL                   /* 0 */
+  LQR_EF_STD,
+  LQR_EF_ABS,
+  LQR_EF_NULL
 };
 
 typedef enum _LqrEnergyFuncType LqrEnergyFuncType;
 
+enum _LqrReadFuncType
+{
+  LQR_RF_BRIGHTNESS,                  /* use braightness          */
+  LQR_RF_LUMA,                        /* use luma            */
+};
+
+typedef enum _LqrReadFuncType LqrReadFuncType;
+
+struct _LqrEnergy;
+
+typedef struct _LqrEnergy LqrEnergy;
+
+LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFuncType ef_ind, LqrGradFuncType gf_ind, LqrReadFuncType rf_ind);
 
 #endif /* __LQR_ENERGY_PUB_H__ */

@@ -107,6 +107,21 @@ enum _LqrResizeOrder
 
 typedef enum _LqrResizeOrder LqrResizeOrder;
 
+/**** IMAGE TYPE ****/
+enum _LqrImageType
+{
+  LQR_RGB_IMAGE,
+  LQR_RGBA_IMAGE,
+  LQR_GREY_IMAGE,
+  LQR_GREYA_IMAGE,
+  LQR_CMY_IMAGE,
+  LQR_CMYK_IMAGE,
+  LQR_CMYKA_IMAGE,
+  LQR_CUSTOM_IMAGE
+};
+
+typedef enum _LqrImageType LqrImageType;
+
 /**** CLASSES DECLARATIONS ****/
 
 struct _LqrCarver;              /* the multisize image carver */

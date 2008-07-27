@@ -83,7 +83,8 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->w_start = r->w;
   r->h_start = r->h;
 
-  lqr_carver_set_gradient_function(r, LQR_GF_XABS);
+  TRY_N_N (r->nrg = g_try_new (LqrEnergy, 1));
+  lqr_carver_set_energy_function(r, LQR_EF_STD, LQR_GF_XABS, LQR_RF_BRIGHTNESS);
 
   r->leftright = 0;
   r->lr_switch_frequency = 0;
@@ -95,6 +96,34 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   /* initialize cursor */
 
   TRY_N_N (r->c = lqr_cursor_create (r));
+
+  switch (channels)
+  {
+    case 1:
+      r->image_type = LQR_GREY_IMAGE;
+      r->alpha_channel = -1;
+      break;
+    case 2:
+      r->image_type = LQR_GREYA_IMAGE;
+      r->alpha_channel = 1;
+      break;
+    case 3:
+      r->image_type = LQR_RGB_IMAGE;
+      r->alpha_channel = -1;
+      break;
+    case 4:
+      r->image_type = LQR_RGBA_IMAGE;
+      r->alpha_channel = 3;
+      break;
+    case 5:
+      r->image_type = LQR_CMYKA_IMAGE;
+      r->alpha_channel = 4;
+      break;
+    default:
+      r->image_type = LQR_CUSTOM_IMAGE;
+      r->alpha_channel = channels - 1;
+      break;
+  }
 
   return r;
 }
@@ -140,6 +169,7 @@ lqr_carver_destroy (LqrCarver * r)
   g_free (r->bias);
   g_free (r->m);
   g_free (r->least);
+  g_free (r->nrg);
 
   lqr_cursor_destroy (r->c);
   g_free (r->vpath);
@@ -207,30 +237,95 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
 /*** set attributes ***/
 
-/* gradient function for energy computation */
-LQR_PUBLIC
+LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
+{
+  switch (image_type) {
+    case LQR_GREY_IMAGE:
+      if (r->channels != 1) {
+        return LQR_ERROR;
+      }
+      r->alpha_channel = -1;
+      break;
+    case LQR_GREYA_IMAGE:
+      if (r->channels != 2)
+        {
+          return LQR_ERROR;
+        }
+      r->alpha_channel = 1;
+      break;
+    case LQR_CMY_IMAGE:
+    case LQR_RGB_IMAGE:
+      if (r->channels != 3)
+        {
+          return LQR_ERROR;
+        }
+      r->alpha_channel = -1;
+      break;
+    case LQR_CMYK_IMAGE:
+      if (r->channels != 4)
+        {
+          return LQR_ERROR;
+        }
+      r->alpha_channel = -1;
+      break;
+    case LQR_RGBA_IMAGE:
+      if (r->channels != 4)
+        {
+          return LQR_ERROR;
+        }
+      r->alpha_channel = 3;
+      break;
+    case LQR_CMYKA_IMAGE:
+      if (r->channels != 5)
+        {
+          return LQR_ERROR;
+        }
+      r->alpha_channel = 4;
+      break;
+    case LQR_CUSTOM_IMAGE:
+      r->alpha_channel = r->channels - 1;
+      break;
+    default:
+      return LQR_ERROR;
+  }
+  r->image_type = image_type;
+
+  return LQR_OK;
+}
+
+LqrRetVal
+lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
+{
+  if (channel_index < 0) {
+    r->alpha_channel = -1;
+  } else if (channel_index < r->channels) {
+    r->alpha_channel = channel_index;
+  } else {
+    return LQR_ERROR;
+  }
+  r->image_type = LQR_CUSTOM_IMAGE;
+  return LQR_OK;
+}
+
+/* set gradient function */
+/* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
+/* lqr_carver_set_energy_function() should be used in newly written code instead */
 void
 lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 {
   switch (gf_ind)
     {
     case LQR_GF_NORM:
-      r->gf = &lqr_grad_norm;
-      break;
-    case LQR_GF_NORM_BIAS:
-      r->gf = &lqr_grad_norm_bias;
+      r->nrg->gf = &lqr_grad_norm;
       break;
     case LQR_GF_SUMABS:
-      r->gf = &lqr_grad_sumabs;
+      r->nrg->gf = &lqr_grad_sumabs;
       break;
     case LQR_GF_XABS:
-      r->gf = &lqr_grad_xabs;
-      break;
-    case LQR_GF_YABS:
-      r->gf = &lqr_grad_yabs;
+      r->nrg->gf = &lqr_grad_xabs;
       break;
     case LQR_GF_NULL:
-      r->gf = &lqr_grad_zero;
+      r->nrg->gf = &lqr_grad_null;
       break;
 #ifdef __LQR_DEBUG__
     default:
@@ -361,11 +456,20 @@ lqr_carver_build_emap (LqrCarver * r)
       CATCH_CANC(r);
       for (x = 0; x < r->w; x++)
         {
-          lqr_carver_compute_e (r, x, y);
+          lqr_carver_compute_e(r, x, y);
         }
     }
 
   return LQR_OK;
+}
+
+void
+lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
+{
+  gint data;
+
+  data = r->raw[y][x];
+  r->en[data] = (*(r->nrg->ef))(r, x, y) + r->bias[data] / r->w_start;
 }
 
 /* compute auxiliary minpath map
