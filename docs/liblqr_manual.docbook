@@ -10,7 +10,7 @@
 	<!ENTITY ret_null "<literal><returnvalue>NULL</returnvalue></literal>">
 	<!ENTITY param_w "<parameter>width</parameter>">
 	<!ENTITY param_h "<parameter>height</parameter>">
-	<!ENTITY param_bpp "<parameter>bpp</parameter>">
+	<!ENTITY param_channels "<parameter>channels</parameter>">
 	<!ENTITY param_depth "<parameter>depth</parameter>">
 	<!ENTITY err_ok "<literal><errorcode>LQR_OK</errorcode></literal>">
 	<!ENTITY err_err "<literal><errorcode>LQR_ERROR</errorcode></literal>">
@@ -31,7 +31,7 @@
 			<title>Copyright</title>
 			<para>
 				LiquidRescaling Library Manual.
-				Copyright (C) 2007 Carlo Baldassi <email>carlobaldassi@gmail.com</email>
+				Copyright (C) 2007-2008 Carlo Baldassi <email>carlobaldassi@gmail.com</email>
 			</para>
 			<para>
 				This manual is released under the terms of the GNU General Public License
@@ -70,24 +70,30 @@
 		<sect1 id="seam-carve">
 			<title>Seam carving in brief</title>
 			<para>
-				Basically, the algorithm tries to find out which parts
+				Basically, the rescaling algorithm tries to find out which parts
 				of the image are important, and which are not, based on the contrast
 				between adjacent pixels; then, the image is resized through the
 				elimination or insertion of continuous paths, called `seams'.
 				The seams connect the top of the image with the bottom when
 				rescaling horizontally, or they connect the left side with the right
 				side when rescaling vertically.
-				In the seam carving process, seams are removed in sequence.
+				In the seam carving process, seams are removed in sequence, therefore
+				shrinking the image by one pixel at a time.
 				The seam insertion process mirrors the seam carving process,
 				introducing interpolated seams in regions where they would have
 				been carved.
+			</para>
+			<para>
+				Once it has been computed, the carving information can be efficiently
+				stored in a so called multi-sized image, which can be used to reproduce
+				the carving operation on the fly at any later moment. 
 			</para>
 			<para>
 				It often happens that the automatic feature detection fails
 				to identify as significant some image regions; in these cases
 				a preservation mask can be specified, which marks those regions.
 				In fact, the feature recognition process can be manually driven
-				quite easily to its full extent. 
+				quite easily to its full extent, by using custom masks.
 			</para>
 			<para>
 				See also the <link linkend="references">References</link> section for
@@ -164,7 +170,7 @@
 				When a &carv_obj; object is created from an input image, the
 				visibility of each pixel is uninitialized. At this point, one could either
 				import a previously computed &vmap_obj;, or activate the &carv_obj; so
-				that it creates one afresh when asked.
+				that it creates one afresh when asked to.
 			</para>
 			<para>
 				In either case, there's a single method to call, specifiying the new
@@ -188,7 +194,8 @@
 						</para>
 						<para>
 							<programlisting>
-LqrCarver * lqr_carver_new (guchar *buffer, gint width, gint height, gint bpp);
+LqrCarver * lqr_carver_new (guchar *buffer, gint width, gint height, gint channels);
+LqrCarver * lqr_carver_new_16 (guint16 *buffer, gint width, gint height, gint channels);
 void lqr_carver_destroy (LqrCarver *carver);
 							</programlisting>
 						</para>
@@ -220,9 +227,11 @@ LqrRetVal lqr_carver_flatten (LqrCarver *carver);
 						</para>
 						<para>
 							<programlisting>
-gboolean lqr_carver_scan (LqrCarver *carver, gint *x, gint *y, guchar **carvergb);
+gboolean lqr_carver_scan (LqrCarver *carver, gint *x, gint *y, guchar **rgb);
+gboolean lqr_carver_scan_16 (LqrCarver *carver, gint *x, gint *y, guint16 **rgb);
 gboolean lqr_carver_scan_by_row (LqrCarver *carver);
-gboolean lqr_carver_scan_line (LqrCarver *carver, gint *n, guchar **carvergb);
+gboolean lqr_carver_scan_line (LqrCarver *carver, gint *n, guchar **rgb);
+gboolean lqr_carver_scan_line_16 (LqrCarver *carver, gint *n, guint16 **rgb);
 							</programlisting>
 						</para>
 					</listitem>
@@ -234,7 +243,7 @@ gboolean lqr_carver_scan_line (LqrCarver *carver, gint *n, guchar **carvergb);
 							<programlisting>
 gint lqr_carver_get_width (LqrCarver *carver);
 gint lqr_carver_get_height (LqrCarver *carver);
-gint lqr_carver_get_bpp (LqrCarver *carver);
+gint lqr_carver_get_channels (LqrCarver *carver);
 							</programlisting>
 						</para>
 					</listitem>
@@ -248,7 +257,8 @@ gint lqr_carver_get_bpp (LqrCarver *carver);
 			</para>
 			<para>
 				The return value of many functions is of type <classname>LqrRetVal</classname>. This is just an
-				enum type which can be used for signal handling, see <link linkend="signals">this section</link>.
+				enum type which can be used for signal handling,
+				see <link linkend="signals">the signal handling section</link>.
 			</para>
 			<para>
 				The other classes are optional: the class &vmap_obj; is used to hold the
@@ -257,8 +267,8 @@ gint lqr_carver_get_bpp (LqrCarver *carver);
 				progress report from the resizing engine (by default is turned off).
 			</para>
 			<para>
-				A complete list of the library public method can be found at the
-				end of this document
+				A complete list of the library public methods can be found at the
+				end of this document.
 			</para>
 		</sect1>
 	</chapter>
@@ -348,41 +358,54 @@ gint lqr_carver_get_bpp (LqrCarver *carver);
 			<sect2 id="carver-new">
 				<title>Carver object creation</title>
 				<para>
-					The &carv_obj; objects are initialized from a plain buffer of unsigned
-					chars representing an image, in which each colour channel takes a value
-					between 0 and 255, through this function:
+					The &carv_obj; objects are initialized from a plain buffer
+					representing an image. Depending on the buffer type, there are different
+					constructors. The constructor for 8-bit images is:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>LqrCarver * <function>lqr_carver_new</function></funcdef>
 							<paramdef> guchar * <parameter>buffer</parameter></paramdef>
 							<paramdef> gint <parameter>width</parameter></paramdef>
 							<paramdef> gint <parameter>height</parameter></paramdef>
-							<paramdef> gint <parameter>bpp</parameter></paramdef>
+							<paramdef> gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</para>
 				<para>
 					Here, <parameter>buffer</parameter> is the array representing an image of size
 					<parameter>width</parameter> by <parameter>height</parameter> width
-					<parameter>bpp</parameter> colour channels per pixels.
+					<parameter>channels</parameter> colour channels per pixels.
 					Thus, the overall buffer size has to be of
-					<literal><parameter>widht</parameter> * <parameter>height</parameter> * <parameter>bpp</parameter>
+					<literal><parameter>widht</parameter> * <parameter>height</parameter> * <parameter>channels</parameter>
 					</literal>
 					unsigned characters, and ordered such that
 					the <literal><symbol>k</symbol></literal>-th colour of the pixel at row
 					<literal><symbol>y</symbol></literal> and column
 					<literal><symbol>x</symbol></literal> is found at:
-					<programlisting>buffer[(y * width + x) * bpp + k]</programlisting>
+					<programlisting>buffer[(y * width + x) * channels + k]</programlisting>
 					(this assumes that <literal><symbol>x</symbol></literal>, <literal><symbol>y</symbol></literal>
 					and <literal><symbol>k</symbol></literal> all start from <literal>0</literal>
 					and reach the maximum values
 					<literal><symbol>widht</symbol>-1</literal>,
 					<literal><symbol>height</symbol>-1</literal>
-					and <literal><symbol>bpp</symbol>-1</literal>, respectively)
+					and <literal><symbol>channels</symbol>-1</literal>, respectively)
 				</para>
 				<para>
 					The function returns a pointer to the newly allocated &carv_obj; upon 
 					success, or <literal><returnvalue>NULL</returnvalue></literal> in case of insufficient memory.
+				</para>
+				<para>
+					The constructor for 16-bit images is almost identical:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrCarver * <function>lqr_carver_new_16</function></funcdef>
+							<paramdef> guint16 * <parameter>buffer</parameter></paramdef>
+							<paramdef> gint <parameter>width</parameter></paramdef>
+							<paramdef> gint <parameter>height</parameter></paramdef>
+							<paramdef> gint <parameter>channels</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					The only difference with the 8-bit version is the type of the buffer.
 				</para>
 				<important>
 					<para>
@@ -415,9 +438,9 @@ gint lqr_carver_get_bpp (LqrCarver *carver);
 				</para>
 				<para>
 					Here, <parameter>delta_x</parameter> is the maximum allowed transversal step of the
-					seams (0 means straight seams, the standard value is 1), while
+					seams (0 means straight seams, the typical value is 1), while
 					the <parameter>rigidity</parameter> parameter can be used to introduce
-					a bias for non-straight seams (the standard value is 0).
+					a bias for non-straight seams (the typical value is 0).
 			</para>
 				<important>
 					<para>
@@ -512,13 +535,24 @@ gint lqr_carver_get_bpp (LqrCarver *carver);
 
 				<para>
 					Once you have rescaled the image, you can read out the result through
-					this function:
+					these functions:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
 							<paramdef> gint* <parameter>x</parameter></paramdef>
 							<paramdef> gint* <parameter>y</parameter></paramdef>
 							<paramdef> guchar** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					or
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_16</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+							<paramdef> gint* <parameter>x</parameter></paramdef>
+							<paramdef> gint* <parameter>y</parameter></paramdef>
+							<paramdef> guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 
@@ -527,17 +561,18 @@ gint lqr_carver_get_bpp (LqrCarver *carver);
 					Here, <parameter>x</parameter> and <parameter>y</parameter> are pointers to
 					the varaibles which will hold the pixel coordinate, while 
 					<parameter>rgb</parameter> is a pointer to an array which will
-					contain the pixel colour information.
+					contain the pixel colour information. The correct function must be chosen
+					depending on how the carver was created.
 				</para>
 				<para>
 					The return value is &ret_false; when the end of the image is reached,
-					&ret_true; otherwise.
+					or the buffer has the wrong number of bits, &ret_true; otherwise.
 				</para>
 				<para>
-					Each time this function is invoked, it will store
+					Each time these functions are invoked, they will store
 					the coordinates and rgb information in the output pointers
-					and move to the next pixel. If it reaches the end, it
-					resets the reader and returns &ret_false;.
+					and move to the next pixel. If they reach the end, they
+					resets the reader and return &ret_false;.
 				</para>
 				<para>
 					Here is a sample code usage:
@@ -554,7 +589,7 @@ while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
 						</programlisting>
 					</example>
 
-					In this example, it is assumed that the image has 3 colour
+					In this example, it is assumed that the image has three 8-bit colour
 					channels, and that there exist some function
 					<function>my_plot</function> which writes out the pixels somewhere.
 				</para>
@@ -589,7 +624,7 @@ while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
 					if it is read by column.
 				</para>
 				<para>
-					Then, the image can be read through this function:
+					Then, the image can be read through these functions:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan_line</function></funcdef>
@@ -598,9 +633,19 @@ while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
 							<paramdef>guchar** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
+					or
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_line_16</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>n</parameter></paramdef>
+							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
 				</para>
 				<para>
-					This function works exactly the same way as <function>lqr_carver_scan</function>, but
+					These functions work exactly the same way as <function>lqr_carver_scan</function> and
+					<function>lqr_carver_scan_16</function>, but
 					only one coordinate is stored (either the row or the column number),
 					and the <parameter>rgb</parameter> array will contain a whole line.
 				</para>
@@ -683,12 +728,6 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 						can be called multiple times.
 					</para>
 				</note>
-				<para>
-
-					(See also the section "Additional notes" in the README file for
-					situations where the behaviour of biased regions can be
-					counter-intuitive.) [XXX]
-				</para>
 			</sect2>
 
 			<sect2 id="float-bias">
@@ -728,9 +767,9 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 				<title>Using another image</title>
 
 				<para>
-					The bias can also be read from an rgb buffer. This buffer
-					has to be in the same format as the one used in the LqrCarver
-					constructor (but may have a different number of colour per
+					The bias can also be read from an 8-bit rgb buffer. This buffer
+					has to be in the same format as the one used in the 8-bit LqrCarver
+					constructor (but may have a different number of colours per
 					channel). The function is:
 					<funcsynopsis>
 						<funcprototype>
@@ -738,7 +777,7 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
-							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</para>
@@ -754,9 +793,10 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 				<important>
 					<para>
 						The existence of an alpha channel is inferred from the
-						<parameter>bpp</parameter> value: if this is 1 or 3, no alpha
+						<parameter>channels</parameter> value: if this is 1 or 3, no alpha
 						channel is assumed, if it is 2 or 4, it is assumed that the last
-						channel is holds the alpha value.
+						channel is holds the alpha value. If this is not what you want, you should
+						resort to the previous method.
 					</para>
 				</important>
 			</sect2>
@@ -785,9 +825,9 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb_area</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
-							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>x_off</parameter></paramdef>
@@ -805,7 +845,7 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 				<para>
 					The provided buffers have to be of size
 					<literal>&param_w; * &param_h;</literal>
-					(or <literal>&param_w; * &param_h; * &param_bpp;</literal> for the rgb case)
+					(or <literal>&param_w; * &param_h; * &param_channels;</literal> for the rgb case)
 					but the specified areas need not to be strictly included inside the
 					&carv_obj; image area : only the parts which overlap with it will be used.
 					For example, the offsets can also be negative.
@@ -1169,7 +1209,7 @@ vis =  buffer[y * width + x];
 					</funcsynopsis>
 				</para>
 				<para>
-					The carver must not to be initialized.
+					The carver must not to be initialized, neither before nor after invoking this function.
 				</para>
 				<note>
 					<para>
@@ -1556,6 +1596,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 
 				<refnamediv>
 					<refname>lqr_carver_new</refname>
+					<refname>lqr_carver_new_16</refname>
 					<refname>lqr_carver_destroy</refname>
 					<refpurpose>the &carv_obj; object constructor and destructor</refpurpose>
 				</refnamediv>
@@ -1568,7 +1609,14 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
 							<paramdef>gint <parameter>height</parameter></paramdef>
-							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrCarver* <function>lqr_carver_new_16</function></funcdef>
+							<paramdef>guint16* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_destroy</function></funcdef>
@@ -1583,18 +1631,21 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<refsect2>
 						<title>Description</title>
 						<para>
-							The function <function>lqr_carver_new</function> creates a new
-							&carv_obj; object from an RGB image of size &param_w; * &param_h;
-							with &param_bpp; colour channels.
+							The functions <function>lqr_carver_new</function> and 
+							<function>lqr_carver_new_16</function> create a new
+							&carv_obj; object from an image of size &param_w; * &param_h;
+							with &param_channels; colour channels.
 						</para>
 						<para>
 							The image must be stored in 
-							<parameter>buffer</parameter> as a plain array of <type>unsigned chars</type>,
+							<parameter>buffer</parameter> as a plain array of <type>unsigned chars</type>
+							(for <function>lqr_carver_new</function>) or <type>16 bits unsigned integers</type>
+							(for <function>lqr_carver_new_16</function>),
 							ordered by row, then by column, then by colour channel.
 						</para>
 						<para>
 							The buffer will be incorporated into the &carv_obj; object and
-							must not be accessed any more
+							must not be accessed any more.
 						</para>
 					</refsect2>
 					<refsect2>
@@ -1740,7 +1791,14 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gint* <parameter>x</parameter></paramdef>
 							<paramdef>gint* <parameter>y</parameter></paramdef>
-							<paramdef>gint** <parameter>rgb</parameter></paramdef>
+							<paramdef>guchar** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_16</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>x</parameter></paramdef>
+							<paramdef>gint* <parameter>y</parameter></paramdef>
+							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan_by_row</function></funcdef>
@@ -1750,7 +1808,13 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>gboolean <function>lqr_carver_scan_line</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gint* <parameter>n</parameter></paramdef>
-							<paramdef>gint** <parameter>rgb</parameter></paramdef>
+							<paramdef>guchar** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_line_16</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>n</parameter></paramdef>
+							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
@@ -1776,6 +1840,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refnamediv>
 					<refname>lqr_carver_get_width</refname>
 					<refname>lqr_carver_get_height</refname>
+					<refname>lqr_carver_get_channels</refname>
 					<refname>lqr_carver_get_bpp</refname>
 					<refpurpose>get various &carv_obj; object quantities</refpurpose>
 				</refnamediv>
@@ -1789,6 +1854,10 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						</funcprototype>
 						<funcprototype>
 							<funcdef>gint <function>lqr_carver_get_heigth</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_channels</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
@@ -2209,14 +2278,14 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
-							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
-							<paramdef>gint <parameter>bpp</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>x_off</parameter></paramdef>
