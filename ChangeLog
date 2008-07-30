@@ -1,3 +1,8 @@
+2008-07-30  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Optimized vsmap management
+	* Bugfixes
+
 2008-04-06  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Added 16 bit support

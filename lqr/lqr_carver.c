@@ -45,6 +45,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->max_level = 1;
   r->transposed = 0;
   r->active = FALSE;
+  r->root = NULL;
   r->rigidity = 0;
   r->resize_aux_layers = FALSE;
   r->dump_vmaps = FALSE;
@@ -83,7 +84,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
 
   /* initialize cursor */
 
-  TRY_N_N (r->c = lqr_cursor_create (r, r->vs));
+  TRY_N_N (r->c = lqr_cursor_create (r));
 
   return r;
 }
@@ -123,7 +124,10 @@ void
 lqr_carver_destroy (LqrCarver * r)
 {
   g_free (r->rgb);
-  g_free (r->vs);
+  if (r->root == NULL)
+    {
+      g_free (r->vs);
+    }
   g_free (r->en);
   g_free (r->bias);
   g_free (r->m);
@@ -231,6 +235,9 @@ lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
   CATCH_F (r->h0 == aux->h0);
   /* lqr_carver_copy_vsmap (r, aux); */
   CATCH_MEM (r->attached_list = lqr_carver_list_append (r->attached_list, aux));
+  g_free(aux->vs);
+  aux->vs = r->vs;
+  aux->root = r;
   return LQR_OK;
 }
 
@@ -280,6 +287,7 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
   if (depth > r->max_level)
     {
       CATCH_F (r->active);
+      CATCH_F (r->root == NULL);
 
       /* set to minimum width reached so far */
       lqr_carver_set_width (r, r->w_start - r->max_level + 1);
@@ -493,15 +501,6 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
         }
     }
 
-  /* reset width to the maximum */
-  lqr_carver_set_width (r, r->w0);
-
-  /* copy visibility maps on auxiliary layers
-   * (needs to be done before inflation) */
-
-  data_tok.carver = r;
-  lqr_carver_list_foreach (r->attached_list,  lqr_carver_copy_vsmap1, data_tok);
-
   /* insert seams for image enlargement */
   CATCH (lqr_carver_inflate (r, depth - 1));
 
@@ -509,7 +508,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
   lqr_carver_set_width (r, r->w_start);
   /* repeat for auxiliary layers */
   data_tok.integer = r->w_start;
-  CATCH (lqr_carver_list_foreach (r->attached_list, lqr_carver_set_width1, data_tok));
+  CATCH (lqr_carver_list_foreach (r->attached_list, lqr_carver_set_width_attached, data_tok));
 
 #ifdef __LQR_VERBOSE__
   printf ("[ visibility map OK ]\n");
@@ -529,7 +528,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   gint x, y;
   gint c_left;
   void *new_rgb = NULL;
-  gint *new_vs;
+  gint *new_vs = NULL;
   guint tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
@@ -543,6 +542,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 #ifdef __LQR_DEBUG__
   assert (l + 1 > r->max_level);        /* otherwise is useless */
 #endif /* __LQR_DEBUG__ */
+
+  /* first iterate on attached carvers */
+  data_tok.integer = l;
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_inflate_attached, data_tok));
 
   /* scale to current maximum size
    * (this is the original size the first time) */
@@ -558,7 +561,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
     case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, w1 * r->h0 * r->channels));
        break;
   }
-  CATCH_MEM (new_vs = g_try_new0 (gint, w1 * r->h0));
+  if (r->root == NULL)
+    {
+      CATCH_MEM (new_vs = g_try_new0 (gint, w1 * r->h0));
+    }
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, w1 * r->h0));
@@ -606,7 +612,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 		    ((guchar*)new_rgb)[z0 * r->channels + k] = (guchar)tmp_rgb;
 		    break;
 		  case 16:
-		    ((guint16*)new_rgb)[z0 * r->channels + k] = (guchar)tmp_rgb;
+		    ((guint16*)new_rgb)[z0 * r->channels + k] = (guint16)tmp_rgb;
 		    break;
 		}
 	    }
@@ -623,7 +629,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
            * so that the final minimum visibiliy will be 1 again
            * and so that vs=0 still means "uninitialized".
            * Subsequent inflations account for that */
-          new_vs[z0] = l - vs + r->max_level;
+          if (r->root == NULL)
+            {
+              new_vs[z0] = l - vs + r->max_level;
+            }
           z0++;
         }
       for (k = 0; k < r->channels; k++)
@@ -650,7 +659,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
       if (vs != 0)
         {
           /* visibility has to be shifted up */
-          new_vs[z0] = vs + l - r->max_level + 1;
+          if (r->root == NULL)
+            {
+              new_vs[z0] = vs + l - r->max_level + 1;
+            }
         }
       else if (r->raw != NULL)
         {
@@ -683,7 +695,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   /* substitute maps */
   g_free (r->rgb);
-  g_free (r->vs);
+  //g_free (r->vs);
   g_free (r->en);
   g_free (r->m);
   g_free (r->least);
@@ -691,7 +703,16 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   g_free (r->rigidity_mask);
 
   r->rgb = new_rgb;
-  r->vs = new_vs;
+  if (r->root == NULL)
+    {
+      g_free (r->vs);
+      r->vs = new_vs;
+      CATCH (lqr_carver_propagate_vsmap(r));
+    }
+  else
+    {
+      //r->vs = NULL;
+    }
   if (r->active)
     {
       r->bias = new_bias;
@@ -707,7 +728,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   r->w0 = w1;
   r->w = r->w_start;
 
-  /* reset cursor and readout buffer */
+  /* reset readout buffer */
   g_free (r->rgb_ro_buffer);
   switch (r->bits)
     {
@@ -716,12 +737,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
       case 16: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
 	 break;
     }
-  lqr_cursor_destroy (r->c);
-  r->c = lqr_cursor_create (r, r->vs);
   
-  data_tok.integer = l;
-  CATCH (lqr_carver_list_foreach (r->attached_list, lqr_carver_inflate1, data_tok));
-
 #ifdef __LQR_VERBOSE__
   printf ("  [ inflating OK ]\n");
   fflush (stdout);
@@ -731,10 +747,11 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 }
 
 LqrRetVal
-lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data)
+lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data)
 {
   return lqr_carver_inflate (r, data.integer);
 }
+
 
 /*** internal functions for maps computations ***/
 
@@ -800,6 +817,10 @@ void
 lqr_carver_carve (LqrCarver * r)
 {
   gint x, y;
+
+#ifdef __LQR_DEBUG__
+  assert (r->root == NULL);
+#endif /* __LQR_DEBUG__ */
 
   for (y = 0; y < r->h_start; y++)
     {
@@ -1066,6 +1087,9 @@ void
 lqr_carver_update_vsmap (LqrCarver * r, gint l)
 {
   gint y;
+#ifdef __LQR_DEBUG__
+  assert(r->root == NULL);
+#endif /* __LQR_DEBUG__ */
   for (y = 0; y < r->h; y++)
     {
 #ifdef __LQR_DEBUG__
@@ -1085,6 +1109,7 @@ lqr_carver_finish_vsmap (LqrCarver * r)
 
 #ifdef __LQR_DEBUG__
   assert (r->w == 1);
+  assert (r->root == NULL);
 #endif /* __LQR_DEBUG__ */
   lqr_cursor_reset (r->c);
   for (y = 1; y <= r->h; y++, lqr_cursor_next (r->c))
@@ -1097,32 +1122,26 @@ lqr_carver_finish_vsmap (LqrCarver * r)
   lqr_cursor_reset (r->c);
 }
 
-/* copy the visibility map from a lqr_carver
- * to another one of the same size */
-void
-lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest)
-{
-  gint x, y;
-#ifdef __LQR_DEBUG__
-  assert (r->w0 == dest->w0);
-  assert (r->h0 == dest->h0);
-#endif /* __LQR_DEBUG__ */
-  for (y = 0; y < r->h0; y++)
-    {
-      for (x = 0; x < r->w0; x++)
-        {
-          dest->vs[y * r->w0 + x] = r->vs[y * r->w0 + x];
-        }
-    }
-}
-
+/* propagate the root carver's visibility map */
 LqrRetVal
-lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data)
+lqr_carver_propagate_vsmap (LqrCarver * r)
 {
-  lqr_carver_copy_vsmap (data.carver, r);
+  LqrDataTok data_tok;
+  data_tok.data = NULL;
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
   return LQR_OK;
 }
 
+LqrRetVal
+lqr_carver_propagate_vsmap_attached (LqrCarver * r, LqrDataTok data)
+{
+  LqrDataTok data_tok;
+  data_tok.data = NULL;
+  r->vs = r->root->vs;
+  lqr_carver_scan_reset(r);
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
+  return LQR_OK;
+}
 
 /*** image manipulations ***/
 
@@ -1140,7 +1159,7 @@ lqr_carver_set_width (LqrCarver * r, gint w1)
 }
 
 LqrRetVal
-lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data)
+lqr_carver_set_width_attached (LqrCarver * r, LqrDataTok data)
 {
   lqr_carver_set_width (r, data.integer);
   return LQR_OK;
@@ -1165,6 +1184,9 @@ lqr_carver_flatten (LqrCarver * r)
   printf ("    [ flattening (active=%i) ]\n", r->active);
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
+
+  /* first iterate on attached carvers */
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_flatten_attached, data_tok));
 
   /* free non needed maps first */
   g_free (r->en);
@@ -1221,9 +1243,7 @@ lqr_carver_flatten (LqrCarver * r)
             {
               new_bias[z0] = r->bias[r->c->now];
 	      if (r->rigidity_mask) {
-		      //printf("  uno z0=%i r->c->now=%i size=%i\n", z0, r->c->now, r->w * r->h); fflush(stdout);
 		      new_rigmask[z0] = r->rigidity_mask[r->c->now];
-		      //printf("  due\n"); fflush(stdout);
 	      }
               r->raw[y][x] = z0;
             }
@@ -1245,8 +1265,12 @@ lqr_carver_flatten (LqrCarver * r)
     }
 
   /* init the other maps */
-  g_free (r->vs);
-  CATCH_MEM (r->vs = g_try_new0 (gint, r->w * r->h));
+  if (r->root == NULL)
+    { 
+      g_free (r->vs);
+      CATCH_MEM (r->vs = g_try_new0 (gint, r->w * r->h));
+      CATCH (lqr_carver_propagate_vsmap(r));
+    }
   if (r->active)
     {
       CATCH_MEM (r->en = g_try_new0 (gdouble, r->w * r->h));
@@ -1262,14 +1286,6 @@ lqr_carver_flatten (LqrCarver * r)
   r->level = 1;
   r->max_level = 1;
 
-  /* reset seam path and cursors */
-  lqr_cursor_destroy (r->c);
-  r->c = lqr_cursor_create (r, r->vs);
-
-  /* call flatten on auxiliary layers */
-  data_tok.integer = 0;
-  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_flatten1, data_tok));
-
 
 #ifdef __LQR_VERBOSE__
   printf ("    [ flattening OK ]\n");
@@ -1280,7 +1296,7 @@ lqr_carver_flatten (LqrCarver * r)
 }
 
 LqrRetVal
-lqr_carver_flatten1(LqrCarver *r, LqrDataTok data)
+lqr_carver_flatten_attached(LqrCarver *r, LqrDataTok data)
 {
   return lqr_carver_flatten(r);
 }
@@ -1304,13 +1320,20 @@ lqr_carver_transpose (LqrCarver * r)
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
+
   if (r->level > 1)
     {
       CATCH (lqr_carver_flatten (r));
     }
 
+  /* first iterate on attached carvers */
+  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_transpose_attached, data_tok));
+
   /* free non needed maps first */
-  g_free (r->vs);
+  if (r->root == NULL)
+    {
+      g_free (r->vs);
+    }
   g_free (r->en);
   g_free (r->m);
   g_free (r->least);
@@ -1387,7 +1410,11 @@ lqr_carver_transpose (LqrCarver * r)
     }
 
   /* init the other maps */
-  CATCH_MEM (r->vs = g_try_new0 (gint, r->w0 * r->h0));
+  if (r->root == NULL)
+    {
+      CATCH_MEM (r->vs = g_try_new0 (gint, r->w0 * r->h0));
+      CATCH (lqr_carver_propagate_vsmap(r));
+    }
   if (r->active)
     {
       CATCH_MEM (r->en = g_try_new0 (gdouble, r->w0 * r->h0));
@@ -1416,8 +1443,6 @@ lqr_carver_transpose (LqrCarver * r)
       g_free (r->vpath_x);
       CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
     }
-  lqr_cursor_destroy (r->c);
-  r->c = lqr_cursor_create (r, r->vs);
 
   switch (r->bits)
     {
@@ -1440,9 +1465,6 @@ lqr_carver_transpose (LqrCarver * r)
   /* set transposed flag */
   r->transposed = (r->transposed ? 0 : 1);
 
-  /* call transpose on auxiliary layers */
-  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_transpose1, data_tok));
-
 #ifdef __LQR_VERBOSE__
   printf ("[ transpose OK ]\n");
   fflush (stdout);
@@ -1452,7 +1474,7 @@ lqr_carver_transpose (LqrCarver * r)
 }
 
 LqrRetVal
-lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data)
+lqr_carver_transpose_attached (LqrCarver * r, LqrDataTok data)
 {
   return lqr_carver_transpose(r);
 }
@@ -1491,7 +1513,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
       lqr_carver_set_width (r, w1);
 
       data_tok.integer = w1;
-      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width1, data_tok);
+      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width_attached, data_tok);
 
       if (r->dump_vmaps)
         {
@@ -1529,7 +1551,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       lqr_carver_set_width (r, h1);
 
       data_tok.integer = h1;
-      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width1, data_tok);
+      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width_attached, data_tok);
       
       if (r->dump_vmaps)
         {

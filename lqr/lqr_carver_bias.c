@@ -43,6 +43,11 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
     }
 
   CATCH_F (r->active);
+  if ((r->w != r->w0) || (r->w_start != r->w0) ||
+      (r->h != r->h0) || (r->h_start != r->h0))
+    {
+      CATCH (lqr_carver_flatten(r));
+    }
   if (r->transposed)
     {
       CATCH (lqr_carver_transpose(r));
@@ -91,7 +96,11 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
     }
 
   CATCH_F (r->active);
-  CATCH (lqr_carver_flatten(r));
+  if ((r->w != r->w0) || (r->w_start != r->w0) ||
+      (r->h != r->h0) || (r->h_start != r->h0))
+    {
+      CATCH (lqr_carver_flatten(r));
+    }
   if (r->transposed)
     {
       transposed = 1;

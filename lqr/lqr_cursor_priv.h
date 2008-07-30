@@ -39,14 +39,13 @@ struct _LqrCursor
   gint y;                       /* y coordinate of current data */
   gint now;                     /* current array position */
   LqrCarver *o;                 /* pointer to owner carver */
-  gint *vs;                     /* pointer to owner's visibility map */
   gchar eoc;			/* end of carver flag */
 };
 
 /* LQR_CURSOR CLASS PRIVATE FUNCTIONS */
 
 /* constructor */
-LqrCursor *lqr_cursor_create (LqrCarver * owner, gint * vs);
+LqrCursor * lqr_cursor_create (LqrCarver * owner);
 
 /* destructor */
 void lqr_cursor_destroy (LqrCursor * c);

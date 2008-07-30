@@ -63,8 +63,8 @@ void lqr_carver_build_vpath (LqrCarver * r);    /* compute seam path */
 void lqr_carver_carve (LqrCarver * r);  /* updates the "raw" buffer */
 void lqr_carver_update_vsmap (LqrCarver * r, gint l);   /* update visibility map after seam removal */
 void lqr_carver_finish_vsmap (LqrCarver * r);   /* complete visibility map (last seam) */
-void lqr_carver_copy_vsmap (LqrCarver * r, LqrCarver * dest);   /* copy vsmap on another carver */
 LqrRetVal lqr_carver_inflate (LqrCarver * r, gint l);    /* adds enlargment info to map */
+LqrRetVal lqr_carver_propagate_vsmap (LqrCarver * r);    /* propagates vsmap on attached carvers */
 
 /* image manipulations */
 LqrRetVal lqr_carver_resize_width (LqrCarver * r, gint w1);   /* liquid resize width */
@@ -73,10 +73,10 @@ void lqr_carver_set_width (LqrCarver * r, gint w1);
 LqrRetVal lqr_carver_transpose (LqrCarver * r);
 
 /* auxiliary */
-LqrRetVal lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data);
-LqrRetVal lqr_carver_flatten1 (LqrCarver * r, LqrDataTok data);
-LqrRetVal lqr_carver_transpose1 (LqrCarver * r, LqrDataTok data);
-LqrRetVal lqr_carver_copy_vsmap1 (LqrCarver * r, LqrDataTok data);
-LqrRetVal lqr_carver_inflate1 (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_set_width_attached (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_flatten_attached (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_transpose_attached (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_propagate_vsmap_attached (LqrCarver * r, LqrDataTok data);
 
 #endif /* __LQR_CARVER_PRIV_H__ */

@@ -27,6 +27,10 @@
 #error "lqr_base.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_BASE_H__ */
 
+#ifndef __LQR_CURSOR_PUB_H__
+#error "lqr_cursor_pub.h must be included prior to lqr_carver_pub.h"
+#endif /* __LQR_CURSOR_PUB_H__ */
+
 #ifndef __LQR_GRADIENT_PUB_H__
 #error "lqr_gradient_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_GRADIENT_PUB_H__ */
@@ -43,10 +47,7 @@
 #define R_RGB_MAX ((1 << r->bits) - 1)
 
 /**** LQR_CARVER CLASS DEFINITION ****/
-/* This is the representation of the multisize image
- * The image is stored internally as a one-dimentional
- * array of LqrData points, called map.
- * The points are ordered by rows. */
+/* This is the representation of the multisize image */
 struct _LqrCarver
 {
   gint w_start, h_start;        /* original width & height */
@@ -65,6 +66,7 @@ struct _LqrCarver
 
   gint transposed;              /* flag to set transposed state */
   gboolean active;              /* flag to set if carver is active */
+  LqrCarver* root;              /* pointer to the root carver */
 
   gboolean resize_aux_layers;   /* flag to determine whether the auxiliary layers are resized */
   gboolean dump_vmaps;         /* flag to determine whether to output the seam map */
