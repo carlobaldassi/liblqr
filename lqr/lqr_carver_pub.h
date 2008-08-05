@@ -130,6 +130,7 @@ LqrRetVal lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image 
 
 /* readout */
 void lqr_carver_scan_reset (LqrCarver * r);
+void lqr_carver_scan_reset_all (LqrCarver * r);
 gboolean lqr_carver_scan (LqrCarver *r, gint *x, gint *y, guchar ** rgb);
 gboolean lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb);
 gboolean lqr_carver_scan_16 (LqrCarver *r, gint *x, gint *y, guint16 ** rgb);

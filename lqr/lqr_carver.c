@@ -1586,7 +1586,7 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 	assert(0);
 #endif /* __LQR_DEBUG__ */
     }
-  lqr_carver_scan_reset(r);
+  lqr_carver_scan_reset_all(r);
 
 #ifdef __LQR_VERBOSE__
   printf("[ Rescale OK ]\n");
@@ -1623,6 +1623,22 @@ void lqr_carver_scan_reset (LqrCarver * r)
 {
   lqr_cursor_reset (r->c);
 }
+
+LqrRetVal lqr_carver_scan_reset_attached(LqrCarver * r, LqrDataTok data)
+{
+  lqr_carver_scan_reset(r);
+  return lqr_carver_list_foreach(r->attached_list, lqr_carver_scan_reset_attached, data);
+}
+
+void lqr_carver_scan_reset_all (LqrCarver *r)
+{
+  LqrDataTok data;
+  data.data = NULL;
+  lqr_carver_scan_reset(r);
+  lqr_carver_list_foreach(r->attached_list, lqr_carver_scan_reset_attached, data);
+}
+
+
 
 /* readout all, pixel by bixel */
 gboolean

@@ -73,6 +73,7 @@ void lqr_carver_set_width (LqrCarver * r, gint w1);
 LqrRetVal lqr_carver_transpose (LqrCarver * r);
 
 /* auxiliary */
+LqrRetVal lqr_carver_scan_reset_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_set_width_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_flatten_attached (LqrCarver * r, LqrDataTok data);
