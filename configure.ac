@@ -24,11 +24,8 @@ m4_define([ltversion_current], [3])
 m4_define([ltversion_revision], [0])
 m4_define([ltversion_age], [3])
 
-m4_define([configure_ac_revision], [0])
-
 AC_INIT([library_name], [package_version])
 
-AC_REVISION([[revision: ]package_version.configure_ac_revision])
 AC_PREFIX_DEFAULT([/usr])
 
 AC_DEFINE(LIBRARY_NAME, PACKAGE_NAME, [Library name])
@@ -130,11 +127,24 @@ AC_ARG_ENABLE([legacy-macros],
 	  [AC_MSG_ERROR([bad value ${enableval} for --enable-legacy-macros])]
 	  )],
      [legacy_macros=true])
-
 AS_IF([test "x$legacy_macros" = "xfalse"],
       [AC_DEFINE([LQR_DISABLE_LEGACY_MACROS],[],[Disable legacy macros])],
       [:]
       )
+
+AC_ARG_ENABLE([dllimport],
+     [AS_HELP_STRING([--disable-declspec], [Disable Win32 __declspec directives (only meaningful for building static library on MinGW)])],
+     [AS_CASE([["${enableval}"]],
+	  [yes], [declspec=true],
+	  [no], [declspec=false],
+	  [AC_MSG_ERROR([bad value ${enableval} for --enable-declspec])]
+	  )],
+     [declspec=true])
+AS_IF([test "x$declspec" = "xfalse"],
+      [AC_DEFINE([LQR_DISABLE_DECLSPEC],[],[Disable __declspec directives])],
+      [:]
+      )
+
 
 AC_MSG_CHECKING([[if we are on Win32]])
 AC_LANG([C])

@@ -36,6 +36,9 @@
 /* Library name */
 #undef LIBRARY_NAME
 
+/* Disable __declspec directives */
+#undef LQR_DISABLE_DECLSPEC
+
 /* Disable legacy macros */
 #undef LQR_DISABLE_LEGACY_MACROS
 

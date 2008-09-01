@@ -25,7 +25,7 @@
 
 #define LQR_MAX_NAME_LENGTH (1024)
 
-#ifdef G_OS_WIN32
+#if defined(G_OS_WIN32) && ! defined(LQR_DISABLE_DECLSPEC)
 #  ifdef LQR_EXPORTS
 #    define LQR_PUBLIC __declspec(dllexport)
 #  else
