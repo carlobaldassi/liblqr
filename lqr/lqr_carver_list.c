@@ -69,12 +69,14 @@ lqr_carver_list_destroy(LqrCarverList * list)
     }
 }
 
+EXPORT
 LqrCarverList *
 lqr_carver_list_start (LqrCarver *r)
 {
   return r->attached_list;
 }
 
+EXPORT
 LqrCarverList *
 lqr_carver_list_next (LqrCarverList * list)
 {
@@ -82,6 +84,7 @@ lqr_carver_list_next (LqrCarverList * list)
   return list->next;
 }
 
+EXPORT
 LqrCarver *
 lqr_carver_list_current (LqrCarverList * list)
 {
@@ -89,6 +92,7 @@ lqr_carver_list_current (LqrCarverList * list)
   return list->current;
 }
 
+EXPORT
 LqrRetVal
 lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data)
 {

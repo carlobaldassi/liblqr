@@ -1,3 +1,7 @@
+2008-09-04  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Hid private symbols
+
 2008-07-30  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Optimized vsmap management

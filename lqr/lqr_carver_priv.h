@@ -71,6 +71,7 @@ LqrRetVal lqr_carver_resize_width (LqrCarver * r, gint w1);   /* liquid resize w
 LqrRetVal lqr_carver_resize_height (LqrCarver * r, gint h1);   /* liquid resize height */
 void lqr_carver_set_width (LqrCarver * r, gint w1);
 LqrRetVal lqr_carver_transpose (LqrCarver * r);
+void lqr_carver_scan_reset_all (LqrCarver * r);
 
 /* auxiliary */
 LqrRetVal lqr_carver_scan_reset_attached (LqrCarver * r, LqrDataTok data);

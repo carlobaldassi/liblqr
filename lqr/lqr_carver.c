@@ -89,6 +89,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   return r;
 }
 
+EXPORT
 LqrCarver *
 lqr_carver_new (guchar * buffer, gint width, gint height, gint channels)
 {
@@ -103,6 +104,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint channels)
   return r;
 }
 
+EXPORT
 LqrCarver *
 lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels)
 {
@@ -120,6 +122,7 @@ lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels)
 
 
 /* destructor */
+EXPORT
 void
 lqr_carver_destroy (LqrCarver * r)
 {
@@ -152,6 +155,7 @@ lqr_carver_destroy (LqrCarver * r)
 
 /*** initialization ***/
 
+EXPORT
 LqrRetVal
 lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
@@ -197,6 +201,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 /*** set attributes ***/
 
 /* gradient function for energy computation */
+EXPORT
 void
 lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 {
@@ -228,6 +233,7 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 }
 
 /* attach carvers to be scaled along with the main one */
+EXPORT
 LqrRetVal
 lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
@@ -242,6 +248,7 @@ lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 }
 
 /* set the seam output flag */
+EXPORT
 void
 lqr_carver_set_dump_vmaps (LqrCarver *r)
 {
@@ -249,6 +256,7 @@ lqr_carver_set_dump_vmaps (LqrCarver *r)
 }
 
 /* set order if rescaling in both directions */
+EXPORT
 void
 lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 {
@@ -256,6 +264,7 @@ lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 }
 
 /* set leftright switch interval */
+EXPORT
 void
 lqr_carver_set_side_switch_frequency (LqrCarver *r, gint switch_frequency)
 {
@@ -263,6 +272,7 @@ lqr_carver_set_side_switch_frequency (LqrCarver *r, gint switch_frequency)
 }
 
 /* set progress reprot */
+EXPORT
 void
 lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 {
@@ -1169,6 +1179,7 @@ lqr_carver_set_width_attached (LqrCarver * r, LqrDataTok data)
 
 /* flatten the image to its current state
  * (all maps are reset, invisible points are lost) */
+EXPORT
 LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
@@ -1564,6 +1575,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
 }
 
 /* liquid rescale public method */
+EXPORT
 LqrRetVal
 lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 {
@@ -1596,41 +1608,53 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 }
 
 /* get size */
-gint lqr_carver_get_width(LqrCarver* r)
+EXPORT
+gint
+lqr_carver_get_width(LqrCarver* r)
 {
   return (r->transposed ? r->h : r->w);
 }
 
-gint lqr_carver_get_height(LqrCarver* r)
+EXPORT
+gint
+lqr_carver_get_height(LqrCarver* r)
 {
   return (r->transposed ? r->w : r->h);
 }
 
 /* get colour channels */
-gint lqr_carver_get_channels (LqrCarver * r)
+EXPORT
+gint
+lqr_carver_get_channels (LqrCarver * r)
 {
   return r->channels;
 }
 
-gint lqr_carver_get_bpp (LqrCarver * r)
+EXPORT
+gint
+lqr_carver_get_bpp (LqrCarver * r)
 {
   return lqr_carver_get_channels(r);
 }
 
 
 /* readout reset */
-void lqr_carver_scan_reset (LqrCarver * r)
+EXPORT
+void
+lqr_carver_scan_reset (LqrCarver * r)
 {
   lqr_cursor_reset (r->c);
 }
 
-LqrRetVal lqr_carver_scan_reset_attached(LqrCarver * r, LqrDataTok data)
+LqrRetVal
+lqr_carver_scan_reset_attached(LqrCarver * r, LqrDataTok data)
 {
   lqr_carver_scan_reset(r);
   return lqr_carver_list_foreach(r->attached_list, lqr_carver_scan_reset_attached, data);
 }
 
-void lqr_carver_scan_reset_all (LqrCarver *r)
+void
+lqr_carver_scan_reset_all (LqrCarver *r)
 {
   LqrDataTok data;
   data.data = NULL;
@@ -1641,6 +1665,7 @@ void lqr_carver_scan_reset_all (LqrCarver *r)
 
 
 /* readout all, pixel by bixel */
+EXPORT
 gboolean
 lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
@@ -1665,6 +1690,7 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
   return TRUE;
 }
 
+EXPORT
 gboolean
 lqr_carver_scan_16 (LqrCarver * r, gint * x, gint * y, guint16 ** rgb)
 {
@@ -1690,12 +1716,14 @@ lqr_carver_scan_16 (LqrCarver * r, gint * x, gint * y, guint16 ** rgb)
 }
 
 /* readout all, by line */
+EXPORT
 gboolean
 lqr_carver_scan_by_row (LqrCarver *r)
 {
   return r->transposed ? FALSE : TRUE;
 }
 
+EXPORT
 gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {
@@ -1729,6 +1757,7 @@ lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
   return TRUE;
 }
 
+EXPORT
 gboolean
 lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb)
 {

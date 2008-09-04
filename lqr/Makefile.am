@@ -52,7 +52,8 @@ AM_CPPFLAGS = \
 	-DDATADIR=\""$(DATADIR)"\"		\
 	-I$(top_srcdir)		\
 	@GLIB_CFLAGS@		\
-	-I$(includedir)
+	-I$(includedir)		\
+	-fvisibility=hidden
 
 lqr_include0_HEADERS = lqr.h
 
