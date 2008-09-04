@@ -1,0 +1,4 @@
+usr/include/*
+usr/lib/liblqr-1.la
+usr/lib/liblqr-1.so
+usr/lib/pkgconfig/*

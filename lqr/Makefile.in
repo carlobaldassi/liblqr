@@ -57,7 +57,8 @@ am__installdirs = "$(DESTDIR)$(lqrdir)" "$(DESTDIR)$(lqr_includedir)" \
 	"$(DESTDIR)$(lqr_include0dir)"
 lqrLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lqr_LTLIBRARIES)
-liblqr_1_la_LIBADD =
+am__DEPENDENCIES_1 =
+liblqr_1_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_liblqr_1_la_OBJECTS = lqr_gradient.lo lqr_cursor.lo lqr_carver.lo \
 	lqr_carver_list.lo lqr_carver_bias.lo lqr_vmap.lo \
 	lqr_vmap_list.lo lqr_progress.lo
@@ -237,12 +238,14 @@ liblqr_1_la_SOURCES = \
 	lqr_progress_pub.h  \
 	lqr_progress_priv.h
 
-liblqr_1_la_LDFLAGS = -version-info @LTVERSION@ $(GLIB_LIBS) -lm
+liblqr_1_la_LDFLAGS = -version-info @LTVERSION@
+liblqr_1_la_LIBADD = $(GLIB_LIBS) -lm
 AM_CPPFLAGS = \
 	-DDATADIR=\""$(DATADIR)"\"		\
 	-I$(top_srcdir)		\
 	@GLIB_CFLAGS@		\
-	-I$(includedir)
+	-I$(includedir)		\
+	-fvisibility=hidden
 
 lqr_include0_HEADERS = lqr.h
 lqr_include0dir = $(includedir)/@LIBRARY_SNAME@

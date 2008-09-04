@@ -8,7 +8,7 @@ function err_mess ()
 [ -f "Makefile" ] || { err_mess "makefile not found"; exit 1; }
 [ -f "configure.ac" ] || { err_mess "configure.ac not found"; exit 1; }
 
-DISTRO="gutsy"
+DISTRO="hardy"
 if [ -n "$1" ]
 then
 	DISTRO="$1";
@@ -24,13 +24,14 @@ esac
 BASE_NAME=$(head -n 50 configure.ac | grep "m4_define(\[library_base_name\], \[.*\])" | sed "s/m4_define(\[library_base_name\], \[\(.*\)\])/\1/")
 API_VERSION=$(head -n 50 configure.ac | grep "m4_define(\[api_version\], \[.*\])" | sed "s/m4_define(\[api_version\], \[\(.*\)\])/\1/")
 
-NAME="lib${BASE_NAME}-${API_VERSION}"
-NAME1="lib${BASE_NAME}${API_VERSION}"
-NAMEDEV1="lib${BASE_NAME}${API_VERSION}-dev"
-
 MAJOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_major_version\], \[.*\])" | sed "s/m4_define(\[package_major_version\], \[\(.*\)\])/\1/")
 MINOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_minor_version\], \[.*\])" | sed "s/m4_define(\[package_minor_version\], \[\(.*\)\])/\1/")
 MICRO_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_micro_version\], \[.*\])" | sed "s/m4_define(\[package_micro_version\], \[\(.*\)\])/\1/")
+
+NAME="lib${BASE_NAME}"
+NAME1="lib${BASE_NAME}-${API_VERSION}-${MAJOR_VER}"
+NAMEDEV1="${NAME1}-dev"
+NAMEDBG1="${NAME1}-dbg"
 
 VER="${MAJOR_VER}.${MINOR_VER}.${MICRO_VER}"
 
@@ -42,7 +43,7 @@ REL_SUB_VER_FILE="${DEBIAN_IN_DIR}/${DISTRO}/release_subv"
 REL_SUB_VER="$(cat "${REL_SUB_VER_FILE}")";
 echo "$REL_SUB_VER" | grep -q "[[:digit:]]\+" || { err_mess "invalid release subversion: $REL_SUB_VER"; exit 1;}
 
-NAME_HYPHEN="${NAME}-${VER}"
+NAME_HYPHEN="${NAME}-${API_VERSION}-${VER}"
 
 RESULTS_DIR="/var/cache/pbuilder_${DISTRO}/result"
 BUILD_DIR="${HOME}/deb_builds/${DISTRO}/${NAME_HYPHEN}"

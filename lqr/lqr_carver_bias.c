@@ -30,6 +30,7 @@
 
 /**** LQR_CARVER_BIAS STRUCT FUNTIONS ****/
 
+EXPORT
 LqrRetVal
 lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off)
 {
@@ -69,12 +70,14 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
 }
 
 
+EXPORT
 LqrRetVal
 lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor)
 {
   return lqr_carver_bias_add_area(r, buffer, bias_factor, r->w0, r->h0, 0, 0);
 }
 
+EXPORT
 LqrRetVal
 lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint bpp, gint width, gint height, gint x_off, gint y_off)
 {
@@ -138,6 +141,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint b
   return LQR_OK;
 }
 
+EXPORT
 LqrRetVal
 lqr_carver_bias_add_rgb(LqrCarver *r, guchar *rgb, gint bias_factor, gint bpp)
 {
