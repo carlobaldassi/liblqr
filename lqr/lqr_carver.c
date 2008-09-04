@@ -35,7 +35,7 @@
 /*** constructor & destructor ***/
 
 /* constructor */
-EXPORT
+LQR_PUBLIC
 LqrCarver *
 lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 {
@@ -90,7 +90,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint bpp)
 
 
 /* destructor */
-EXPORT
+LQR_PUBLIC
 void
 lqr_carver_destroy (LqrCarver * r)
 {
@@ -119,7 +119,7 @@ lqr_carver_destroy (LqrCarver * r)
 
 /*** initialization ***/
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
@@ -165,7 +165,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 /*** set attributes ***/
 
 /* gradient function for energy computation */
-EXPORT
+LQR_PUBLIC
 void
 lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 {
@@ -197,7 +197,7 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 }
 
 /* attach layers to be scaled along with the main one */
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
@@ -209,7 +209,7 @@ lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 }
 
 /* set the seam output flag */
-EXPORT
+LQR_PUBLIC
 void
 lqr_carver_set_dump_vmaps (LqrCarver *r)
 {
@@ -217,14 +217,14 @@ lqr_carver_set_dump_vmaps (LqrCarver *r)
 }
 
 /* set order if rescaling in both directions */
-EXPORT
+LQR_PUBLIC
 void
 lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 {
   r->resize_order = resize_order;
 }
 
-EXPORT
+LQR_PUBLIC
 void
 lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 {
@@ -1036,7 +1036,7 @@ lqr_carver_set_width1 (LqrCarver * r, LqrDataTok data)
 
 /* flatten the image to its current state
  * (all maps are reset, invisible points are lost) */
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
@@ -1367,7 +1367,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
 }
 
 /* liquid rescale public method */
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 {
@@ -1400,14 +1400,14 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 }
 
 /* get size */
-EXPORT
+LQR_PUBLIC
 gint
 lqr_carver_get_width(LqrCarver* r)
 {
   return (r->transposed ? r->h : r->w);
 }
 
-EXPORT
+LQR_PUBLIC
 gint
 lqr_carver_get_height(LqrCarver* r)
 {
@@ -1415,7 +1415,7 @@ lqr_carver_get_height(LqrCarver* r)
 }
 
 /* get colour channels */
-EXPORT
+LQR_PUBLIC
 gint
 lqr_carver_get_bpp (LqrCarver * r)
 {
@@ -1424,7 +1424,7 @@ lqr_carver_get_bpp (LqrCarver * r)
 
 
 /* readout reset */
-EXPORT
+LQR_PUBLIC
 void
 lqr_carver_scan_reset (LqrCarver * r)
 {
@@ -1432,7 +1432,7 @@ lqr_carver_scan_reset (LqrCarver * r)
 }
 
 /* readout all, pixel by bixel */
-EXPORT
+LQR_PUBLIC
 gboolean
 lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
@@ -1454,14 +1454,14 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 }
 
 /* readout all, by line */
-EXPORT
+LQR_PUBLIC
 gboolean
 lqr_carver_scan_by_row (LqrCarver *r)
 {
   return r->transposed ? FALSE : TRUE;
 }
 
-EXPORT
+LQR_PUBLIC
 gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {

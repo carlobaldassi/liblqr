@@ -27,7 +27,7 @@
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_progress.h>
 
-EXPORT
+LQR_PUBLIC
 LqrProgress *
 lqr_progress_new(void)
 {
@@ -85,7 +85,7 @@ lqr_progress_end(LqrProgress * p, const gchar * message)
     }
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_init(LqrProgress * p, LqrProgressFuncInit init_func)
 {
@@ -93,7 +93,7 @@ lqr_progress_set_init(LqrProgress * p, LqrProgressFuncInit init_func)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_update(LqrProgress * p, LqrProgressFuncUpdate update_func)
 {
@@ -101,7 +101,7 @@ lqr_progress_set_update(LqrProgress * p, LqrProgressFuncUpdate update_func)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_end(LqrProgress * p, LqrProgressFuncEnd end_func)
 {
@@ -109,7 +109,7 @@ lqr_progress_set_end(LqrProgress * p, LqrProgressFuncEnd end_func)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_update_step (LqrProgress *p, gfloat update_step)
 {
@@ -117,7 +117,7 @@ lqr_progress_set_update_step (LqrProgress *p, gfloat update_step)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message)
 {
@@ -126,7 +126,7 @@ lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message)
 {
@@ -135,7 +135,7 @@ lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message)
 {
@@ -144,7 +144,7 @@ lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message)
   return LQR_OK;
 }
 
-EXPORT
+LQR_PUBLIC
 LqrRetVal
 lqr_progress_set_end_height_message(LqrProgress *p, const gchar * message)
 {
