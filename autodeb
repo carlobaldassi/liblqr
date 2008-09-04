@@ -9,16 +9,15 @@ function err_mess ()
 [ -f "configure.ac" ] || { err_mess "configure.ac not found"; exit 1; }
 
 FAKE=0
-if [ -n "$1" ]
+if [ "$1" == "--fake" ]
 then
-	if [ "$1" == "--fake" ]
-	then
-		FAKE=1
-	fi
+	FAKE=1
+	DEBFULLNAME="Me Myself"
+	DEBEMAIL="me@myself.org"
 	shift;
 fi
 
-DISTRO="gutsy"
+DISTRO="hardy"
 if [ -n "$1" ]
 then
 	DISTRO="$1";
@@ -38,13 +37,14 @@ PBUILDER_RC_FILE="${HOME}/.pbuilderrc_${DISTRO}"
 BASE_NAME=$(head -n 50 configure.ac | grep "m4_define(\[library_base_name\], \[.*\])" | sed "s/m4_define(\[library_base_name\], \[\(.*\)\])/\1/")
 API_VERSION=$(head -n 50 configure.ac | grep "m4_define(\[api_version\], \[.*\])" | sed "s/m4_define(\[api_version\], \[\(.*\)\])/\1/")
 
-NAME="lib${BASE_NAME}-${API_VERSION}"
-NAME1="lib${BASE_NAME}${API_VERSION}"
-NAMEDEV1="lib${BASE_NAME}${API_VERSION}-dev"
-
 MAJOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_major_version\], \[.*\])" | sed "s/m4_define(\[package_major_version\], \[\(.*\)\])/\1/")
 MINOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_minor_version\], \[.*\])" | sed "s/m4_define(\[package_minor_version\], \[\(.*\)\])/\1/")
 MICRO_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_micro_version\], \[.*\])" | sed "s/m4_define(\[package_micro_version\], \[\(.*\)\])/\1/")
+
+NAME="lib${BASE_NAME}"
+NAME1="lib${BASE_NAME}-${API_VERSION}-${MAJOR_VER}"
+NAMEDEV1="${NAME1}-dev"
+NAMEDBG1="${NAME1}-dbg"
 
 VER="${MAJOR_VER}.${MINOR_VER}.${MICRO_VER}"
 
@@ -56,10 +56,11 @@ REL_SUB_VER_FILE="${DEBIAN_IN_DIR}/${DISTRO}/release_subv"
 REL_SUB_VER="$(cat "${REL_SUB_VER_FILE}")";
 echo "$REL_SUB_VER" | grep -q "[[:digit:]]\+" || { err_mess "invalid release subversion: $REL_SUB_VER"; exit 1;}
 
-NAME_HYPHEN="${NAME}-${VER}"
+NAME_HYPHEN="${NAME}-${API_VERSION}-${VER}"
 NAME_UNDERSC="${NAME}_${VER}"
 NAME_UNDERSC1="${NAME1}_${VER}"
 NAMEDEV_UNDERSC1="${NAMEDEV1}_${VER}"
+NAMEDBG_UNDERSC1="${NAMEDBG1}_${VER}"
 TGZ_NAME="${NAME_HYPHEN}.tar.gz"
 ORIG_NAME="${NAME_UNDERSC}.orig.tar.gz"
 
@@ -68,11 +69,13 @@ function ubunames ()
 	DEB_NAME="${NAME_UNDERSC}-0ubuntu$1"
 	DEB_NAME1="${NAME_UNDERSC1}-0ubuntu$1"
 	DEB_NAMEDEV1="${NAMEDEV_UNDERSC1}-0ubuntu$1"
+	DEB_NAMEDBG1="${NAMEDBG_UNDERSC1}-0ubuntu$1"
 	DSC_NAME="${DEB_NAME}.dsc"
 	DIFF_NAME="${DEB_NAME}.diff.gz"
 	CHANGES_NAME="${DEB_NAME}_i386.changes"
 	PKG_NAME="${DEB_NAME1}_i386.deb"
 	PKG_NAMEDEV="${DEB_NAMEDEV1}_i386.deb"
+	PKG_NAMEDBG="${DEB_NAMEDBG1}_i386.deb"
 }
 
 RESULTS_DIR="/var/cache/pbuilder_${DISTRO}/result"
@@ -161,30 +164,33 @@ cat "debian/changelog" >> "${TMP_FILE_1}" || exit 1
 
 cp "${TMP_FILE_1}" "${TMP_FILE_2}" || exit 1
 
-vim "${TMP_FILE_1}" || exit 1
+vim +/"< description here >" "${TMP_FILE_1}" || exit 1
 
-diff -q "${TMP_FILE_1}" "${TMP_FILE_2}" > /dev/null
-case $? in
-	0) echo "no changelog description, aborting";
-           cd ../.. || exit 1
-	   rm -fr "${TMP_DIR}" || exit 1;
-	   exit 2;
-	   ;;
-	2) exit 1;
-	   ;;
-esac
+if [ ${FAKE} -eq 0 ]
+then
+	diff -q "${TMP_FILE_1}" "${TMP_FILE_2}" > /dev/null
+	case $? in
+		0) echo "no changelog description, aborting";
+		   cd ../.. || exit 1
+		   rm -fr "${TMP_DIR}" || exit 1;
+		   exit 2;
+		   ;;
+		2) exit 1;
+		   ;;
+	esac
+fi
 	   
 cp "${TMP_FILE_1}" "debian/changelog"
 
 rm -f "${TMP_FILE_1}" "${TMP_FILE_2}" || exit 1
 
-debuild -S || exit 1
+debuild -S -k"${DEBFULLNAME}" || exit 1
 
 cd .. || exit 1
 
 ubunames ${REL_SUB_VER}
 
-sudo apt-get update || exit 1
+sudo apt-get update --simulate || exit 1
 
 sudo pbuilder --build \
               --distribution "${DISTRO}" \
@@ -198,10 +204,10 @@ pushd "${RESULTS_DIR}" > /dev/null || exit 1
 if [ $FAKE -eq 0 ]
 then
 	[ ${REL_SUB_VER} -eq 1 ] && { cp "${ORIG_NAME}" "${BUILD_DIR}" || exit 1; }
-	cp "${DIFF_NAME}" "${CHANGES_NAME}" "${DSC_NAME}" "${PKG_NAME}" "${PKG_NAMEDEV}" "${BUILD_DIR}" || exit 1
+	cp "${DIFF_NAME}" "${CHANGES_NAME}" "${DSC_NAME}" "${PKG_NAME}" "${PKG_NAMEDEV}" "${PKG_NAMEDBG}" "${BUILD_DIR}" || exit 1
 else
 	[ ${REL_SUB_VER} -eq 1 ] && { [ -f "${ORIG_NAME}" ] || { err_mess "orginal tar.gz not found"; exit 1; } }
-	[ -f "${CHANGES_NAME}" -a -f "${DSC_NAME}" -a -f "${PKG_NAME}" -a -f "${PKG_NAMEDEV}" ] || { err_mess "built files not found"; exit 1; }
+	[ -f "${CHANGES_NAME}" -a -f "${DSC_NAME}" -a -f "${PKG_NAME}" -a -f "${PKG_NAMEDEV}" -a -f "${PKG_NAMEDBG}" ] || { err_mess "built files not found"; exit 1; }
 fi
 
 popd > /dev/null || exit 1

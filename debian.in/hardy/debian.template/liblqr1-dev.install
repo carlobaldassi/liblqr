@@ -1,6 +1,0 @@
-lqr/lqr.h usr/include/lqr-1/
-lqr/lqr_base.h usr/include/lqr-1/lqr/
-lqr/lqr_*_pub.h usr/include/lqr-1/lqr/
-lqr/.libs/lib*.so usr/lib/
-lqr-1.pc usr/lib/pkgconfig/
-lqr/.libs/*.la usr/lib/

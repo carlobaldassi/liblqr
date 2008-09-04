@@ -1,0 +1,12 @@
+Document: liblqr
+Title: Debian liblqr Manual
+Author: Carlo Baldassi <carlobaldassi@gmail.com>
+Abstract: This manual describes in detail the Liquid Rescale library
+ API, starting from a brief overview on seam carving, the internal
+ image representation, a minimal list of basic methods and the full
+ explanation of all the library public methods.
+Section: Programming/C
+
+Format: HTML
+Index: /usr/share/doc/liblqr-1-0-dev/liblqr_manual.html
+Files: /usr/share/doc/liblqr-1-0-dev/html/*.html

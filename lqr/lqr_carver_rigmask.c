@@ -92,7 +92,7 @@ lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint heig
 
 
 LqrRetVal
-lqr_carver_rigmask_add(LqrCarver *r, gdouble *buffer, gint rigmask_factor)
+lqr_carver_rigmask_add(LqrCarver *r, gdouble *buffer)
 {
   return lqr_carver_rigmask_add_area(r, buffer, r->w0, r->h0, 0, 0);
 }

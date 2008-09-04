@@ -43,6 +43,10 @@
 #error "lqr_vmap_list_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_VMAP_LIST_PUB_H__ */
 
+#ifndef __LQR_PROGRESS_PUB_H__
+#error "lqr_progress_pub.h must be included prior to lqr_carver_pub.h"
+#endif /* __LQR_PROGRESS_PUB_H__ */
+
 #define R_RGB(rgb, z) ((r->bits == 8) ? ((guchar*)rgb)[z] : ((guint16*)rgb)[z])
 #define R_RGB_MAX ((1 << r->bits) - 1)
 
