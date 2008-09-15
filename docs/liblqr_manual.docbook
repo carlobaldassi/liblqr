@@ -440,8 +440,10 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 					Here, <parameter>delta_x</parameter> is the maximum allowed transversal step of the
 					seams (0 means straight seams, the typical value is 1), while
 					the <parameter>rigidity</parameter> parameter can be used to introduce
-					a bias for non-straight seams (the typical value is 0).
-			</para>
+					a global bias for non-straight seams (the typical value is 0; a nonzero
+					value can be modulated locally for specific areas using the functions described
+					in section <link linkend="rigmask">Adding a rigidity mask</link>).
+				</para>
 				<important>
 					<para>
 						It is currently an error to initalize a carver object
@@ -694,7 +696,7 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 		<sect1 id="bias">
 			<title>Adding a bias</title>
 
-			<sect2 id="foreword">
+			<sect2 id="bias-foreword">
 				<title>Foreword</title>
 
 				<para>
@@ -730,7 +732,7 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 				</note>
 			</sect2>
 
-			<sect2 id="float-bias">
+			<sect2 id="bias-float">
 				<title>Using an array of floating-point values</title>
 
 				<para>
@@ -801,7 +803,7 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 				</important>
 			</sect2>
 
-			<sect2 id="areas">
+			<sect2 id="bias-areas">
 				<title>Operating on a specific area</title>
 
 				<para>
@@ -850,6 +852,169 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 					&carv_obj; image area : only the parts which overlap with it will be used.
 					For example, the offsets can also be negative.
 				</para>
+			</sect2>
+		</sect1>
+
+		<sect1 id="rigmask">
+			<title>Adding a rigidity mask</title>
+
+			<sect2 id="rigmask-foreword">
+				<title>Foreword</title>
+
+				<para>
+					The rigidity parameter which is set at carver activation time
+					(see section <link linkend="carver-init">Carver activation</link>)
+					normally affects the whole image. It is possible, however, to
+					specify which areas of the image should be affected by using a
+					rigidity mask.
+				</para>
+				<para>
+					When a rigidity mask is used, each pixel of the image acquires an individual
+					rigidity coefficient, which has to be multiplied with the overall rigidity parameter
+					to get the actual pixel's rigidity.
+					This is useful in some situations to reduce distorsions in specific areas of
+					the image while keeping se seams optimal in other areas.
+				</para>
+				<para>
+					The library interface to deal with rigidity masks follows verty closely
+					the scheme for bias masks as described in the <link linkend="bias">bias section</link>),
+					the only difference being that no equivalent to the bias factor has to be
+					provided.
+				</para>
+				<important>
+					<para>
+						The rigidity mask has to be added always <emphasis>after</emphasis>
+						the &carv_obj; initialization and <emphasis>before</emphasis>
+						resizing takes place.
+					</para>
+				</important>
+				<note>
+					<para>
+						All of the functions can be called multiple times; in such case, their
+						effect will be summed up.
+					</para>
+				</note>
+			</sect2>
+
+			<sect2 id="rigmask-float">
+				<title>Using an array of floating-point values</title>
+
+				<para>
+					The rigidity mask values are stored as an array of floating points.
+					It is possible to use directly one such array through
+					this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					Here, <parameter>buffer</parameter> is an array contining the bias values,
+					and it is assumed to have the same size as the image loaded in
+					<parameter>carver</parameter>.
+				</para>
+				<note>
+					<para>
+						This function, and all the following, will not swallow
+						the buffer (to the contrary of what happens e.g. when creating
+						a new &carv_obj; object).
+					</para>
+				</note>
+			</sect2>
+
+			<sect2 id="rigmask-rgb">
+				<title>Using another image</title>
+
+				<para>
+					The rigidity mask can also be read from an 8-bit rgb buffer. This buffer
+					has to be in the same format as the one used in the 8-bit LqrCarver
+					constructor (but may have a different number of colours per
+					channel). The function is:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_rgb</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					As in the previous case, <parameter>buffer</parameter> is assumed to
+					hold and image of the same size as the one in the <parameter>carver</parameter>.
+				</para>
+				<para>
+					The <parameter>buffer</parameter> contents will be transformed into
+					floating-points by averaging the colour components and multiplying the
+					result by the alpha channel (transparency) value.
+				</para>
+				<important>
+					<para>
+						The existence of an alpha channel is inferred from the
+						<parameter>channels</parameter> value: if this is 1 or 3, no alpha
+						channel is assumed, if it is 2 or 4, it is assumed that the last
+						channel is holds the alpha value. If this is not what you want, you should
+						resort to the previous method.
+					</para>
+				</important>
+			</sect2>
+
+			<sect2 id="rigmask-areas">
+				<title>Operating on a specific area</title>
+
+				<para>
+					The above functions operate on the whole &carv_obj; image.
+					It is also possible to access specific image regions; for
+					the floating point use:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					while for the rgb image use:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_rgb_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>guchar* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					In both functions, &param_w; and &param_h;
+					are used to specify the size of the area of interest, while
+					<parameter>x_off</parameter> and <parameter>y_off</parameter>
+					specify its offset.
+					For the rest, both functions work in the same way as their global couterpart.
+				</para>
+				<para>
+					The provided buffers have to be of size
+					<literal>&param_w; * &param_h;</literal>
+					(or <literal>&param_w; * &param_h; * &param_channels;</literal> for the rgb case)
+					but the specified areas need not to be strictly included inside the
+					&carv_obj; image area : only the parts which overlap with it will be used.
+					For example, the offsets can also be negative.
+				</para>
+				<note>
+					<para>
+						Outside of the affected areas, the rigidity will be set to 0, which means
+						that the global rigidity value will not be used for such areas.
+					</para>
+				</note>
 			</sect2>
 		</sect1>
 
@@ -2306,6 +2471,101 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				</refsect1>
 			</refentry>
 		</sect1>
+
+		<sect1 id="ref-rigmask">
+			<title>Rigidity masks</title>
+
+			<refentry id="ref-lqr-rigmask-add">
+				<refmeta>
+					<refentrytitle>Add a rigidity mask to a &carv_obj;</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_rigmask_add</refname>
+					<refname>lqr_carver_rigmask_add_area</refname>
+					<refpurpose>update a &carv_obj; rigidity mask by reading a buffer</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-rigmask-add-rgb">
+				<refmeta>
+					<refentrytitle>Read the rigidity mask from an image</refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_rigmask_add_rgb</refname>
+					<refname>lqr_carver_rigmask_add_rgb_area</refname>
+					<refpurpose>update a &carv_obj; rigidity mask by reading an RGB image</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_rgb</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
+						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+					</para>
+				</refsect1>
+			</refentry>
+		</sect1>
+
 
 		<sect1 id="ref-progress">
 			<title>Progress reports</title>
