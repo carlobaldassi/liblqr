@@ -255,6 +255,14 @@ lqr_carver_set_dump_vmaps (LqrCarver *r)
   r->dump_vmaps = TRUE;
 }
 
+/* unset the seam output flag */
+LQR_PUBLIC
+void
+lqr_carver_set_no_dump_vmaps (LqrCarver *r)
+{
+  r->dump_vmaps = FALSE;
+}
+
 /* set order if rescaling in both directions */
 LQR_PUBLIC
 void

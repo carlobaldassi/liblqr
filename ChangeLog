@@ -1,10 +1,14 @@
 2008-09-04  Carlo Baldassi  <carlobaldassi@gmail.com>
 
+	* Added set_no_dump_vmaps
+
+2008-09-04  Carlo Baldassi  <carlobaldassi@gmail.com>
+
 	* Hid private symbols
 
 2008-07-30  Carlo Baldassi  <carlobaldassi@gmail.com>
 
-	* Optimized vsmap management
+	* Optimized vsmap memory management
 	* Bugfixes
 
 2008-04-06  Carlo Baldassi  <carlobaldassi@gmail.com>

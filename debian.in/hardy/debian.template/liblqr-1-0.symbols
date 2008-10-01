@@ -25,6 +25,7 @@ liblqr-1.so.0 liblqr-1-0 #MINVER#
  lqr_carver_scan_line_16@Base 0.1.1
  lqr_carver_scan_reset@Base 0.1.0
  lqr_carver_set_dump_vmaps@Base 0.1.0
+ lqr_carver_set_no_dump_vmaps@Base 0.1.1
  lqr_carver_set_gradient_function@Base 0.1.0
  lqr_carver_set_progress@Base 0.1.0
  lqr_carver_set_resize_order@Base 0.1.0

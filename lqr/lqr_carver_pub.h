@@ -123,6 +123,7 @@ LqrRetVal lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity);
 /* set attributes */
 void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
 void lqr_carver_set_dump_vmaps (LqrCarver *r);
+void lqr_carver_set_no_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
 void lqr_carver_set_side_switch_frequency (LqrCarver *r, gint switch_interval);
 LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
