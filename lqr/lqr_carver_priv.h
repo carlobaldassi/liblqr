@@ -43,6 +43,12 @@
 #error "lqr_vmap_list.h must be included prior to lqr_carver_priv.h"
 #endif /* __LQR_VMAP_LIST_H__ */
 
+/* Macros for internal use */
+
+#define AS_8I(x) ((guchar*)x)
+#define AS_16I(x) ((guint16*)x)
+#define AS_32F(x) ((gdouble*)x)
+
 /* LQR_CARVER CLASS PRIVATE FUNCTIONS */
 
 /* constructor base */

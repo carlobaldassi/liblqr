@@ -1,3 +1,7 @@
+2008-10-01  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Added 32 bit floating point support
+
 2008-09-04  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Added set_no_dump_vmaps

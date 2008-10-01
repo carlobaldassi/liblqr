@@ -79,6 +79,15 @@ typedef enum _LqrRetVal LqrRetVal;
 } G_STMT_END
 
 
+/**** IMAGE DEPTH ****/
+enum _LqrImgDepth
+{
+  LQR_IMG_8I,
+  LQR_IMG_16I,
+  LQR_IMG_32F
+};
+
+typedef enum _LqrImgDepth LqrImgDepth;
 
 /**** RESIZE ORDER ****/
 enum _LqrResizeOrder

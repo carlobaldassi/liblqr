@@ -210,6 +210,7 @@
 							<programlisting>
 LqrCarver * lqr_carver_new (guchar *buffer, gint width, gint height, gint channels);
 LqrCarver * lqr_carver_new_16 (guint16 *buffer, gint width, gint height, gint channels);
+LqrCarver * lqr_carver_new_32f (gdouble *buffer, gint width, gint height, gint channels);
 void lqr_carver_destroy (LqrCarver *carver);
 							</programlisting>
 						</para>
@@ -243,9 +244,11 @@ LqrRetVal lqr_carver_flatten (LqrCarver *carver);
 							<programlisting>
 gboolean lqr_carver_scan (LqrCarver *carver, gint *x, gint *y, guchar **rgb);
 gboolean lqr_carver_scan_16 (LqrCarver *carver, gint *x, gint *y, guint16 **rgb);
+gboolean lqr_carver_scan_32f (LqrCarver *carver, gint *x, gint *y, gdouble **rgb);
 gboolean lqr_carver_scan_by_row (LqrCarver *carver);
 gboolean lqr_carver_scan_line (LqrCarver *carver, gint *n, guchar **rgb);
 gboolean lqr_carver_scan_line_16 (LqrCarver *carver, gint *n, guint16 **rgb);
+gboolean lqr_carver_scan_line_32f (LqrCarver *carver, gint *n, gdouble **rgb);
 							</programlisting>
 						</para>
 					</listitem>
@@ -289,7 +292,7 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 
 	<chapter id="api-manual">
 
-		<title>API user manual</title>
+		<title>LqR library API user manual</title>
 
 		<sect1 id="signals">
 			<title>Signal handling</title>
@@ -409,7 +412,7 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 					success, or <literal><returnvalue>NULL</returnvalue></literal> in case of insufficient memory.
 				</para>
 				<para>
-					The constructor for 16-bit images is almost identical:
+					The constructors for 16-bit integer and 32-bit floating point images is almost identical:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>LqrCarver * <function>lqr_carver_new_16</function></funcdef>
@@ -419,7 +422,16 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 							<paramdef> gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
-					The only difference with the 8-bit version is the type of the buffer.
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrCarver * <function>lqr_carver_new_32f</function></funcdef>
+							<paramdef> gdouble * <parameter>buffer</parameter></paramdef>
+							<paramdef> gint <parameter>width</parameter></paramdef>
+							<paramdef> gint <parameter>height</parameter></paramdef>
+							<paramdef> gint <parameter>channels</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					The only differences with the 8-bit version are the types of the buffers.
 				</para>
 				<important>
 					<para>
@@ -571,6 +583,16 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 							<paramdef> guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
+					or
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_32f</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+							<paramdef> gint* <parameter>x</parameter></paramdef>
+							<paramdef> gint* <parameter>y</parameter></paramdef>
+							<paramdef> gdouble** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
 
 				</para>
 				<para>
@@ -658,10 +680,20 @@ while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
 							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
+					or
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_line_32f</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>n</parameter></paramdef>
+							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
 				</para>
 				<para>
-					These functions work exactly the same way as <function>lqr_carver_scan</function> and
-					<function>lqr_carver_scan_16</function>, but
+					These functions work exactly the same way as <function>lqr_carver_scan</function>, 
+					<function>lqr_carver_scan_16</function> and
+					<function>lqr_carver_scan_32f</function>, but
 					only one coordinate is stored (either the row or the column number),
 					and the <parameter>rgb</parameter> array will contain a whole line.
 				</para>
@@ -1810,7 +1842,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 	</chapter>
 
 	<chapter id="ref-pages">
-		<title>API reference</title>
+		<title>LqR library API reference</title>
 
 
 		<sect1 id="ref-carve">
@@ -1825,6 +1857,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refnamediv>
 					<refname>lqr_carver_new</refname>
 					<refname>lqr_carver_new_16</refname>
+					<refname>lqr_carver_new_32f</refname>
 					<refpurpose>the &carv_obj; object constructors</refpurpose>
 				</refnamediv>
 
@@ -1845,14 +1878,22 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrCarver* <function>lqr_carver_new_32f</function></funcdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
+						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
 
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The functions <function>lqr_carver_new</function> and 
-						<function>lqr_carver_new_16</function> create a new
+						The functions <function>lqr_carver_new</function>,
+						<function>lqr_carver_new_16</function> and
+						<function>lqr_carver_new_32f</function> create a new
 						&carv_obj; object from an image of size &param_w; * &param_h;
 						with &param_channels; colour channels.
 					</para>
@@ -1860,7 +1901,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						The image must be stored in 
 						<parameter>buffer</parameter> as a plain array of <type>unsigned chars</type>
 						(for <function>lqr_carver_new</function>) or <type>16 bits unsigned integers</type>
-						(for <function>lqr_carver_new_16</function>),
+						(for <function>lqr_carver_new_16</function>) of <type>32 bits floating points</type>
+						(for <function>lqr_carver_new_32f</function>),
 						ordered by row, then by column, then by colour channel.
 					</para>
 					<para>
@@ -2186,6 +2228,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refnamediv>
 					<refname>lqr_carver_scan</refname>
 					<refname>lqr_carver_scan_16</refname>
+					<refname>lqr_carver_scan_32f</refname>
 					<refpurpose>read out a multi-size image one pixel at a time</refpurpose>
 				</refnamediv>
 
@@ -2206,16 +2249,23 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint* <parameter>y</parameter></paramdef>
 							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_32f</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>x</parameter></paramdef>
+							<paramdef>gint* <parameter>y</parameter></paramdef>
+							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
 
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The functions <function>lqr_carver_scan</function> and <function>lqr_carver_scan_16</function>
-						are used to read out the multi-size image contained in the &carv_obj; object
-						pointed to by <parameter>carver</parameter> one pixel at a time in 8-bit or 16-bit images,
-						respectively.
+						The functions <function>lqr_carver_scan</function>, <function>lqr_carver_scan_16</function>
+						and <function>lqr_carver_scan_32f</function> are used to read out the multi-size image
+						contained in the &carv_obj; object pointed to by <parameter>carver</parameter> one pixel
+						at a time in 8-bit integer, 16-bit integer or 32-bit floating point images, respectively.
 						They store the pixel coordinates in the variables pointed to by <parameter>x</parameter> and
 						<parameter>y</parameter>, and the pixel content in the array pointed to by
 						<parameter>rgb</parameter>; then they move the readout pointer to the next pixel, or they
@@ -2274,9 +2324,10 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						The function <function>lqr_carver_scan_by_row</function> must be used before
 						calling the functions
-						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line</function></link>
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line</function></link>,
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_16</function></link>
 						and
-						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_16</function></link>,
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_32f</function></link>,
 						in order to ascertain if those functions will scan the multi-size image contained in the 
 						&carv_obj; object pointed to by <parameter>carver</parameter> by row or by column,
 						which depends on which was last rescaling direction and cannot be controlled directly by the user.
@@ -2311,6 +2362,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 
 				<refnamediv>
 					<refname>lqr_carver_scan_line</refname>
+					<refname>lqr_carver_scan_line_16</refname>
+					<refname>lqr_carver_scan_line_32f</refname>
 					<refpurpose>read out a multi-size image one line at a time</refpurpose>
 				</refnamediv>
 
@@ -2329,16 +2382,23 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint* <parameter>n</parameter></paramdef>
 							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
+						<funcprototype>
+							<funcdef>gboolean <function>lqr_carver_scan_line_32f</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint* <parameter>n</parameter></paramdef>
+							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
+						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
 
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The functions <function>lqr_carver_scan_line</function> and
-						<function>lqr_carver_scan_line_16</function> are used to read out the multi-size image
+						The functions <function>lqr_carver_scan_line</function>, 
+						<function>lqr_carver_scan_line_16</function> and
+						<function>lqr_carver_scan_line_32f</function> are used to read out the multi-size image
 						contained in the &carv_obj; object pointed to by <parameter>carver</parameter> one line 
-						at a time in 8-bit or 16-bit images, respectively.
+						at a time in 8-bit integer, 16-bit integer or 32-bit floating point images, respectively.
 						They store the line number (row or column) in the variable pointed to by <parameter>n</parameter>
 						and the colour values in the array pointed to by <parameter>rgb</parameter>;
 						then they move the readout pointer to the next line, or they

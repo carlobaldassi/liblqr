@@ -47,9 +47,6 @@
 #error "lqr_progress_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_PROGRESS_PUB_H__ */
 
-#define R_RGB(rgb, z) ((r->bits == 8) ? ((guchar*)rgb)[z] : ((guint16*)rgb)[z])
-#define R_RGB_MAX ((1 << r->bits) - 1)
-
 /**** LQR_CARVER CLASS DEFINITION ****/
 /* This is the representation of the multisize image */
 struct _LqrCarver
@@ -65,8 +62,8 @@ struct _LqrCarver
                                  * since levels are shifted upon inflation
                                  */
 
-  gint channels;                     /* number of colour channels of the image */
-  gint bits;			/* number of bits per channel */
+  gint channels;                /* number of colour channels of the image */
+  LqrImgDepth img_depth;	/* image colour depth */
 
   gint transposed;              /* flag to set transposed state */
   gboolean active;              /* flag to set if carver is active */
@@ -115,6 +112,7 @@ struct _LqrCarver
 /* constructor & destructor */
 LqrCarver * lqr_carver_new (guchar * buffer, gint width, gint height, gint channels);
 LqrCarver * lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels);
+LqrCarver * lqr_carver_new_32f (gdouble * buffer, gint width, gint height, gint channels);
 void lqr_carver_destroy (LqrCarver * r);
 
 /* initialize */
@@ -139,6 +137,8 @@ gboolean lqr_carver_scan (LqrCarver *r, gint *x, gint *y, guchar ** rgb);
 gboolean lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb);
 gboolean lqr_carver_scan_16 (LqrCarver *r, gint *x, gint *y, guint16 ** rgb);
 gboolean lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb);
+gboolean lqr_carver_scan_32f (LqrCarver *r, gint *x, gint *y, gdouble ** rgb);
+gboolean lqr_carver_scan_line_32f (LqrCarver * r, gint * n, gdouble ** rgb);
 gboolean lqr_carver_scan_by_row (LqrCarver *r);
 gint lqr_carver_get_bpp (LqrCarver *r);
 gint lqr_carver_get_channels (LqrCarver *r);

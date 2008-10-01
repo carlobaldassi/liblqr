@@ -9,6 +9,6 @@
 	<xsl:param name="make.single.year.ranges" select="1"></xsl:param>
 	<xsl:param name="make.year.ranges" select="1"></xsl:param>
 	<xsl:param name="man.authors.section.enabled">0</xsl:param>
-	<!--<xsl:param name="generate.section.toc.level" select="1"></xsl:param>-->
+	<xsl:param name="man.th.title.max.length">30</xsl:param>
 </xsl:stylesheet>
 

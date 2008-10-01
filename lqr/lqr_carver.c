@@ -99,7 +99,7 @@ lqr_carver_new (guchar * buffer, gint width, gint height, gint channels)
 
   r->rgb = (void*) buffer;
   TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->channels * r->w));
-  r->bits = 8;
+  r->img_depth = LQR_IMG_8I;
 
   return r;
 }
@@ -114,7 +114,22 @@ lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels)
 
   r->rgb = (void*) buffer;
   TRY_N_N (r->rgb_ro_buffer = g_try_new (guint16, r->channels * r->w));
-  r->bits = 16;
+  r->img_depth = LQR_IMG_16I;
+
+  return r;
+}
+
+LQR_PUBLIC
+LqrCarver *
+lqr_carver_new_32f (gdouble * buffer, gint width, gint height, gint channels)
+{
+  LqrCarver *r;
+
+  TRY_N_N (r = lqr_carver_new_common (width, height, channels));
+
+  r->rgb = (void*) buffer;
+  TRY_N_N (r->rgb_ro_buffer = g_try_new (gdouble, r->channels * r->w));
+  r->img_depth = LQR_IMG_32F;
 
   return r;
 }
@@ -547,7 +562,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   gint c_left;
   void *new_rgb = NULL;
   gint *new_vs = NULL;
-  guint tmp_rgb;
+  gdouble tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
   LqrDataTok data_tok;
@@ -573,11 +588,16 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   w1 = r->w0 + l - r->max_level + 1;
 
   /* allocate room for new maps */
-  switch (r->bits) {
-    case 8: CATCH_MEM (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->channels));
-       break;
-    case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, w1 * r->h0 * r->channels));
-       break;
+  switch (r->img_depth) {
+    case LQR_IMG_8I:
+      CATCH_MEM (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->channels));
+      break;
+    case LQR_IMG_16I:
+      CATCH_MEM (new_rgb = g_try_new0 (guint16, w1 * r->h0 * r->channels));
+      break;
+    case LQR_IMG_32F:
+      CATCH_MEM (new_rgb = g_try_new0 (gdouble, w1 * r->h0 * r->channels));
+      break;
   }
   if (r->root == NULL)
     {
@@ -622,15 +642,22 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
 	  for (k = 0; k < r->channels; k++)
 	    {
-	      tmp_rgb = (R_RGB(r->rgb, c_left * r->channels + k) +
-			 R_RGB(r->rgb, r->c->now * r->channels + k)) / 2;
-	      switch (r->bits)
+	      switch (r->img_depth)
 		{
-		  case 8:
-		    ((guchar*)new_rgb)[z0 * r->channels + k] = (guchar)tmp_rgb;
+		  case LQR_IMG_8I:
+		    tmp_rgb = (AS_8I(r->rgb)[c_left * r->channels + k] +
+		               AS_8I(r->rgb)[r->c->now * r->channels + k]) / 2;
+		    AS_8I(new_rgb)[z0 * r->channels + k] = (guchar) (tmp_rgb + 0.499999);
 		    break;
-		  case 16:
-		    ((guint16*)new_rgb)[z0 * r->channels + k] = (guint16)tmp_rgb;
+		  case LQR_IMG_16I:
+		    tmp_rgb = (AS_16I(r->rgb)[c_left * r->channels + k] +
+		               AS_16I(r->rgb)[r->c->now * r->channels + k]) / 2;
+		    AS_16I(new_rgb)[z0 * r->channels + k] = (guint16) (tmp_rgb + 0.499999);
+		    break;
+		  case LQR_IMG_32F:
+		    tmp_rgb = (AS_32F(r->rgb)[c_left * r->channels + k] +
+		               AS_32F(r->rgb)[r->c->now * r->channels + k]) / 2;
+		    AS_32F(new_rgb)[z0 * r->channels + k] = (gdouble) tmp_rgb;
 		    break;
 		}
 	    }
@@ -655,14 +682,16 @@ lqr_carver_inflate (LqrCarver * r, gint l)
         }
       for (k = 0; k < r->channels; k++)
         {
-	  tmp_rgb = R_RGB(r->rgb, r->c->now * r->channels + k);
-	  switch (r->bits)
+	  switch (r->img_depth)
 	    {
-	      case 8:
-		((guchar*)new_rgb)[z0 * r->channels + k] = (guchar) tmp_rgb;
+	      case LQR_IMG_8I:
+		AS_8I(new_rgb)[z0 * r->channels + k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
 		break;
-	      case 16:
-		((guint16*)new_rgb)[z0 * r->channels + k] = (guint16) tmp_rgb;
+	      case LQR_IMG_16I:
+		AS_16I(new_rgb)[z0 * r->channels + k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
+		break;
+	      case LQR_IMG_32F:
+		AS_32F(new_rgb)[z0 * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
 		break;
 	    }
         }
@@ -748,12 +777,17 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   /* reset readout buffer */
   g_free (r->rgb_ro_buffer);
-  switch (r->bits)
+  switch (r->img_depth)
     {
-      case 8: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
-	 break;
-      case 16: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
-	 break;
+      case LQR_IMG_8I:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
+	break;
+      case LQR_IMG_16I:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
+	break;
+      case LQR_IMG_32F:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gdouble, r->w0 * r->channels));
+	break;
     }
   
 #ifdef __LQR_VERBOSE__
@@ -783,9 +817,33 @@ lqr_carver_read (LqrCarver * r, gint x, gint y)
   gint now = r->raw[y][x];
   for (k = 0; k < r->channels; k++)
     {
-      sum += R_RGB(r->rgb, now * r->channels + k);
+      switch (r->img_depth)
+        {
+	  case LQR_IMG_8I:
+	    sum += AS_8I(r->rgb)[now * r->channels + k];
+	    break;
+	  case LQR_IMG_16I:
+	    sum += AS_16I(r->rgb)[now * r->channels + k];
+	    break;
+	  case LQR_IMG_32F:
+	    sum += AS_32F(r->rgb)[now * r->channels + k];
+	    break;
+	}
     }
-  return sum / (R_RGB_MAX * r->channels);
+  switch (r->img_depth)
+    {
+      case LQR_IMG_8I:
+	sum /= (255 * r->channels);
+	break;
+      case LQR_IMG_16I:
+	sum /= ((gdouble)(65535) * r->channels);
+	break;
+      case LQR_IMG_32F:
+	sum /= r->channels;
+	break;
+    }
+
+  return sum;
 }
 
 
@@ -1192,7 +1250,6 @@ LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
   void *new_rgb = NULL;
-  guint tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
   gint x, y, k;
@@ -1213,13 +1270,17 @@ lqr_carver_flatten (LqrCarver * r)
   g_free (r->least);
 
   /* allocate room for new map */
-  switch (r->bits)
-    {
-      case 8: CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w * r->h * r->channels));
-	 break;
-      case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w * r->h * r->channels));
-	 break;
-    }
+  switch (r->img_depth) {
+    case LQR_IMG_8I:
+      CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w * r->h * r->channels));
+      break;
+    case LQR_IMG_16I:
+      CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w * r->h * r->channels));
+      break;
+    case LQR_IMG_32F:
+      CATCH_MEM (new_rgb = g_try_new0 (gdouble, r->w * r->h * r->channels));
+      break;
+  }
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w * r->h));
@@ -1247,14 +1308,16 @@ lqr_carver_flatten (LqrCarver * r)
           z0 = y * r->w + x;
           for (k = 0; k < r->channels; k++)
             {
-              tmp_rgb = R_RGB(r->rgb, r->c->now * r->channels + k);
-	      switch (r->bits)
+	      switch (r->img_depth)
 	        {
-		  case 8:
-		    ((guchar*)new_rgb)[z0 * r->channels + k] = (guchar) tmp_rgb;
+		  case LQR_IMG_8I:
+		    AS_8I(new_rgb)[z0 * r->channels + k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
 		    break;
-		  case 16:
-		    ((guint16*)new_rgb)[z0 * r->channels + k] = (guint16) tmp_rgb;
+		  case LQR_IMG_16I:
+		    AS_16I(new_rgb)[z0 * r->channels + k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
+		    break;
+		  case LQR_IMG_32F:
+		    AS_32F(new_rgb)[z0 * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
 		    break;
 		}
             }
@@ -1329,7 +1392,6 @@ lqr_carver_transpose (LqrCarver * r)
   gint z0, z1;
   gint d;
   void *new_rgb = NULL;
-  guint tmp_rgb;
   gdouble *new_bias = NULL;
   gdouble *new_rigmask = NULL;
   LqrDataTok data_tok;
@@ -1359,12 +1421,17 @@ lqr_carver_transpose (LqrCarver * r)
   g_free (r->rgb_ro_buffer);
 
   /* allocate room for the new maps */
-  switch (r->bits)
+  switch (r->img_depth)
     {
-      case 8: CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->channels));
-	 break;
-      case 16: CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w0 * r->h0 * r->channels));
-	 break;
+      case LQR_IMG_8I:
+	CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->channels));
+	break;
+      case LQR_IMG_16I:
+	CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w0 * r->h0 * r->channels));
+	break;
+      case LQR_IMG_32F:
+	CATCH_MEM (new_rgb = g_try_new0 (gdouble, r->w0 * r->h0 * r->channels));
+	break;
     }
 
   if (r->active)
@@ -1393,14 +1460,16 @@ lqr_carver_transpose (LqrCarver * r)
           z1 = x * r->h0 + y;
           for (k = 0; k < r->channels; k++)
             {
-              tmp_rgb = R_RGB(r->rgb, z0 * r->channels + k);
-	      switch (r->bits)
+	      switch (r->img_depth)
 	        {
-		  case 8:
-		    ((guchar*)new_rgb)[z1 * r->channels + k] = (guchar) tmp_rgb;
+		  case LQR_IMG_8I:
+		    AS_8I(new_rgb)[z1 * r->channels + k] = AS_8I(r->rgb)[z0 * r->channels + k];
 		    break;
-		  case 16:
-		    ((guint16*)new_rgb)[z1 * r->channels + k] = (guint16) tmp_rgb;
+		  case LQR_IMG_16I:
+		    AS_16I(new_rgb)[z1 * r->channels + k] = AS_16I(r->rgb)[z0 * r->channels + k];
+		    break;
+		  case LQR_IMG_32F:
+		    AS_32F(new_rgb)[z1 * r->channels + k] = AS_32F(r->rgb)[z0 * r->channels + k];
 		    break;
 		}
             }
@@ -1463,12 +1532,17 @@ lqr_carver_transpose (LqrCarver * r)
       CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
     }
 
-  switch (r->bits)
+  switch (r->img_depth)
     {
-      case 8: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
-	 break;
-      case 16: CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
-	 break;
+      case LQR_IMG_8I:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
+	break;
+      case LQR_IMG_16I:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
+	break;
+      case LQR_IMG_32F:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gdouble, r->w0 * r->channels));
+	break;
     }
 
   /* rescale rigidity */
@@ -1678,7 +1752,7 @@ gboolean
 lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
   gint k;
-  if (r->bits != 8)
+  if (r->img_depth != LQR_IMG_8I)
     {
       return FALSE;
     }
@@ -1691,7 +1765,7 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
   (*y) = (r->transposed ? r->c->x : r->c->y);
   for (k = 0; k < r->channels; k++)
     {
-      ((guchar*)r->rgb_ro_buffer)[k] = R_RGB(r->rgb, r->c->now * r->channels + k);
+      AS_8I(r->rgb_ro_buffer)[k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
     }
   (*rgb) = (guchar*)r->rgb_ro_buffer;
   lqr_cursor_next(r->c);
@@ -1703,7 +1777,7 @@ gboolean
 lqr_carver_scan_16 (LqrCarver * r, gint * x, gint * y, guint16 ** rgb)
 {
   gint k;
-  if (r->bits != 16)
+  if (r->img_depth != LQR_IMG_16I)
     {
       return FALSE;
     }
@@ -1716,9 +1790,34 @@ lqr_carver_scan_16 (LqrCarver * r, gint * x, gint * y, guint16 ** rgb)
   (*y) = (r->transposed ? r->c->x : r->c->y);
   for (k = 0; k < r->channels; k++)
     {
-      ((guint16*)r->rgb_ro_buffer)[k] = R_RGB(r->rgb, r->c->now * r->channels + k);
+      AS_16I(r->rgb_ro_buffer)[k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
     }
   (*rgb) = (guint16*)r->rgb_ro_buffer;
+  lqr_cursor_next(r->c);
+  return TRUE;
+}
+
+LQR_PUBLIC
+gboolean
+lqr_carver_scan_32f (LqrCarver * r, gint * x, gint * y, gdouble ** rgb)
+{
+  gint k;
+  if (r->img_depth != LQR_IMG_32F)
+    {
+      return FALSE;
+    }
+  if (r->c->eoc)
+    {
+      lqr_carver_scan_reset (r);
+      return FALSE;
+    }
+  (*x) = (r->transposed ? r->c->y : r->c->x);
+  (*y) = (r->transposed ? r->c->x : r->c->y);
+  for (k = 0; k < r->channels; k++)
+    {
+      AS_32F(r->rgb_ro_buffer)[k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
+    }
+  (*rgb) = (gdouble*)r->rgb_ro_buffer;
   lqr_cursor_next(r->c);
   return TRUE;
 }
@@ -1736,7 +1835,7 @@ gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {
   gint k, x;
-  if (r->bits != 8)
+  if (r->img_depth != LQR_IMG_8I)
     {
       return FALSE;
     }
@@ -1756,12 +1855,12 @@ lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
     {
       for (k = 0; k < r->channels; k++)
 	{
-	  ((guchar*)r->rgb_ro_buffer)[x * r->channels + k] = R_RGB(r->rgb, r->c->now * r->channels + k);
+	  AS_8I(r->rgb_ro_buffer)[x * r->channels + k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
 	}
       lqr_cursor_next(r->c);
     }
 
-  (*rgb) = (guchar*)r->rgb_ro_buffer;
+  (*rgb) = AS_8I(r->rgb_ro_buffer);
   return TRUE;
 }
 
@@ -1770,7 +1869,7 @@ gboolean
 lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb)
 {
   gint k, x;
-  if (r->bits != 16)
+  if (r->img_depth != LQR_IMG_16I)
     {
       return FALSE;
     }
@@ -1790,13 +1889,46 @@ lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb)
     {
       for (k = 0; k < r->channels; k++)
 	{
-	  ((guint16*)r->rgb_ro_buffer)[x * r->channels + k] = R_RGB(r->rgb, r->c->now * r->channels + k);
+	  AS_16I(r->rgb_ro_buffer)[x * r->channels + k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
 	}
       lqr_cursor_next(r->c);
     }
 
-  (*rgb) = (guint16*)r->rgb_ro_buffer;
+  (*rgb) = AS_16I(r->rgb_ro_buffer);
   return TRUE;
 }
 
+LQR_PUBLIC
+gboolean
+lqr_carver_scan_line_32f (LqrCarver * r, gint * n, gdouble ** rgb)
+{
+  gint k, x;
+  if (r->img_depth != LQR_IMG_32F)
+    {
+      return FALSE;
+    }
+  if (r->c->eoc)
+    {
+      lqr_carver_scan_reset (r);
+      return FALSE;
+    }
+  x = r->c->x;
+  (*n) = r->c->y;
+  while (x > 0)
+    {
+      lqr_cursor_prev(r->c);
+      x = r->c->x;
+    }
+  for (x = 0; x < r->w; x++)
+    {
+      for (k = 0; k < r->channels; k++)
+	{
+	  AS_32F(r->rgb_ro_buffer)[x * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
+	}
+      lqr_cursor_next(r->c);
+    }
+
+  (*rgb) = AS_32F(r->rgb_ro_buffer);
+  return TRUE;
+}
 /**** END OF LQR_CARVER CLASS FUNCTIONS ****/
