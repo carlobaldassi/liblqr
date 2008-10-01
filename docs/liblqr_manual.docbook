@@ -3,7 +3,9 @@
 	<!ENTITY lqr "Liquid Rescale">
 	<!ENTITY lqrl "&lqr; library">
 	<!ENTITY carv_obj "<classname>LqrCarver</classname>">
+	<!ENTITY carvl_obj "<classname>LqrCarverList</classname>">
 	<!ENTITY vmap_obj "<classname>LqrVMap</classname>">
+	<!ENTITY vmapl_obj "<classname>LqrVMapList</classname>">
 	<!ENTITY prog_obj "<classname>LqrProgress</classname>">
 	<!ENTITY ret_true "<literal><returnvalue>TRUE</returnvalue></literal>">
 	<!ENTITY ret_false "<literal><returnvalue>FALSE</returnvalue></literal>">
@@ -15,13 +17,28 @@
 	<!ENTITY err_ok "<literal><errorcode>LQR_OK</errorcode></literal>">
 	<!ENTITY err_err "<literal><errorcode>LQR_ERROR</errorcode></literal>">
 	<!ENTITY err_nomem "<literal><errorcode>LQR_NOMEM</errorcode></literal>">
+	<!ENTITY prog_init_w_mess "<computeroutput>&quot;Resizing width...&quot;</computeroutput>">
+	<!ENTITY prog_init_h_mess "<computeroutput>&quot;Resizing height...&quot;</computeroutput>">
+	<!ENTITY prog_end_w_mess "<computeroutput>&quot;done&quot;</computeroutput>">
+	<!ENTITY prog_end_h_mess "<computeroutput>&quot;done&quot;</computeroutput>">
 	]>
-
 
 <book id="liblqr-manual" lang="en">
 
 	<bookinfo>
 		<title>The &lqrl; Manual</title>
+		<author>
+			<firstname>Carlo</firstname>
+			<surname>Baldassi</surname>
+		</author>
+		<productname class='copyright'>LqR library</productname>
+		<productnumber>0.1.1 (API 0.1.0)</productnumber>
+		<copyright>
+			<year>2007</year>
+			<year>2008</year>
+			<holder>Carlo Baldassi</holder>
+		</copyright>
+		<date>01 Oct 2008</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -30,7 +47,7 @@
 		<sect1 id="copyright">
 			<title>Copyright</title>
 			<para>
-				LiquidRescaling Library Manual.
+				Liquid Rescale Library Manual.
 				Copyright (C) 2007-2008 Carlo Baldassi <email>carlobaldassi@gmail.com</email>
 			</para>
 			<para>
@@ -62,9 +79,6 @@
 				Refer to the <filename>README</filename> file for information about installing
 				and compiling.
 			</para>
-			<note>
-				The manual reference is not complete yet.
-			</note>
 		</sect1>
 
 		<sect1 id="seam-carve">
@@ -133,8 +147,8 @@
 			<para>
 				The &lqrl; is written in C, but can be used into C++ programs without
 				any modification.
-				It has an object-oriented design, so that the terminology is borrowed
-				from C++. The central class of the library is called &carv_obj;.
+				It has an object-oriented design, so that the terminology in this manual is
+				borrowed from C++. The central class of the library is called &carv_obj;.
 				Carver objects can generate and store multi-size images, or load
 				them, and read them out at the desired size.
 			</para>
@@ -167,7 +181,7 @@
 			</para>
 			<para>
 				Visibility maps can be stored in objects of type &vmap_obj;.
-				When a &carv_obj; object is created from an input image, the
+				When an &carv_obj; object is created from an input image, the
 				visibility of each pixel is uninitialized. At this point, one could either
 				import a previously computed &vmap_obj;, or activate the &carv_obj; so
 				that it creates one afresh when asked to.
@@ -262,9 +276,9 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 			</para>
 			<para>
 				The other classes are optional: the class &vmap_obj; is used to hold the
-				carving information (and the class <classname>LqrVMapList</classname> is used to retrieve it
+				carving information (and the class &vmapl_obj; is used to retrieve it
 				from the &carv_obj; ojects); the class &prog_obj; is used to customize
-				progress report from the resizing engine (by default is turned off).
+				progress report from the resizing engine (by default it is turned off).
 			</para>
 			<para>
 				A complete list of the library public methods can be found at the
@@ -310,8 +324,8 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 				</variablelist>
 			</para>
 			<para>
-				At top level, the user should handle this values explicitely, because
-				the library doesn't do anything else than stopping and returning an
+				At top level, the user should handle this values explicitly, because
+				the library functions don't do anything else than stopping and returning an
 				error signal in case of errors. An easy way is setting up some macros
 				and wrap each function call with those, as shown in the example files.
 			</para>
@@ -574,7 +588,7 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 					Each time these functions are invoked, they will store
 					the coordinates and rgb information in the output pointers
 					and move to the next pixel. If they reach the end, they
-					resets the reader and return &ret_false;.
+					reset the reader and return &ret_false;.
 				</para>
 				<para>
 					Here is a sample code usage:
@@ -796,8 +810,8 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 					<para>
 						The existence of an alpha channel is inferred from the
 						<parameter>channels</parameter> value: if this is 1 or 3, no alpha
-						channel is assumed, if it is 2 or 4, it is assumed that the last
-						channel is holds the alpha value. If this is not what you want, you should
+						channel is assumed, if it is 2 or 4 or greater, it is assumed that the last
+						channel holds the alpha value. If this is not what you want, you should
 						resort to the previous method.
 					</para>
 				</important>
@@ -1042,13 +1056,22 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 					</funcsynopsis>
 				</para>
 				<para>
-					The possible values for gf_ind are:
+					The possible values for <parameter>gf_ind</parameter> are:
 					<variablelist>
 						<varlistentry>
 							<term><literal>LQR_GF_XABS</literal></term>
 							<listitem>
 								<para>
-									transversal absolute value (this is the default)
+									absolute value of the gradient in the direction of the rescaling
+									(this is the default)
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term><literal>LQR_GF_SUMABS</literal></term>
+							<listitem>
+								<para>
+									sum of absolute values of the gradients in both directions
 								</para>
 							</listitem>
 						</varlistentry>
@@ -1057,14 +1080,6 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 							<listitem>
 								<para>
 									gradient norm
-								</para>
-							</listitem>
-						</varlistentry>
-						<varlistentry>
-							<term><literal>LQR_GF_SUMABS</literal></term>
-							<listitem>
-								<para>
-									sum of absolute values
 								</para>
 							</listitem>
 						</varlistentry>
@@ -1089,8 +1104,8 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 				<title>Choosing the resize order</title>
 
 				<para>
-					When <function>lqr_carver_resize</function> is asked to resize along both directions
-					in a single step, it has to choose which direction to resize first.
+					When the function <function>lqr_carver_resize</function> is asked to resize along both
+					directions in a single step, it has to choose which direction to resize first.
 					The resize order can be changed through this function:
 					<funcsynopsis>
 						<funcprototype>
@@ -1120,6 +1135,42 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 							</listitem>
 						</varlistentry>
 					</variablelist>
+				</para>
+			</sect2>
+
+			<sect2 id="switch-freq">
+				<title>Choosing the side switch frequency</title>
+
+				<para>
+					When the function <function>lqr_carver_resize</function> is invoked,
+					it chooses at each step the optimal seam to carve based on the relvance value for each pixel.
+					However, in the case two seams are equivalent (which may happen when large portions of the image
+					have the same colour, for example), the algorithm always chooses the seams from one side.
+				</para>
+				<para>
+					In order to overcome this effect, an option is given to automatically switch the favoured
+					side during rescaling, at the cost of a slightly worse performance. The number of times such
+					a switching event occurs for each rescale operation can be set using the function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_side_switch_frequency</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>guint <parameter>switch_frequency</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The default value for newly created &carv_obj; objects is <literal>0</literal>.
+					Giving a value greater than the number of pixels by which to rescale produces
+					a switch for each pixel, therefore you could set <parameter>switch_freqency</parameter> to
+					a ridicolously high value in order to be sure to get this effect.
+				</para>
+				<para>
+					As for the final result, a very small value (e.g. <literal>1<literal> to </literal>4</literal>)
+					will normally suffice to balance the left and right side of the image (or the
+					top and the boddom sides for vertical rescalings), without noticeable
+					computational costs. However, in order to obtain a smoother behaviour for the visibiliy
+					map, i.e. for the intermediate steps, higher values may be required.
 				</para>
 			</sect2>
 		</sect1>
@@ -1171,6 +1222,16 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 					two maps will be dumped, one for each direction.
 				</para>
 				<para>
+					In order to revert the effect of <function>lqr_carver_set_dump_vmaps</function>,
+					thus stopping the automatic dumping, use function
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_no_dump_vmaps</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
 					Alternatively, the internal storage mechanism
 					can be called over the current visibility map
 					at any given moment by calling this function:
@@ -1185,7 +1246,7 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 					The dumped maps are stored inside &vmap_obj;
 					objects, and these are attached to their corresponing
 					&carv_obj; object through a linked list, whose
-					type is <classname>LqrVMapList</classname>.
+					type is &vmapl_obj;
 				</para>
 			</sect2>
 
@@ -1363,7 +1424,7 @@ vis =  buffer[y * width + x];
 				<title>Importing a visibility map in a carver</title>
 
 				<para>
-					Having an &vmap_obj; object, one can load it in a &carv_obj;
+					Having an &vmap_obj; object, one can load it in an &carv_obj;
 					simply by calling this function:
 					<funcsynopsis>
 						<funcprototype>
@@ -1444,7 +1505,7 @@ vis =  buffer[y * width + x];
 				</para>
 				<para>
 					Needless to say, no resizing operation should be done directly
-					on a &carv_obj; once it has been attached to another &carv_obj;.
+					on an &carv_obj; once it has been attached to another &carv_obj;.
 				</para>
 				<important>
 					<para>
@@ -1462,9 +1523,7 @@ vis =  buffer[y * width + x];
 					Attached carvers can be read-out in the same way as their parents.
 					There are however also methods to span all them, in a way very similar
 					to that in which internally dumped &vmap_obj;'s are accessed, but
-					<classname>LqrVMapList</classname>
-					objects are substitued in this case by
-					<classname>LqrCarverList</classname> objects.
+					&vmapl_obj; objects are substitued in this case by &carvl_obj; objects.
 				</para>
 				<para>
 					First, the starting point of the list has to be retreived through:
@@ -1601,7 +1660,7 @@ lqr_carver_list_foreach (list, my_func, data_tok);
 							<void></void>
 						</funcprototype>
 					</funcsynopsis>
-					and can be associated to a &carv_obj; object through this function:
+					and can be associated to an &carv_obj; object through this function:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_set_progress</function></funcdef>
@@ -1656,11 +1715,13 @@ LqrRetVal my_end (const gchar *end_message);
 			</sect2>
 
 			<sect2 id="progress-messages">
-				<title>Progress report messages</title>
+				<title>Initial and ending progress messages</title>
 				<para>
-					The init and end messages that will be passed to the hooks will change,
+					The init and end hooks will be called at the beginning and at the end of each
+					rescaling operation by function <function>lqr_carver_resize</function>.
+					The messages that will be passed to these hooks will change,
 					depending if the resizing is occurring in the horizontal or in the
-					vertical direction. The defaults are:
+					vertical direction. The defaults for newly created &prog_obj; objects are:
 					<table id="progress-mess-def">
 						<title>Default progress messages</title>
 						<tgroup cols="3">
@@ -1673,20 +1734,20 @@ LqrRetVal my_end (const gchar *end_message);
 							</thead>
 							<tbody>
 								<row>
-									<entry>width</entry>
-									<entry><computeroutput>"Resizing width..."</computeroutput></entry>
-									<entry><computeroutput>"done"</computeroutput></entry>
+									<entry>horizontal</entry>
+									<entry>&prog_init_w_mess;</entry>
+									<entry>&prog_end_w_mess;</entry>
 								</row>
 								<row>
-									<entry>height</entry>
-									<entry><computeroutput>"Resizing height..."</computeroutput></entry>
-									<entry><computeroutput>"done"</computeroutput></entry>
+									<entry>vertical</entry>
+									<entry>&prog_init_h_mess;</entry>
+									<entry>&prog_end_h_mess;</entry>
 								</row>
 							</tbody>
 						</tgroup>
 					</table>
 
-					These can be changed with these functions:
+					These can be changed using these functions:
 					<programlisting>
 LqrRetVal <function>lqr_progress_set_init_width_message</function> (&prog_obj; *<parameter>p</parameter>, const gchar * <parameter>message</parameter>)
 LqrRetVal <function>lqr_progress_set_init_height_message</function> (&prog_obj; *<parameter>p</parameter>, const gchar * <parameter>message</parameter>)
@@ -1699,7 +1760,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 			<sect2 id="progress-upd-step">
 				<title>Progress update step</title>
 				<para>
-					The update hook will receive as an argument the completion percentage.
+					The update hook will be called at regular intervals, and it will be passed the completion percentage
+					as the argument.
 				</para>
 				<para>
 					The update step can be specified through:
@@ -1750,20 +1812,20 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 	<chapter id="ref-pages">
 		<title>API reference</title>
 
+
 		<sect1 id="ref-carve">
 			<title>Carver objects</title>
 
-			<refentry id="ref-lqr-carver-new-destroy">
+			<refentry id="ref-lqr-carver-new">
 				<refmeta>
-					<refentrytitle>&carv_obj; constructor and destructor</refentrytitle>
+					<refentrytitle><function>lqr_carver_new</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_new</refname>
 					<refname>lqr_carver_new_16</refname>
-					<refname>lqr_carver_destroy</refname>
-					<refpurpose>the &carv_obj; object constructor and destructor</refpurpose>
+					<refpurpose>the &carv_obj; object constructors</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -1783,6 +1845,62 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The functions <function>lqr_carver_new</function> and 
+						<function>lqr_carver_new_16</function> create a new
+						&carv_obj; object from an image of size &param_w; * &param_h;
+						with &param_channels; colour channels.
+					</para>
+					<para>
+						The image must be stored in 
+						<parameter>buffer</parameter> as a plain array of <type>unsigned chars</type>
+						(for <function>lqr_carver_new</function>) or <type>16 bits unsigned integers</type>
+						(for <function>lqr_carver_new_16</function>),
+						ordered by row, then by column, then by colour channel.
+					</para>
+					<para>
+						After calling the function, the buffer will be part of the &carv_obj; object and
+						must not be accessed any more.
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value is the address of the newly created &carv_obj; object, or
+						&ret_null; in case of failure (insufficient memory).
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-destroy"></xref></member>
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-destroy">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_destroy</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_destroy</refname>
+					<refpurpose>the &carv_obj; object destructor</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_destroy</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -1791,60 +1909,34 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				</refsynopsisdiv>
 
 				<refsect1>
-					<title>Constructor</title>
-
-					<refsect2>
-						<title>Description</title>
-						<para>
-							The functions <function>lqr_carver_new</function> and 
-							<function>lqr_carver_new_16</function> create a new
-							&carv_obj; object from an image of size &param_w; * &param_h;
-							with &param_channels; colour channels.
-						</para>
-						<para>
-							The image must be stored in 
-							<parameter>buffer</parameter> as a plain array of <type>unsigned chars</type>
-							(for <function>lqr_carver_new</function>) or <type>16 bits unsigned integers</type>
-							(for <function>lqr_carver_new_16</function>),
-							ordered by row, then by column, then by colour channel.
-						</para>
-						<para>
-							The buffer will be incorporated into the &carv_obj; object and
-							must not be accessed any more.
-						</para>
-					</refsect2>
-					<refsect2>
-						<title>Return value</title>
-						<para>
-							The return value is the address of the newly created &carv_obj; object, or
-							<returnvalue>NULL</returnvalue> in case of failure.
-						</para>
-					</refsect2>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_destroy</function> destroys the &carv_obj;
+						object pointed to by <parameter>carver</parameter>, and all of its attched
+						components (visibility maps and attached carvers).
+					</para>
 				</refsect1>
 
 				<refsect1>
-					<title>Destructor</title>
-
-					<refsect2>
-						<title>Description</title>
-						<para>
-							The function <function>lqr_carver_destroy</function> destroys the &carv_obj;
-							object pointed to by <parameter>carver</parameter>, and all of its attched
-							components (visibility maps and attached carvers).
-						</para>
-					</refsect2>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-destroy"></xref></member>
+						</simplelist>
+					</para>
 				</refsect1>
 			</refentry>
 
 			<refentry id="ref-lqr-carver-init">
 				<refmeta>
-					<refentrytitle>&carv_obj; initialization</refentrytitle>
+					<refentrytitle><function>lqr_carver_init</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_init</refname>
-					<refpurpose>activates a &carv_obj; object</refpurpose>
+					<refpurpose>activates an &carv_obj; object</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -1877,28 +1969,39 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						a negative bias to non-straight seams, and it is normally set to 0.
 					</para>
 					<para>
-						Visibility maps must not be loaded when using this function,
-						neither before nor after.
+						Visibility maps must not be loaded with the function
+						<function>lqr_vmap_load</function> when using this function,
+						neither before nor after invoking it.
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
-						The return value follows the lqr library signalling system.
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-carver-resize-flatten">
+			<refentry id="ref-lqr-carver-resize">
 				<refmeta>
-					<refentrytitle>&carv_obj; resize and flatten</refentrytitle>
+					<refentrytitle><function>lqr_carver_resize</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_resize</refname>
-					<refname>lqr_carver_flatten</refname>
-					<refpurpose>manipulate a &carv_obj; object</refpurpose>
+					<refpurpose>liquid rescale a &carv_obj; object</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -1908,8 +2011,80 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>LqrRetVal <function>lqr_carver_resize</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gint <parameter>new_width</parameter></paramdef>
-							<paramdef>gint <parameter>new_heigth</parameter></paramdef>
+							<paramdef>gint <parameter>new_height</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_resize</function> performs the liquid
+						rescaling over the &carv_obj; object pointed to by <parameter>carver</parameter>.
+						If a visibility map was loaded through the function <function>lqr_vmap_load</function>,
+						and the carver was not initialized, the resizing operations must be limited to the direction
+						and the sizes included in the loaded map.
+						If the carver was initialized through the function
+						<function>lqr_carver_init</function>, the only limitation to the operations
+						is that the final size must not exceed twice the original size in any of
+						the two dimensions (the original size is reset by the function
+						<function>lqr_carver_flatten</function>).
+					</para>
+					<para>
+						The resizing function can be called multiple times, and it will decide
+						automatically whether the computation of the visibility map is necessary
+						or not. In case it isn't, the function returns almost immediately, otherwise
+						operations will proceed following the order given through the function
+						<function>lqr_carver_set_resize_order</function>.
+						Currently, on-the-fly rescaling without computation is only possible
+						for a single direction at a time.
+					</para>
+					<para>
+						Whenever the resizing dirction change (this may happen
+						in a single call of the rescaling function or through multiple calls), the
+						visibility map computed during the first direction rescale is dropped to
+						make place for the one for the second. These visibility maps can be
+						saved by using the <function>lqr_carver_set_vmap_dump</function> function,
+						for inspection or future use.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+						It returns an error if trying to exceed the limitations of a loaded
+						visibility map, or if trying to increase the size of the image
+						by more than twice the original size.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-flatten">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_flatten</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_flatten</refname>
+					<refpurpose>flatten a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_flatten</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -1920,28 +2095,52 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_carver_flatten</function> can be used to discard
+						the visibility map information and flatten the multi-size image contained in
+						the &carv_obj; object pointerd to by <parameter>carver</parameter>
+						to its current state.
+						This can be useful to perform more than one rescale step in the same direction,
+						expecially for enlarging.
+					</para>
+					<para>
+						This function must only be invoked over initialized &carv_obj; objects.
+					</para>
+					<para>
+						The discarded visibility map will not be dumped automatically in any case, use the
+						function <xref linkend="ref-lqr-vmap-dump"></xref> or
+						<xref linkend="ref-lqr-vmap-internal-dump"></xref> in order to save it before invoking
+						this function.
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
-						The return value follows the lqr library signalling system.
+						The return value follows the &lqrl; signalling system. Errors can occur
+						for non-initialized &carv_obj; objects or in case of insufficient memory.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-carver-scan">
+			<refentry id="ref-lqr-carver-scan-reset">
 				<refmeta>
-					<refentrytitle>&carv_obj; readout</refentrytitle>
+					<refentrytitle><function>lqr_carver_scan_reset</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_scan_reset</refname>
-					<refname>lqr_carver_scan</refname>
-					<refname>lqr_carver_scan_by_row</refname>
-					<refname>lqr_carver_scan_line</refname>
-					<refpurpose>read out a multi-size image</refpurpose>
+					<refpurpose>reset the readout cursor of a multi-size image</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -1951,6 +2150,48 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>void <function>lqr_carver_scan_reset</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_scan_reset</function> resets the readout pointer
+						associated with the &carv_obj; object pointed to by <parameter>carver</parameter>
+						to the start of the image. (Normally, calling this function isn't needed, as the
+						pointer is reset automatically whenever an operation is performed or once a
+						readout has completed.)
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-scan"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan-by-row"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan-line"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+
+			</refentry>
+
+			<refentry id="ref-lqr-carver-scan">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_scan</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_scan</refname>
+					<refname>lqr_carver_scan_16</refname>
+					<refpurpose>read out a multi-size image one pixel at a time</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -1965,10 +2206,117 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint* <parameter>y</parameter></paramdef>
 							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The functions <function>lqr_carver_scan</function> and <function>lqr_carver_scan_16</function>
+						are used to read out the multi-size image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter> one pixel at a time in 8-bit or 16-bit images,
+						respectively.
+						They store the pixel coordinates in the variables pointed to by <parameter>x</parameter> and
+						<parameter>y</parameter>, and the pixel content in the array pointed to by
+						<parameter>rgb</parameter>; then they move the readout pointer to the next pixel, or they
+						reset it if the end of the image is reached.
+					</para>
+					<para>
+						The <parameter>rgb</parameter> variable will point to an array which is internal
+						to the &carv_obj; object, so there is no need to allocate memory for it.
+						However, you must avoid writing to it or its elements.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						These functions return &ret_true; in case the readout is successful and the end of the image
+						was not reached, &ret_false; otherwise.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-scan-reset"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan-line"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+
+			</refentry>
+
+			<refentry id="ref-lqr-carver-scan-by-row">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_scan_by_row</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_scan_by_row</refname>
+					<refpurpose>tells if the image in &carv_obj; will be scanned by row or by column</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan_by_row</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_scan_by_row</function> must be used before
+						calling the functions
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line</function></link>
+						and
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_16</function></link>,
+						in order to ascertain if those functions will scan the multi-size image contained in the 
+						&carv_obj; object pointed to by <parameter>carver</parameter> by row or by column,
+						which depends on which was last rescaling direction and cannot be controlled directly by the user.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						This function returns &ret_true; in case the image is going to be scanned by row,
+						&ret_false; in case it is going to be scanned by column;
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-scan-reset"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan-line"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-scan-line">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_scan_line</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_scan_line</refname>
+					<refpurpose>read out a multi-size image one line at a time</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan_line</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -1987,27 +2335,50 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The functions <function>lqr_carver_scan_line</function> and
+						<function>lqr_carver_scan_line_16</function> are used to read out the multi-size image
+						contained in the &carv_obj; object pointed to by <parameter>carver</parameter> one line 
+						at a time in 8-bit or 16-bit images, respectively.
+						They store the line number (row or column) in the variable pointed to by <parameter>n</parameter>
+						and the colour values in the array pointed to by <parameter>rgb</parameter>;
+						then they move the readout pointer to the next line, or they
+						reset it if the end of the image is reached.
+					</para>
+					<para>
+						Use the function <xref linkend="ref-lqr-carver-scan-by-row"></xref> before calling these
+						to know whether your image will be scanned by row or by column.
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
+						These functions return &ret_true; in case the readout is successful and the end of the image
+						was not reached, &ret_false; otherwise.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-scan-reset"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan-by-row"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-carver-get">
+			<refentry id="ref-lqr-carver-get-width">
 				<refmeta>
-					<refentrytitle>Get &carv_obj; values</refentrytitle>
+					<refentrytitle><function>lqr_carver_get_width</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_get_width</refname>
-					<refname>lqr_carver_get_height</refname>
-					<refname>lqr_carver_get_channels</refname>
-					<refname>lqr_carver_get_bpp</refname>
-					<refpurpose>get various &carv_obj; object quantities</refpurpose>
+					<refpurpose>get the current width of a &carv_obj; object</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2017,10 +2388,85 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>gint <function>lqr_carver_get_width</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_width</function> returns
+						the current width of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, in pixel units.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-height">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_height</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_height</refname>
+					<refpurpose>get the current height of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
-							<funcdef>gint <function>lqr_carver_get_heigth</function></funcdef>
+							<funcdef>gint <function>lqr_carver_get_height</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_height</function> returns
+						the current height of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, in pixel units.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-channels">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_channels</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_channels</refname>
+					<refname>lqr_carver_get_bpp</refname>
+					<refpurpose>get the number of channels in a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>gint <function>lqr_carver_get_channels</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -2035,46 +2481,338 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The functions <function>lqr_carver_get_channels</function> returns
+						the number of colour channels of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>.
+					</para>
+					<para>
+						The function <function>lqr_carver_get_bpp</function> is an alias for
+						<function>lqr_carver_get_channels</function>, it is deprecated
+						and it is maintained for backward compatibility purposes only.
 					</para>
 				</refsect1>
+
 				<refsect1>
-					<title>Return value</title>
+					<title>See also</title>
 					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-carver-set">
+			<refentry id="ref-lqr-carver-set-gradient-function">
 				<refmeta>
-					<refentrytitle>Set &carv_obj; values</refentrytitle>
+					<refentrytitle><function>lqr_carver_set_gradient_function</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_set_gradient_function</refname>
-					<refname>lqr_carver_set_resize_order</refname>
-					<refname>lqr_carver_set_dump_vmaps</refname>
-					<refname>lqr_carver_set_progress</refname>
-					<refpurpose>set various &carv_obj; object attributes</refpurpose>
+					<refpurpose>set the gradient function for an &carv_obj; object</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
 					<funcsynopsis>
 						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
-							<funcdef>void <function>lqr_carver_set_gradient_fucntion</function></funcdef>
+							<funcdef>void <function>lqr_carver_set_gradient_function</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>LqrGradFuncType <parameter>gf_ind</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						Function <function>lqr_carver_set_gradient_function</function> is used
+						to determine which function of the gradient should be used by
+						the &carv_obj; object pointed to by <parameter>carver</parameter>
+						to determine the relevance of a pixel (less relevant pixels being the ones which
+						tend to be crossed by the seams, and thus the ones affected by rescaling).
+						For each pixel, the gradient is computed for each direction as the difference
+						of the values of nighboring pixels, the value being computed as the average
+						over the colour channels multiplied by the alpha channel value (if present).
+					</para>
+					<para>
+						Possible values of the argument <parameter>gs_ind</parameter> are:
+						<variablelist>
+							<varlistentry>
+								<term><literal>LQR_GF_XABS</literal></term>
+								<listitem>
+									<para>
+										absolute value of the gradient in the direction of the rescaling
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term><literal>LQR_GF_SUMABS</literal></term>
+								<listitem>
+									<para>
+										sum of absolute values of the gradients in both directions
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term><literal>LQR_GF_NORM</literal></term>
+								<listitem>
+									<para>
+										gradient norm
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term><literal>LQR_GF_NULL</literal></term>
+								<listitem>
+									<para>
+										always returns 0
+									</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+					</para>
+					<para>
+						The default value for newly created &carv_obj; objects is <literal>LQR_GF_XABS</literal>.
+						The value <literal>LQR_GF_NULL</literal> can be used together with the function
+						<xref linkend="ref-lqr-carver-bias-add-area"></xref> ant the like to override completely the
+						automatic feature detection.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-resize-order">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_resize_order</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_resize_order</refname>
+					<refpurpose>set &carv_obj; object resize order</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_set_resize_order</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>LqrResizeOrder <parameter>resize_order</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						When the function <xref linkend="ref-lqr-carver-resize"></xref> is invoked and
+						both the horizontal and vertical sizes are different from the current ones,
+						the rescaling occurs first in one direction and then in the other.
+					</para>
+					<para>
+						The function <function>lqr_carver_set_resize_order</function> can be used
+						to set which direction to rescale first for the &carv_obj; object pointed
+						to by <parameter>carver</parameter>.
+						The parameter <parameter>resize_order</parameter> can take either the
+						value <literal>LQR_RES_ORDER_HOR</literal> (horizontal rescale first) or
+						<literal>LQR_RES_ORDER_VERT</literal> (vertical rescale first).
+						By default, when an &carv_obj; object is created, the value is set to
+						<literal>LQR_RES_ORDER_HOR</literal>
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-dump-vmaps">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_dump_vmaps</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_dump_vmaps</refname>
+					<refname>lqr_carver_set_no_dump_vmaps</refname>
+					<refpurpose>set the visibility maps autodump for an &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_set_dump_vmaps</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_no_dump_vmaps</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						Invoking function <function>lqr_carver_set_dump_vmaps</function> over
+						the &carv_obj; object pointed to by <parameter>carver</parameter> has the effect of
+						activating the automatic dumping of visibility maps at each rescale operation
+						(which by default is turned off).
+					</para>
+					<para>
+						Rescale operations involving both directions will dump two maps.
+					</para>
+					<para>
+						The dumped maps will be attached to the &carv_obj; object and can be accsessed
+						at any later time using the functions
+						<xref linkend="ref-lqr-vmap-list-foreach"></xref>
+						or a combination of
+						<xref linkend="ref-lqr-vmap-list-start"></xref>,
+						<xref linkend="ref-lqr-vmap-list-current"></xref> and
+						<xref linkend="ref-lqr-vmap-list-next"></xref>.
+					</para>
+					<para>
+						Using this setting is pointless if the &carv_obj; object is not initialized.
+					</para>
+					<para>
+						The function <function>lqr_carver_set_no_dump_vmaps</function> reverts the effect
+						of the previous one (but the maps dumped so far will be kept).
+					</para>
+					<para>
+						Note that it is also possible to dump visibility maps manually; however, using
+						the automatic dump is the only way to get intermidiate maps when the function
+						<xref linkend="ref-lqr-carver-resize"></xref> performs the rescaling in both directions.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-foreach"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-side-switch-frequency">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_side_switch_frequency</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_side_switch_frequency</refname>
+					<refpurpose>set &carv_obj; object side switch frequency</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_side_switch_frequency</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>guint <parameter>switch_frequency</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						When the function <xref linkend="ref-lqr-carver-resize"></xref> is invoked,
+						it computes a relevance value for each pixel in the image, then chooses
+						the optimal seam to carve based on such relvance values.
+						However, in the case two seams are equivalent (which may happen when large portions of the image
+						have the same colour, for example), the algorithm always chooses the seams from one side.
+					</para>
+					<para>
+						In order to overcome this effect, an option is given to automatically switch the favoured
+						side during rescaling, at the cost of a slightly worse performance.
+					</para>
+					<para>
+						The function <function>lqr_carver_set_side_switch_frequency</function> sets the
+						side switch frequency to <parameter>switch_frequency</parameter> for the &carv_obj;
+						object pointed to by <parameter>carver</parameter>.
+						This will have the effect that, for each rescale operation, the favoured side
+						will be switched <parameter>switch_frequency</parameter> times (or as much times as
+						the number of pixels to rescale).
+					</para>
+					<para>
+						The default value for newly created &carv_obj; objects is <literal>0</literal>.
+					</para>
+					<para>
+						As for the final result, a very small value (e.g. <literal>1<literal> to </literal>4</literal>)
+						will normally suffice to balance the left and right side of the image (or the
+						top and the boddom sides for vertical rescalings), without noticeable
+						computational costs. However, in order to obtain a smoother behaviour for the visibiliy
+						map, i.e. for the intermediate steps, higher values may be required.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+
+			<refentry id="ref-lqr-carver-set-progress">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_progress</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_progress</refname>
+					<refpurpose>set the progress report function for an &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_set_progress</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -2086,24 +2824,40 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_carver_set_progress</function> associates
+						the progress indicator pointed to by <parameter>progress</parameter>
+						to the &carv_obj; object pointed to by <parameter>carver</parameter>.
+						Progress indicators objects are created with the function
+						<xref linkend="ref-lqr-progress-new"></xref>.
+					</para>
+					<para>
+						By default, no indicator is used.
 					</para>
 				</refsect1>
+
 				<refsect1>
-					<title>Return value</title>
+					<title>See also</title>
 					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
 			<refentry id="ref-lqr-carver-attach">
 				<refmeta>
-					<refentrytitle>Attach carvers</refentrytitle>
+					<refentrytitle><function>lqr_carver_attach</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_attach</refname>
-					<refpurpose>attach a &carv_obj; to another &carv_obj;</refpurpose>
+					<refpurpose>attach an &carv_obj; to another &carv_obj;</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2112,6 +2866,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_attach</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrCarver* <parameter>aux</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
@@ -2119,28 +2874,52 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_carver_attach</function> is used to attach
+						an &carv_obj; object (pointed to by <parameter>aux</parameter>) to
+						another one (pointed to by <parameter>carver</parameter>).
+						This will have the effect that each operation performed over the
+						<parameter>carver</parameter> object will be reflected on
+						<parameter>aux</parameter> (they will share the same visibility map).
+					</para>
+					<para>
+						This function must not be used after a visibility map was loaded
+						into the base object (the one pointed to by <parameter>carver</parameter>).
+					</para>
+					<para>
+						The object pointed to by <parameter>aux</parameter> must have the same
+						original size as the base object.
+						Note that the original size information is reset whenever a flattening
+						operation occurs, or the rescaling direction changes, so that this function
+						should be called befor rescaling occurs.
+					</para>
+					<para>
+						There is no limitation on the number of &carv_obj; objects which is possible
+						to attach. Nesting is also possible. It is irrelevant if the
+						<parameter>aux</parameter> carver is initialized or not; from
+						the moment of attachment, it will passively undergo all
+						transformations performed over <parameter>carver</parameter>.
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
-						The return value follows the lqr library signalling system.
+						The return value follows the &lqrl; signalling system.
+						A generic error &err_err; is returned if the sizes of <parameter>carver</parameter>
+						and <parameter>aux</parameter> don't match.
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-carver-lists">
+			<refentry id="ref-lqr-carver-list-start">
 				<refmeta>
-					<refentrytitle>Get attached carvers</refentrytitle>
+					<refentrytitle><function>lqr_carver_list_start</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_carver_list_start</refname>
-					<refname>lqr_carver_list_current</refname>
-					<refname>lqr_carver_list_next</refname>
-					<refname>lqr_carver_list_foreach</refname>
-					<refpurpose>get &carv_obj; objects attached to another &carv_obj;</refpurpose>
+					<refpurpose>get the staritng point of the attachement list in an &carv_obj; object</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2150,14 +2929,141 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>LqrCarverList* <function>lqr_carver_list_start</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_list_start</function> returns the stating point of the
+						&carvl_obj; object associated with the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, which is used to keep track of
+						the &carv_obj; objects attached to it.  
+					</para>
+					<para>
+						The returned value is &ret_null; if there are no attached carvers.
+					</para>
+					<para>
+						Use the functions <xref linkend="ref-lqr-carver-list-current"></xref> and
+						<xref linkend="ref-lqr-carver-list-next"></xref> to access the list element
+						individually, or the function <xref linkend="ref-lqr-carver-list-foreach"></xref>
+						to operate on whole lists.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-attach"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-foreach"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-list-current">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_list_current</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_list_current</refname>
+					<refpurpose>get current &carv_obj; object in a &carvl_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrCarver* <function>lqr_carver_list_current</function></funcdef>
 							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_list_current</function> returns a pointer to
+						the &carv_obj; object corresponding to the current value of the
+						<parameter>list</parameter> parameter, or &ret_null; in case of errors.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-attach"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-foreach"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-list-next">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_list_next</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_list_next</refname>
+					<refpurpose>advance the &carvl_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
-							<funcdef>LqrCarverList <function>lqr_carver_list_next</function></funcdef>
+							<funcdef>LqrCarverList* <function>lqr_carver_list_next</function></funcdef>
 							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_list_next</function> returns a pointer to the next
+						attached &carv_obj; object in <parameter>list</parameter>, or &ret_null; if the list
+						has reached the end.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-attach"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-foreach"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-list-foreach">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_list_foreach</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_list_foreach</refname>
+					<refpurpose>perform operations on all &carv_obj; objects in an &carvl_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_list_foreach</function></funcdef>
 							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
@@ -2170,15 +3076,49 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_carver_list_foreach</function> can be used
+						to apply function <parameter>func</parameter> to all the &carv_obj; objects
+						listed in <parameter>list</parameter>. The parameter <parameter>data</parameter>
+						is used to pass arguments to the function.
+					</para>
+					<para>
+						The <parameter>list</parameter> value should be obtained through the function
+						<xref linkend="ref-lqr-carver-list-start"></xref>.
+					</para>
+					<para>
+						The function <parameter>func</parameter> is of type <classname>LqrCarverFunc</classname>,
+						whose prototype is defined by:
+						<programlisting>
+typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
+						</programlisting>
+						The <parameter>data</parameter> argument is of type <structname>LqrDataTok</structname>, 
+						which is defined as a union with the following fields:
+						<itemizedlist>
+							<listitem>
+								<para><type>&carv_obj;*</type> <structfield>carver</structfield></para>
+							</listitem>
+							<listitem>
+								<para><type>gint</type> <structfield>integer</structfield></para>
+							</listitem>
+							<listitem>
+								<para><type>gpointer</type> <structfield>data</structfield></para> 
+							</listitem>
+						</itemizedlist>
 					</para>
 				</refsect1>
+				
 				<refsect1>
-					<title>Return value</title>
+					<title>See also</title>
 					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-attach"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-next"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
-
 		</sect1>
 
 
@@ -2187,14 +3127,13 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 
 			<refentry id="ref-lqr-vmap-new">
 				<refmeta>
-					<refentrytitle>&vmap_obj; constructor and destructor</refentrytitle>
+					<refentrytitle><function>lqr_vmap_new</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_vmap_new</refname>
-					<refname>lqr_vmap_destroy</refname>
-					<refpurpose>the &vmap_obj; object constructor and destructor</refpurpose>
+					<refpurpose>the &vmap_obj; object constructor</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2204,10 +3143,85 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>LqrVMap* <function>lqr_vmap_new</function></funcdef>
 							<paramdef>gint* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
-							<paramdef>gint <parameter>heigth</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>depth</parameter></paramdef>
 							<paramdef>gint <parameter>orientation</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_new</function> is the constructor 
+						for &vmap_obj; objects. It can be used to convert saved data in a format
+						which can be loaded in an &carv_obj; object.
+					</para>
+					<para>
+						The parameter <parameter>buffer</parameter> must point to an an array of
+						<literal><parameter>width</parameter> * <parameter>height</parameter></literal>
+						<type>integers</type> carrying the visibility information.
+					</para>
+					<para>
+						The parameter <parameter>depth</parameter> represents the maximum possible
+						amount of rescaling with the given map.
+					</para>
+					<para>
+						The parameter <parameter>orientation</parameter> must be <literal>0</literal> if the map
+						is to be used for horizontal rescaling, <literal>1</literal> if it is to be used for
+						vertical rescaling.
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Visibility maps format</title>
+					<para>
+						The <parameter>buffer</parameter> must be an array of integers of size
+						<literal><parameter>width</parameter> * <parameter>height</parameter></literal>.
+						For an horizontally oriented visibility map, the format is as such: each row must
+						contain all values between 1 and <parameter>depth</parameter> (included) exactly once,
+						with low values indicating the pixels which will be operated on first during rescaling.
+						All other pixels must be 0, which means that they won't be affected by rescaling.
+						Such a map allows for horizontal rescaling in the range from
+						<literal><parameter>width</parameter> - <parameter>depth</parameter></literal>
+						to <literal><parameter>width</parameter> + <parameter>depth</parameter></literal>.
+						The same applies to vertically oriented visibility maps,
+						with columns in place of rows and <parameter>height</parameter> in place
+						of <parameter>width</parameter>.
+					</para>
+				</refsect1>
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The function returns the newly created &vmap_obj; if successful, or &ret_null;
+						in case of insufficient memory.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-destroy"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-destroy">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_destroy</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_destroy</refname>
+					<refpurpose>the &vmap_obj; object destructor</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>void <function>lqr_vmap_destroy</function></funcdef>
 							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
@@ -2218,27 +3232,31 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_vmap_destroy</function> destroys the &vmap_obj; object.
+						It is not necessary to invoke it over visibility maps which were loaded in
+						&carv_obj; objects, as this is done already by the carver object destructor.
 					</para>
 				</refsect1>
+
 				<refsect1>
-					<title>Return value</title>
+					<title>See also</title>
 					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-vmap-get">
+			<refentry id="ref-lqr-vmap-get-data">
 				<refmeta>
-					<refentrytitle>Get &vmap_obj; values</refentrytitle>
+					<refentrytitle><function>lqr_vmap_get_data</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_vmap_get_data</refname>
-					<refname>lqr_vmap_get_width</refname>
-					<refname>lqr_vmap_get_height</refname>
-					<refname>lqr_vmap_get_depth</refname>
-					<refname>lqr_vmap_get_orientation</refname>
 					<refpurpose>get varous &vmap_obj; object quantities</refpurpose>
 				</refnamediv>
 
@@ -2249,18 +3267,199 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>gint* <function>lqr_vmap_get_data</function></funcdef>
 							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
 						</funcprototype>
-						<funcprototype>
-							<funcdef>gint <function>lqr_vmap_get_width</function></funcdef>
-							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>gint <function>lqr_vmap_get_height</function></funcdef>
-							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
-						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_get_data</function> returns an array with the data
+						stored into the &vmap_obj; object pointed to by <parameter>vmap</parameter>, 
+						ordered first by row, then by column.
+					</para>
+					<para>
+						Reading the data requires retrieval of the other quantities, through the functions
+						<xref linkend="ref-lqr-vmap-get-depth"></xref>,
+						<xref linkend="ref-lqr-vmap-get-width"></xref>,
+						<xref linkend="ref-lqr-vmap-get-height"></xref> and
+						<xref linkend="ref-lqr-vmap-get-orientation"></xref>.
+					</para>
+					<para>
+						See the &vmap_obj; objects format description in the page for
+						<xref linkend="ref-lqr-vmap-new"></xref>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-depth"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-get-depth">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_get_depth</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_get_depth</refname>
+					<refpurpose>get the depth of an &vmap_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>gint <function>lqr_vmap_get_depth</function></funcdef>
 							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_get_depth</function> returns the depth
+						of the &vmap_obj; object pointed to by <parameter>vmap</parameter>,
+						i.e. the maximum scaling allowed by it.
+					</para>
+					<para>
+						See the &vmap_obj; objects format description in the page for
+						<link linkend="ref-lqr-vmap-new">&vmap_obj; constructor and destructor</link>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-data"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-get-width">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_get_width</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_get_width</refname>
+					<refpurpose>get the width of an &vmap_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_vmap_get_width</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_get_width</function> returns the width
+						of the &vmap_obj; object pointed to by <parameter>vmap</parameter>.
+					</para>
+					<para>
+						See the &vmap_obj; objects format description in the page for
+						<link linkend="ref-lqr-vmap-new">&vmap_obj; constructor and destructor</link>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-data"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-depth"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-get-height">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_get_height</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_get_height</refname>
+					<refpurpose>get the height of an &vmap_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_vmap_get_height</function></funcdef>
+							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_get_height</function> returns the height
+						of the &vmap_obj; object pointed to by <parameter>vmap</parameter>.
+					</para>
+					<para>
+						See the &vmap_obj; objects format description in the page for
+						<link linkend="ref-lqr-vmap-new">&vmap_obj; constructor and destructor</link>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-data"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-depth"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-get-orientation">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_get_orientation</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_get_orientation</refname>
+					<refpurpose>get the orientation of an &vmap_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>gint <function>lqr_vmap_get_orientation</function></funcdef>
 							<paramdef>LqrVMap* <parameter>vmap</parameter></paramdef>
@@ -2271,26 +3470,40 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_vmap_get_orientation</function> returns the height
+						of the &vmap_obj; object pointed to by <parameter>vmap</parameter>,
+						which is <literal>0</literal> for horizontally oriented maps, 
+						<literal>1</literal> for vertically oriented ones.
+					</para>
+					<para>
+						See the &vmap_obj; objects format description in the page for
+						<link linkend="ref-lqr-vmap-new">&vmap_obj; constructor and destructor</link>.
 					</para>
 				</refsect1>
+
 				<refsect1>
-					<title>Return value</title>
+					<title>See also</title>
 					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-data"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-depth"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-height"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
 			<refentry id="ref-lqr-vmap-dump">
 				<refmeta>
-					<refentrytitle>&vmap_obj; dump and load</refentrytitle>
+					<refentrytitle><function>lqr_vmap_dump</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_vmap_dump</refname>
-					<refname>lqr_vmap_internal_dump</refname>
-					<refname>lqr_vmap_load</refname>
-					<refpurpose>dump and load &vmap_obj; objects</refpurpose>
+					<refpurpose>dump an &vmap_obj; object</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2300,10 +3513,87 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>LqrVMap* <function>lqr_vmap_dump</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_dump</function> returns the current visibility map
+						of the &carv_obj; object pointed to by <parameter>carver</parameter>, or &ret_null;
+						in case of errors.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-internal-dump">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_internal_dump</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_internal_dump</refname>
+					<refpurpose>dump an &vmap_obj; objects into an &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_vmap_internal_dump</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_internal_dump</function> dumps the current visibility
+						map of the &carv_obj; object pointed to by <parameter>carver</parameter> internally to it,
+						attaching it to the same &vmapl_obj; object list as the one used for automatic dumping
+						(as activated by <xref linkend="ref-lqr-carver-set-dump-vmaps"></xref>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-dump"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-load">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_load</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_load</refname>
+					<refpurpose>load an &vmap_obj; object into an &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_vmap_load</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -2315,27 +3605,46 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_vmap_load</function> loads the visibility map contained in the
+						&vmap_obj; object pointed to by <parameter>vmap</parameter> in the
+						&carv_obj; object pointed to by <parameter>carver</parameter>.
 					</para>
-				</refsect1>
+					<para>
+						It can only be called over uninitialized carver objects, therefore care must be taken not
+						to exceed the loaded map depth when resizing (see the &vmap_obj; objects format description
+						in the page for <xref linkend="ref-lqr-vmap-new"></xref>).
+					</para>
 				<refsect1>
+
+				</refsect1>
 					<title>Return value</title>
 					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-dump"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-vmap-lists">
+			<refentry id="ref-lqr-vmap-list-start">
 				<refmeta>
-					<refentrytitle>Get dumped &vmap_obj;</refentrytitle>
+					<refentrytitle><function>lqr_vmap_list_start</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_vmap_list_start</refname>
-					<refname>lqr_vmap_list_current</refname>
-					<refname>lqr_vmap_list_next</refname>
-					<refname>lqr_vmap_list_foreach</refname>
-					<refpurpose>get &vmap_obj; objects from a &carv_obj;</refpurpose>
+					<refpurpose>get the &vmapl_obj; list attached to an &carv_obj;</refpurpose>
 				</refnamediv>
 				<refsynopsisdiv>
 					<funcsynopsis>
@@ -2344,14 +3653,146 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>LqrVMapList* <function>lqr_vmap_list_start</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_list_start</function> returns the stating point of the
+						&vmapl_obj; object associated with the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, which is used to keep track of
+						the &vmap_obj; objects internally dumped by it.
+					</para>
+					<para>
+						The returned value is &ret_null; if there are no dumped visibility maps.
+					</para>
+					<para>
+						The function <function>lqr_vmap_list_current</function> returns
+						the &vmap_obj; object corresponding to the current value of the
+						<parameter>list</parameter> parameter, or &ret_null; in case of errors.
+					</para>
+					<para>
+						Use the functions <xref linkend="ref-lqr-vmap-list-current"></xref> and
+						<xref linkend="ref-lqr-vmap-list-next"></xref> to access the list element
+						individually, or the function <xref linkend="ref-lqr-vmap-list-foreach"></xref>
+						to operate on whole lists.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-foreach"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-list-current">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_list_current</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_list_current</refname>
+					<refpurpose>get current &vmap_obj; object in a &vmapl_obj; object</refpurpose>
+				</refnamediv>
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrVMap <function>lqr_vmap_list_current</function></funcdef>
 							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_list_current</function> returns
+						the &vmap_obj; object corresponding to the current value of the
+						<parameter>list</parameter> parameter, or &ret_null; in case of errors.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-foreach"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-list-next">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_list_next</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_list_next</refname>
+					<refpurpose>advance the &vmapl_obj; object</refpurpose>
+				</refnamediv>
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrVMapList <function>lqr_vmap_list_next</function></funcdef>
 							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_vmap_list_next</function> returns a pointer the next dumped
+						&vmap_obj; object in <parameter>list</parameter>, or &ret_null; if the list
+						has reached the end.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-foreach"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-vmap-list-foreach">
+				<refmeta>
+					<refentrytitle><function>lqr_vmap_list_foreach</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_vmap_list_foreach</refname>
+					<refpurpose>perform operations on all &vmap_obj; objects in an &vmapl_obj; object</refpurpose>
+				</refnamediv>
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_vmap_list_foreach</function></funcdef>
 							<paramdef>LqrVMapList* <parameter>list</parameter></paramdef>
@@ -2364,34 +3805,72 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_vmap_list_foreach</function> can be used
+						to apply function <parameter>func</parameter> to all the &vmap_obj; objects
+						listed in <parameter>list</parameter>. The parameter <parameter>data</parameter>
+						is used to pass arguments to the function.
 					</para>
-				</refsect1>
-				<refsect1>
-					<title>Return value</title>
 					<para>
+						The <parameter>list</parameter> value should be obtained through the function
+						<xref linkend="ref-lqr-vmap-list-start"></xref>.
+					</para>
+					<para>
+						The function <parameter>func</parameter> is of type <classname>LqrVMapFunc</classname>,
+						whose prototype is defined by:
+						<programlisting>
+typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
+						</programlisting>
+						The <parameter>data</parameter> argument is of type <structname>gpointer</structname>, 
+						which is just a pointer to <literal><type>void</type></literal>.
 					</para>
 				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-vmap-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+
 			</refentry>
 		</sect1>
 
 		<sect1 id="ref-bias">
 			<title>Bias</title>
 
-			<refentry id="ref-lqr-bias-add">
+			<refentry id="ref-lqr-carver-bias-add-area">
 				<refmeta>
-					<refentrytitle>Add a bias to a &carv_obj;</refentrytitle>
+					<refentrytitle><function>lqr_carver_bias_add_area</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
-					<refname>lqr_carver_bias_add</refname>
 					<refname>lqr_carver_bias_add_area</refname>
-					<refpurpose>update a &carv_obj; bias by reading a buffer</refpurpose>
+					<refname>lqr_carver_bias_add</refname>
+					<refname>lqr_carver_bias_add_rgb_area</refname>
+					<refname>lqr_carver_bias_add_rgb</refname>
+					<refpurpose>update an &carv_obj; bias</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
 					<funcsynopsis>
 						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -2399,45 +3878,16 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
-							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb_area</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>x_off</parameter></paramdef>
 							<paramdef>gint <parameter>y_off</parameter></paramdef>
 						</funcprototype>
-					</funcsynopsis>
-				</refsynopsisdiv>
-
-				<refsect1>
-					<title>Description</title>
-					<para>
-					</para>
-				</refsect1>
-				<refsect1>
-					<title>Return value</title>
-					<para>
-					</para>
-				</refsect1>
-			</refentry>
-
-			<refentry id="ref-lqr-bias-add-rgb">
-				<refmeta>
-					<refentrytitle>Read the bias from an image</refentrytitle>
-					<manvolnum>3</manvolnum>
-				</refmeta>
-
-				<refnamediv>
-					<refname>lqr_carver_bias_add_rgb</refname>
-					<refname>lqr_carver_bias_add_rgb_area</refname>
-					<refpurpose>update a &carv_obj; bias by reading an RGB image</refpurpose>
-				</refnamediv>
-
-				<refsynopsisdiv>
-					<funcsynopsis>
-						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -2445,28 +3895,85 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
 							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
-						<funcprototype>
-							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
-							<paramdef>gint <parameter>bias_factor</parameter></paramdef>
-							<paramdef>gint <parameter>channels</parameter></paramdef>
-							<paramdef>gint <parameter>width</parameter></paramdef>
-							<paramdef>gint <parameter>height</parameter></paramdef>
-							<paramdef>gint <parameter>x_off</parameter></paramdef>
-							<paramdef>gint <parameter>y_off</parameter></paramdef>
-						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
 
 				<refsect1>
-					<title>Description</title>
+					<title>Adding a bias from a buffer</title>
+
 					<para>
+						The function <function>lqr_carver_bias_add_area</function> adds a bias to an
+						area of the image loaded into the &carv_obj; object pointed to by
+						<parameter>carver</parameter>. A positive biased area will be more likely to be
+						avoided by seams, and thus be preserved during rescaling, while a negative bias has the
+						opposite effect.
+					</para>
+					<para>
+						This function must be called after <xref linkend="ref-lqr-carver-init"></xref>
+						and before <xref linkend="ref-lqr-carver-resize"></xref>. If called multiple
+						times, the biases added at each call will sum up.
+					</para>
+					<para>
+						The parameter <parameter>buffer</parameter> must point to an array of <type>doubles</type>
+						of size <literal><parameter>width</parameter> * <parameter>height</parameter></literal>,
+						ordered first by rows, then by columns.
+					</para>
+					<para>
+						The offset of the area relative to the image can be specified through
+						<parameter>x_off</parameter> and <parameter>y_off</parameter>.
+						The bias area can exceed the boundary of the image, and the offsets can be negative.
+					</para>
+					<para>
+						The parameter <parameter>bias_factor</parameter> is an overall bias scale. A typical
+						value when the buffer contents are of the order of <literal>1</literal> would be
+						<literal>1000</literal>.
+					</para>
+					<para>
+						The function <function>lqr_carver_bias_add</function> can be used when the area
+						to add is of the same size of the image loaded in the &carv_obj; object and the
+						offsets are <literal>0</literal>.
 					</para>
 				</refsect1>
+
 				<refsect1>
-					<title>Return value</title>
+					<title>Adding a bias from an image</title>
+
 					<para>
+						The functions <function>lqr_carver_bias_add_rgb_area</function> and
+						<function>lqr_carver_bias_add_rgb</function> are very similar to
+						<function>lqr_carver_bias_add_area</function> and
+						<function>lqr_carver_bias_add</function>, except that they use 8-bit multi-channel
+						images as inputs.
+					</para>
+					<para>
+						The number of channels in the image is passed via the parameter
+						<parameter>channels</parameter>. The last channel is assumed to be the alpha
+						(opacity) channel if <parameter>channels</parameter> is equal to <literal>2</literal>
+						or greater than <literal>3</literal> (if this is not the case, use the previous
+						functions).
+					</para>
+					<para>
+						The bias is computed from the average of the colour channels, multiplied by the
+						value of the alpha channel if present. For example, in RGBA images a white,
+						nontransparent pixel is equivalent to a value of <literal>1.0</literal> when using
+						a buffer in <function>lqr_carver_bias_add_area</function>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return values</title>
+					<para>
+						The return values follow the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-rigmask-add-area"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
@@ -2475,21 +3982,32 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 		<sect1 id="ref-rigmask">
 			<title>Rigidity masks</title>
 
-			<refentry id="ref-lqr-rigmask-add">
+			<refentry id="ref-lqr-carver-rigmask-add-area">
 				<refmeta>
-					<refentrytitle>Add a rigidity mask to a &carv_obj;</refentrytitle>
+					<refentrytitle><function>lqr_carver_rigmask_add_area</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
-					<refname>lqr_carver_rigmask_add</refname>
 					<refname>lqr_carver_rigmask_add_area</refname>
-					<refpurpose>update a &carv_obj; rigidity mask by reading a buffer</refpurpose>
+					<refname>lqr_carver_rigmask_add</refname>
+					<refname>lqr_carver_rigmask_add_rgb_area</refname>
+					<refname>lqr_carver_rigmask_add_rgb</refname>
+					<refpurpose>update an &carv_obj; rigidity mask</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
 					<funcsynopsis>
 						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>width</parameter></paramdef>
+							<paramdef>gint <parameter>height</parameter></paramdef>
+							<paramdef>gint <parameter>x_off</parameter></paramdef>
+							<paramdef>gint <parameter>y_off</parameter></paramdef>
+						</funcprototype>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -2499,80 +4017,115 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
+							<paramdef>gint <parameter>channels</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>x_off</parameter></paramdef>
 							<paramdef>gint <parameter>y_off</parameter></paramdef>
 						</funcprototype>
-					</funcsynopsis>
-				</refsynopsisdiv>
-
-				<refsect1>
-					<title>Description</title>
-					<para>
-					</para>
-				</refsect1>
-				<refsect1>
-					<title>Return value</title>
-					<para>
-					</para>
-				</refsect1>
-			</refentry>
-
-			<refentry id="ref-lqr-rigmask-add-rgb">
-				<refmeta>
-					<refentrytitle>Read the rigidity mask from an image</refentrytitle>
-					<manvolnum>3</manvolnum>
-				</refmeta>
-
-				<refnamediv>
-					<refname>lqr_carver_rigmask_add_rgb</refname>
-					<refname>lqr_carver_rigmask_add_rgb_area</refname>
-					<refpurpose>update a &carv_obj; rigidity mask by reading an RGB image</refpurpose>
-				</refnamediv>
-
-				<refsynopsisdiv>
-					<funcsynopsis>
-						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_rgb</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
-						<funcprototype>
-							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
-							<paramdef>gint <parameter>channels</parameter></paramdef>
-							<paramdef>gint <parameter>width</parameter></paramdef>
-							<paramdef>gint <parameter>height</parameter></paramdef>
-							<paramdef>gint <parameter>x_off</parameter></paramdef>
-							<paramdef>gint <parameter>y_off</parameter></paramdef>
-						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
 
 				<refsect1>
-					<title>Description</title>
+					<title>Adding a rigidity mask from a buffer</title>
+
 					<para>
+						The function <function>lqr_carver_rigmask_add_area</function> adds a rigidity mask to an
+						area of the image loaded in the &carv_obj; object pointed to by 
+						<parameter>carver</parameter>. Adding a positive rigidity to an area
+						will give a bias towards straighter seams (in the transversal direction with respect to the
+						rescaling direction), if they happen to cross that area.
+					</para>
+					<para>
+						This function must be called after <function>lqr_carver_init</function>
+						and before <function>lqr_carver_resize</function>.
+					</para>
+					<para>
+						The parameter <parameter>buffer</parameter> must point to an array of <type>doubles</type>
+						of size <literal><parameter>width</parameter> * <parameter>height</parameter></literal>,
+						ordered first by rows, then by columns.
+					</para>
+					<para>
+						The offset of the area relative to the image are specified through
+						<parameter>x_off</parameter> and <parameter>y_off</parameter>.
+						The rigidity mask area can exceed the boundary of the image, and the offsets can be negative.
+					</para>
+					<para>
+						The values in the given <parameter>buffer</parameter> are scaled by the overall
+						<parameter>rigidity</parameter> value set when calling the function
+						<function>lqr_carver_init</function>.
+					</para>
+					<para>
+						Note that using no rigidity masks at all is equivalent to use a rigidity mask over the whole
+						image with all the values set to <literal>1.0</literal>, but, when first adding a rigidity
+						mask to a &carv_obj; object, all the pixels outside the affected area will have their
+						rigidity set to zero; therefore, the function
+						<function>lqr_carver_rigmask_add_area</function>
+						actually affects the whole image, despite its name.
+					</para>
+					<para>
+						The function <function>lqr_carver_rigmask_add</function> can be used when the area
+						to add is of the same size of the image loaded in the &carv_obj; object and the
+						offsets are <literal>0</literal>.
 					</para>
 				</refsect1>
+
+				<refsect1>
+					<title>Adding a rigidity mask from an image</title>
+
+					<para>
+						The functions <function>lqr_carver_rigmask_add_rgb_area</function> and
+						<function>lqr_carver_rigmask_add_rgb</function> are very similar to
+						<function>lqr_carver_rigmask_add_area</function> and
+						<function>lqr_carver_rigmask_add</function>, but use 8-bit multi-channel
+						images as inputs.
+					</para>
+					<para>
+						The number of channels in the image is passed via the parameter
+						<parameter>channels</parameter>. The last channel is assumed to be the alpha
+						(opacity) channel if <parameter>channels</parameter> is equal to <literal>2</literal>
+						or greater than <literal>3</literal> (if this is not the case, use the previous
+						functions).
+					</para>
+					<para>
+						The rigidity value is computed from the average of the colour channels, multiplied by the
+						value of the alpha channel if present. For example, in RGBA images a white,
+						nontransparent pixel is equivalent to a value of <literal>1.0</literal> when using
+						a buffer in <function>lqr_carver_rigmask_add_area</function>.
+					</para>
+				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
+						The return values follow the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 		</sect1>
-
 
 		<sect1 id="ref-progress">
 			<title>Progress reports</title>
 
 			<refentry id="ref-lqr-progress-new">
 				<refmeta>
-					<refentrytitle>&prog_obj; constructor</refentrytitle>
+					<refentrytitle><function>lqr_progress_new</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
@@ -2594,26 +4147,59 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_progress_new</function> is the constructor
+						for &prog_obj; objects. It can be used to setup a progress report indicator
+						for rescale operations performed through
+						<xref linkend="ref-lqr-carver-resize"></xref>.
+					</para>
+					<para>
+						Newly created &prog_obj; objects are inactive, and need to be set up using
+						the functions
+						<xref linkend="ref-lqr-progress-set-init"></xref>,
+						<xref linkend="ref-lqr-progress-set-update"></xref> and
+						<xref linkend="ref-lqr-progress-set-end"></xref>.
+					</para>
+					<para>
+						&prog_obj; objects are associated to &carv_obj; objects using the function
+						<xref linkend="ref-lqr-carver-set-progress"></xref>
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
+						The function returns the newly created &prog_obj; if successful, or &ret_null;
+						in case of insufficient memory.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-progress-set-hooks">
+			<refentry id="ref-lqr-progress-set-init">
 				<refmeta>
-					<refentrytitle>Set &prog_obj; hooks</refentrytitle>
+					<refentrytitle><function>lqr_progress_set_init</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_progress_set_init</refname>
-					<refname>lqr_progress_set_update</refname>
-					<refname>lqr_progress_set_end</refname>
-					<refpurpose>execude custom code during the resizing operations</refpurpose>
+					<refpurpose>execude custom code before each rescaling operation</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2624,11 +4210,167 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
 							<paramdef>LqrProgressFuncInit <parameter>init_func</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_progress_set_init</function> sets the hook
+						<parameter>init_func</parameter> to the &prog_obj; object pointed to by
+						<parameter>p</parameter>.
+					</para>
+					<para>
+						The function <parameter>init_func</parameter> is of type
+						<classname>LqrProgressFuncInit</classname>, whose prototype is defined by:
+						<programlisting>
+typedef LqrRetVal (*LqrProgressFuncInit) (const gchar* init_message);
+						</programlisting>
+						Each time that the function <xref linkend="ref-lqr-carver-resize"></xref>
+						performs a rescale operation (recall that it can perform more than one rescale
+						operation at each call) this function will be called first, with a string argument
+						passed through the parameter <parameter>init_message</parameter>, which
+						is different for horizontal and vertical rescalings.
+					</para>
+					<para>
+						The message arguments can be set with the functions
+						<xref linkend="ref-lqr-progress-set-init-width-message"></xref> and
+						<xref linkend="ref-lqr-progress-set-init-height-message"></xref>.
+					</para>
+					<para>
+						The default values for newly created &prog_obj; objects are:
+						<variablelist>
+							<varlistentry>
+								<term>Horizontal:</term>
+								<listitem>
+									<para>
+										&prog_init_w_mess;
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>Vertical:</term>
+								<listitem>
+									<para>
+										&prog_init_h_mess;
+									</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-update">
+				<refmeta>
+					<refentrytitle><function>lqr_progress_set_update</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_update</refname>
+					<refpurpose>execude custom code at regular steps during each rescaling operation</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_progress_set_update</function></funcdef>
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
 							<paramdef>LqrProgressFuncUpdate <parameter>update_func</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_progress_set_update</function> sets the hook
+						<parameter>update_func</parameter> to the &prog_obj; object pointed to by
+						<parameter>p</parameter>.
+					</para>
+					<para>
+						The function <parameter>update_func</parameter> is of type
+						<classname>LqrProgressFuncUpdate</classname>, whose prototype is defined by:
+						<programlisting>
+typedef LqrRetVal (*LqrProgressFuncUpdate) (gdouble completion_percentage);
+						</programlisting>
+						Each time that the function <xref linkend="ref-lqr-carver-resize"></xref>
+						performs a rescale operation (recall that it can perform more than one rescale
+						operation at each call) this function will be called at regular intervale, 
+						with the current completion percentage <parameter>completion_percentage</parameter>
+						as an argument.
+					</para>
+					<para>
+						The update step can be set with the function
+						<xref linkend="ref-lqr-progress-set-update-step"></xref>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-end">
+				<refmeta>
+					<refentrytitle><function>lqr_progress_set_end</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_end</refname>
+					<refpurpose>execude custom code after each rescaling operation</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_progress_set_end</function></funcdef>
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
@@ -2640,28 +4382,63 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_progress_set_end</function> sets the hook
+						<parameter>end_func</parameter> to the &prog_obj; object pointed to by
+						<parameter>p</parameter>.
+					</para>
+					<para>
+						The function <parameter>end_func</parameter> is of type
+						<classname>LqrProgressFuncEnd</classname>, whose prototype is defined by:
+						<programlisting>
+typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
+						</programlisting>
+						Each time that the function <xref linkend="ref-lqr-carver-resize"></xref>
+						performs a rescale operation (recall that it can perform more than one rescale
+						operation at each call) this function will be called at the end, with a string argument
+						passed through the parameter <parameter>end_message</parameter>, which
+						is different for horizontal and vertical rescalings.
+					</para>
+					<para>
+						The message arguments can be set with the functions
+						<xref linkend="ref-lqr-progress-set-end-width-message"></xref> and
+						<xref linkend="ref-lqr-progress-set-end-height-message"></xref>.
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
 
-			<refentry id="ref-lqr-progress-set-params">
+			<refentry id="ref-lqr-progress-set-update-step">
 				<refmeta>
-					<refentrytitle>Set &prog_obj; parameters</refentrytitle>
+					<refentrytitle><function>lqr_progress_set_update_step</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
 					<refname>lqr_progress_set_update_step</refname>
-					<refname>lqr_progress_set_init_width_message</refname>
-					<refname>lqr_progress_set_end_width_message</refname>
-					<refname>lqr_progress_set_init_height_message</refname>
-					<refname>lqr_progress_set_end_height_message</refname>
-					<refpurpose>setup update step and output messages</refpurpose>
+					<refpurpose>setup update step for &prog_obj; objects</refpurpose>
 				</refnamediv>
 
 				<refsynopsisdiv>
@@ -2672,21 +4449,243 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
 							<paramdef>gfloat <parameter>update_step</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_progress_set_update_step</function> sets the
+						update step of the &prog_obj; pointed to by <parameter>p</parameter> to
+						the value <parameter>update_step</parameter>.
+					</para>
+					<para>
+						The update step must be between <literal>0</literal> and <literal>1</literal>.
+					</para>
+					<para>
+						The default value is <literal>0.02</literal> (i.e. <literal>2%</literal>).
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-init-width-message">
+				<refmeta>
+					<refentrytitle><function>lqr_progress_set_init_width_message</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_init_width_message</refname>
+					<refpurpose>setup width message for init hooks in &prog_obj; objects</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_progress_set_init_width_message</function></funcdef>
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
 							<paramdef>const guchar* <parameter>message</parameter></paramdef>
 						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_progress_set_init_width_message</function> sets
+						the string <parameter>message</parameter> in the &prog_obj; object
+						pointed to by <parameter>p</parameter> as the argument when rescaling
+						the width for init hooks set with
+						<xref linkend="ref-lqr-progress-set-init"></xref>
+					</para>
+					<para>
+						The default value for newly created &prog_obj; objects is:
+						&prog_init_w_mess;
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-init-height-message">
+				<refmeta>
+					<refentrytitle><function>lqr_progress_set_init_height_message</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_init_height_message</refname>
+					<refpurpose>setup height message for init hooks in &prog_obj; objects</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_progress_set_init_height_message</function></funcdef>
+							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
+							<paramdef>const guchar* <parameter>message</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_progress_set_init_height_message</function> sets
+						the string <parameter>message</parameter> in the &prog_obj; object
+						pointed to by <parameter>p</parameter> as the argument when rescaling
+						the height for init hooks set with
+						<xref linkend="ref-lqr-progress-set-init"></xref>
+					</para>
+					<para>
+						The default value for newly created &prog_obj; objects is:
+						&prog_init_h_mess;
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-end-width-message">
+				<refmeta>
+					<refentrytitle><function>lqr_progress_set_end_width_message</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_end_width_message</refname>
+					<refpurpose>setup width message for end hooks in &prog_obj; objects</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_progress_set_end_width_message</function></funcdef>
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
 							<paramdef>const guchar* <parameter>message</parameter></paramdef>
 						</funcprototype>
-						<funcprototype>
-							<funcdef>LqrRetVal <function>lqr_progress_set_init_width_message</function></funcdef>
-							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
-							<paramdef>const guchar* <parameter>message</parameter></paramdef>
-						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_progress_set_end_width_message</function> sets
+						the string <parameter>message</parameter> in the &prog_obj; object
+						pointed to by <parameter>p</parameter> as the argument when rescaling
+						the width for end hooks set with
+						<xref linkend="ref-lqr-progress-set-end"></xref>
+					</para>
+					<para>
+						The default value for newly created &prog_obj; objects is:
+						<computeroutput>"done"</computeroutput>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-progress-set-end-height-message">
+				<refmeta>
+					<refentrytitle><function>lqr_progress_set_end_height_message</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_progress_set_end_height_message</refname>
+					<refpurpose>setup height message for end hooks in &prog_obj; objects</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_progress_set_end_height_message</function></funcdef>
 							<paramdef>LqrProgress* <parameter>p</parameter></paramdef>
@@ -2698,11 +4697,39 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
+						The function <function>lqr_progress_set_end_height_message</function> sets
+						the string <parameter>message</parameter> in the &prog_obj; object
+						pointed to by <parameter>p</parameter> as the argument when rescaling
+						the height for end hooks set with
+						<xref linkend="ref-lqr-progress-set-end"></xref>
+					</para>
+					<para>
+						The default value for newly created &prog_obj; objects is:
+						<computeroutput>"done"</computeroutput>.
 					</para>
 				</refsect1>
+
 				<refsect1>
 					<title>Return value</title>
 					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-progress-new"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-init-height-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-end-width-message"></xref></member>
+							<member><xref linkend="ref-lqr-progress-set-update-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>

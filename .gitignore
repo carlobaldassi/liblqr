@@ -3,6 +3,9 @@ Makefile
 !docs/Makefile
 !examples/Makefile
 docs/html
+docs/man3
+docs/liblqr_manual.html
+docs/liblqr_manual_onepage.html
 */.deps
 */.libs
 */*.l[oa]

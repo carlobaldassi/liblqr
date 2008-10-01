@@ -274,7 +274,7 @@ lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 /* set leftright switch interval */
 LQR_PUBLIC
 void
-lqr_carver_set_side_switch_frequency (LqrCarver *r, gint switch_frequency)
+lqr_carver_set_side_switch_frequency (LqrCarver *r, guint switch_frequency)
 {
   r->lr_switch_frequency = switch_frequency;
 }

@@ -2,13 +2,26 @@ LiquidRescale Library Manual
 ============================
 
 The library manual is provided in docbook format.
-You can compile an html version of it by just issuing `make'.
 
-However, this assumes that your html specification is located at:
+Stylesheets and a makefile are also provided to get html versions and
+manual pages.
 
-/usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl
+*) Issuing `make html' will produce the manual in html format, with 
+   the file `liblqr_manual.html' pointing to the manual index.
 
-If this is not the case, edit the file `lqr_style' accordingly.
+*) Issuing `make onepage' will produce the manual in html formal in a single
+   page, under the name `liblqr_manual_onepage.html'.
 
-After compilation, the file `liblqr_manual.html' will point to
-the manual index.
+*) Issuing `make man' will produce the man pages in the directory `man3/'.
+
+(`make' alone is equivalent to `make html man'.)
+
+However, these assume that `xsltproc' is installed in your system and that
+your docbook specifications are located at:
+
+ html:    /usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl
+ onepage: /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/html/docbook.xsl
+ man:     /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl
+
+If this is not the case, edit the `lqr_style.xsl', `lqr_style_onepage.xsl'
+and `lqr_style_man.xsl' files accordingly.
