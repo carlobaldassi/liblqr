@@ -84,7 +84,8 @@ enum _LqrImgDepth
 {
   LQR_IMG_8I,
   LQR_IMG_16I,
-  LQR_IMG_32F
+  LQR_IMG_32F,
+  LQR_IMG_64F,
 };
 
 typedef enum _LqrImgDepth LqrImgDepth;

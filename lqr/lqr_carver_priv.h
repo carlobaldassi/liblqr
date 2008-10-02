@@ -47,7 +47,8 @@
 
 #define AS_8I(x) ((guchar*)x)
 #define AS_16I(x) ((guint16*)x)
-#define AS_32F(x) ((gdouble*)x)
+#define AS_32F(x) ((gfloat*)x)
+#define AS_64F(x) ((gdouble*)x)
 
 /* LQR_CARVER CLASS PRIVATE FUNCTIONS */
 

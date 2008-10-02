@@ -121,7 +121,22 @@ lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels)
 
 LQR_PUBLIC
 LqrCarver *
-lqr_carver_new_32f (gdouble * buffer, gint width, gint height, gint channels)
+lqr_carver_new_32f (gfloat * buffer, gint width, gint height, gint channels)
+{
+  LqrCarver *r;
+
+  TRY_N_N (r = lqr_carver_new_common (width, height, channels));
+
+  r->rgb = (void*) buffer;
+  TRY_N_N (r->rgb_ro_buffer = g_try_new (gfloat, r->channels * r->w));
+  r->img_depth = LQR_IMG_32F;
+
+  return r;
+}
+
+LQR_PUBLIC
+LqrCarver *
+lqr_carver_new_64f (gdouble * buffer, gint width, gint height, gint channels)
 {
   LqrCarver *r;
 
@@ -129,7 +144,7 @@ lqr_carver_new_32f (gdouble * buffer, gint width, gint height, gint channels)
 
   r->rgb = (void*) buffer;
   TRY_N_N (r->rgb_ro_buffer = g_try_new (gdouble, r->channels * r->w));
-  r->img_depth = LQR_IMG_32F;
+  r->img_depth = LQR_IMG_64F;
 
   return r;
 }
@@ -596,6 +611,9 @@ lqr_carver_inflate (LqrCarver * r, gint l)
       CATCH_MEM (new_rgb = g_try_new0 (guint16, w1 * r->h0 * r->channels));
       break;
     case LQR_IMG_32F:
+      CATCH_MEM (new_rgb = g_try_new0 (gfloat, w1 * r->h0 * r->channels));
+      break;
+    case LQR_IMG_64F:
       CATCH_MEM (new_rgb = g_try_new0 (gdouble, w1 * r->h0 * r->channels));
       break;
   }
@@ -657,7 +675,12 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 		  case LQR_IMG_32F:
 		    tmp_rgb = (AS_32F(r->rgb)[c_left * r->channels + k] +
 		               AS_32F(r->rgb)[r->c->now * r->channels + k]) / 2;
-		    AS_32F(new_rgb)[z0 * r->channels + k] = (gdouble) tmp_rgb;
+		    AS_32F(new_rgb)[z0 * r->channels + k] = (gfloat) tmp_rgb;
+		    break;
+		  case LQR_IMG_64F:
+		    tmp_rgb = (AS_64F(r->rgb)[c_left * r->channels + k] +
+		               AS_64F(r->rgb)[r->c->now * r->channels + k]) / 2;
+		    AS_64F(new_rgb)[z0 * r->channels + k] = (gdouble) tmp_rgb;
 		    break;
 		}
 	    }
@@ -692,6 +715,9 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 		break;
 	      case LQR_IMG_32F:
 		AS_32F(new_rgb)[z0 * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
+		break;
+	      case LQR_IMG_64F:
+		AS_64F(new_rgb)[z0 * r->channels + k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
 		break;
 	    }
         }
@@ -786,6 +812,9 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
 	break;
       case LQR_IMG_32F:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gfloat, r->w0 * r->channels));
+	break;
+      case LQR_IMG_64F:
 	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gdouble, r->w0 * r->channels));
 	break;
     }
@@ -828,6 +857,9 @@ lqr_carver_read (LqrCarver * r, gint x, gint y)
 	  case LQR_IMG_32F:
 	    sum += AS_32F(r->rgb)[now * r->channels + k];
 	    break;
+	  case LQR_IMG_64F:
+	    sum += AS_64F(r->rgb)[now * r->channels + k];
+	    break;
 	}
     }
   switch (r->img_depth)
@@ -839,6 +871,7 @@ lqr_carver_read (LqrCarver * r, gint x, gint y)
 	sum /= ((gdouble)(65535) * r->channels);
 	break;
       case LQR_IMG_32F:
+      case LQR_IMG_64F:
 	sum /= r->channels;
 	break;
     }
@@ -1278,6 +1311,9 @@ lqr_carver_flatten (LqrCarver * r)
       CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w * r->h * r->channels));
       break;
     case LQR_IMG_32F:
+      CATCH_MEM (new_rgb = g_try_new0 (gfloat, r->w * r->h * r->channels));
+      break;
+    case LQR_IMG_64F:
       CATCH_MEM (new_rgb = g_try_new0 (gdouble, r->w * r->h * r->channels));
       break;
   }
@@ -1318,6 +1354,9 @@ lqr_carver_flatten (LqrCarver * r)
 		    break;
 		  case LQR_IMG_32F:
 		    AS_32F(new_rgb)[z0 * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
+		    break;
+		  case LQR_IMG_64F:
+		    AS_64F(new_rgb)[z0 * r->channels + k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
 		    break;
 		}
             }
@@ -1430,6 +1469,9 @@ lqr_carver_transpose (LqrCarver * r)
 	CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w0 * r->h0 * r->channels));
 	break;
       case LQR_IMG_32F:
+	CATCH_MEM (new_rgb = g_try_new0 (gfloat, r->w0 * r->h0 * r->channels));
+	break;
+      case LQR_IMG_64F:
 	CATCH_MEM (new_rgb = g_try_new0 (gdouble, r->w0 * r->h0 * r->channels));
 	break;
     }
@@ -1470,6 +1512,9 @@ lqr_carver_transpose (LqrCarver * r)
 		    break;
 		  case LQR_IMG_32F:
 		    AS_32F(new_rgb)[z1 * r->channels + k] = AS_32F(r->rgb)[z0 * r->channels + k];
+		    break;
+		  case LQR_IMG_64F:
+		    AS_64F(new_rgb)[z1 * r->channels + k] = AS_64F(r->rgb)[z0 * r->channels + k];
 		    break;
 		}
             }
@@ -1541,6 +1586,9 @@ lqr_carver_transpose (LqrCarver * r)
 	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
 	break;
       case LQR_IMG_32F:
+	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gfloat, r->w0 * r->channels));
+	break;
+      case LQR_IMG_64F:
 	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gdouble, r->w0 * r->channels));
 	break;
     }
@@ -1767,7 +1815,7 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
     {
       AS_8I(r->rgb_ro_buffer)[k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
     }
-  (*rgb) = (guchar*)r->rgb_ro_buffer;
+  (*rgb) = AS_8I(r->rgb_ro_buffer);
   lqr_cursor_next(r->c);
   return TRUE;
 }
@@ -1792,14 +1840,14 @@ lqr_carver_scan_16 (LqrCarver * r, gint * x, gint * y, guint16 ** rgb)
     {
       AS_16I(r->rgb_ro_buffer)[k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
     }
-  (*rgb) = (guint16*)r->rgb_ro_buffer;
+  (*rgb) = AS_16I(r->rgb_ro_buffer);
   lqr_cursor_next(r->c);
   return TRUE;
 }
 
 LQR_PUBLIC
 gboolean
-lqr_carver_scan_32f (LqrCarver * r, gint * x, gint * y, gdouble ** rgb)
+lqr_carver_scan_32f (LqrCarver * r, gint * x, gint * y, gfloat ** rgb)
 {
   gint k;
   if (r->img_depth != LQR_IMG_32F)
@@ -1817,7 +1865,32 @@ lqr_carver_scan_32f (LqrCarver * r, gint * x, gint * y, gdouble ** rgb)
     {
       AS_32F(r->rgb_ro_buffer)[k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
     }
-  (*rgb) = (gdouble*)r->rgb_ro_buffer;
+  (*rgb) = AS_32F(r->rgb_ro_buffer);
+  lqr_cursor_next(r->c);
+  return TRUE;
+}
+
+LQR_PUBLIC
+gboolean
+lqr_carver_scan_64f (LqrCarver * r, gint * x, gint * y, gdouble ** rgb)
+{
+  gint k;
+  if (r->img_depth != LQR_IMG_64F)
+    {
+      return FALSE;
+    }
+  if (r->c->eoc)
+    {
+      lqr_carver_scan_reset (r);
+      return FALSE;
+    }
+  (*x) = (r->transposed ? r->c->y : r->c->x);
+  (*y) = (r->transposed ? r->c->x : r->c->y);
+  for (k = 0; k < r->channels; k++)
+    {
+      AS_64F(r->rgb_ro_buffer)[k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
+    }
+  (*rgb) = AS_64F(r->rgb_ro_buffer);
   lqr_cursor_next(r->c);
   return TRUE;
 }
@@ -1900,7 +1973,7 @@ lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb)
 
 LQR_PUBLIC
 gboolean
-lqr_carver_scan_line_32f (LqrCarver * r, gint * n, gdouble ** rgb)
+lqr_carver_scan_line_32f (LqrCarver * r, gint * n, gfloat ** rgb)
 {
   gint k, x;
   if (r->img_depth != LQR_IMG_32F)
@@ -1929,6 +2002,40 @@ lqr_carver_scan_line_32f (LqrCarver * r, gint * n, gdouble ** rgb)
     }
 
   (*rgb) = AS_32F(r->rgb_ro_buffer);
+  return TRUE;
+}
+
+LQR_PUBLIC
+gboolean
+lqr_carver_scan_line_64f (LqrCarver * r, gint * n, gdouble ** rgb)
+{
+  gint k, x;
+  if (r->img_depth != LQR_IMG_64F)
+    {
+      return FALSE;
+    }
+  if (r->c->eoc)
+    {
+      lqr_carver_scan_reset (r);
+      return FALSE;
+    }
+  x = r->c->x;
+  (*n) = r->c->y;
+  while (x > 0)
+    {
+      lqr_cursor_prev(r->c);
+      x = r->c->x;
+    }
+  for (x = 0; x < r->w; x++)
+    {
+      for (k = 0; k < r->channels; k++)
+	{
+	  AS_64F(r->rgb_ro_buffer)[x * r->channels + k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
+	}
+      lqr_cursor_next(r->c);
+    }
+
+  (*rgb) = AS_64F(r->rgb_ro_buffer);
   return TRUE;
 }
 /**** END OF LQR_CARVER CLASS FUNCTIONS ****/
