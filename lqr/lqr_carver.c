@@ -165,9 +165,9 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
   gint y, x;
 
-  CATCH_MEM (r->en = g_try_new (gdouble, r->w * r->h));
-  CATCH_MEM (r->bias = g_try_new0 (gdouble, r->w * r->h));
-  CATCH_MEM (r->m = g_try_new (gdouble, r->w * r->h));
+  CATCH_MEM (r->en = g_try_new (gfloat, r->w * r->h));
+  CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
+  CATCH_MEM (r->m = g_try_new (gfloat, r->w * r->h));
   CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
 
   CATCH_MEM (r->_raw = g_try_new (gint, r->h_start * r->w_start));
@@ -189,12 +189,12 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
   r->delta_x = delta_x;
   r->rigidity = rigidity;
 
-  r->rigidity_map = g_try_new0 (gdouble, 2 * r->delta_x + 1);
+  r->rigidity_map = g_try_new0 (gfloat, 2 * r->delta_x + 1);
   r->rigidity_map += r->delta_x;
   for (x = -r->delta_x; x <= r->delta_x; x++)
     {
       r->rigidity_map[x] =
-        (gdouble) r->rigidity * pow(fabs(x), 1.5) / r->h;
+        r->rigidity * powf(fabsf(x), 1.5) / r->h;
     }
 
   r->active = TRUE;
@@ -355,7 +355,7 @@ lqr_carver_build_mmap (LqrCarver * r)
   gint data;
   gint data_down;
   gint x1_min, x1_max, x1;
-  gdouble m, m1, r_fact;
+  gfloat m, m1, r_fact;
 
 
   /* span first row */
@@ -552,8 +552,8 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   void *new_rgb = NULL;
   gint *new_vs = NULL;
   gdouble tmp_rgb;
-  gdouble *new_bias = NULL;
-  gdouble *new_rigmask = NULL;
+  gfloat *new_bias = NULL;
+  gfloat *new_rigmask = NULL;
   LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
@@ -597,10 +597,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
     }
   if (r->active)
     {
-      CATCH_MEM (new_bias = g_try_new0 (gdouble, w1 * r->h0));
+      CATCH_MEM (new_bias = g_try_new0 (gfloat, w1 * r->h0));
       if (r->rigidity_mask)
 	{
-	  CATCH_MEM (new_rigmask = g_try_new (gdouble, w1 * r->h0));
+	  CATCH_MEM (new_rigmask = g_try_new (gfloat, w1 * r->h0));
 	}
     }
 
@@ -764,8 +764,8 @@ lqr_carver_inflate (LqrCarver * r, gint l)
     {
       r->bias = new_bias;
       r->rigidity_mask = new_rigmask;
-      CATCH_MEM (r->en = g_try_new0 (gdouble, w1 * r->h0));
-      CATCH_MEM (r->m = g_try_new0 (gdouble, w1 * r->h0));
+      CATCH_MEM (r->en = g_try_new0 (gfloat, w1 * r->h0));
+      CATCH_MEM (r->m = g_try_new0 (gfloat, w1 * r->h0));
       CATCH_MEM (r->least = g_try_new0 (gint, w1 * r->h0));
     }
 
@@ -812,7 +812,7 @@ lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data)
 
 /* read average pixel value at x, y 
  * for energy computation */
-inline gdouble
+inline gfloat
 lqr_carver_read (LqrCarver * r, gint x, gint y)
 {
   gdouble sum = 0;
@@ -960,7 +960,7 @@ lqr_carver_update_mmap (LqrCarver * r)
   gint x1;
   gint x1_min, x1_max;
   gint data, data_down, least;
-  gdouble m, m1, r_fact;
+  gfloat m, m1, r_fact;
   gint stop;
 
   /* span first row */
@@ -1074,7 +1074,7 @@ void
 lqr_carver_build_vpath (LqrCarver * r)
 {
   gint x, y, z0;
-  gdouble m, m1;
+  gfloat m, m1;
   gint last = -1;
   gint last_x = 0;
   gint x_min, x_max;
@@ -1257,8 +1257,8 @@ LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
   void *new_rgb = NULL;
-  gdouble *new_bias = NULL;
-  gdouble *new_rigmask = NULL;
+  gfloat *new_bias = NULL;
+  gfloat *new_rigmask = NULL;
   gint x, y, k;
   gint z0;
   LqrDataTok data_tok;
@@ -1293,9 +1293,9 @@ lqr_carver_flatten (LqrCarver * r)
   }
   if (r->active)
     {
-      CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w * r->h));
+      CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w * r->h));
       if (r->rigidity_mask) {
-	      CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w * r->h));
+	      CATCH_MEM (new_rigmask = g_try_new (gfloat, r->w * r->h));
       }
 
       g_free (r->_raw);
@@ -1368,8 +1368,8 @@ lqr_carver_flatten (LqrCarver * r)
     }
   if (r->active)
     {
-      CATCH_MEM (r->en = g_try_new0 (gdouble, r->w * r->h));
-      CATCH_MEM (r->m = g_try_new0 (gdouble, r->w * r->h));
+      CATCH_MEM (r->en = g_try_new0 (gfloat, r->w * r->h));
+      CATCH_MEM (r->m = g_try_new0 (gfloat, r->w * r->h));
       CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
     }
 
@@ -1405,8 +1405,8 @@ lqr_carver_transpose (LqrCarver * r)
   gint z0, z1;
   gint d;
   void *new_rgb = NULL;
-  gdouble *new_bias = NULL;
-  gdouble *new_rigmask = NULL;
+  gfloat *new_bias = NULL;
+  gfloat *new_rigmask = NULL;
   LqrDataTok data_tok;
 
 #ifdef __LQR_VERBOSE__
@@ -1452,10 +1452,10 @@ lqr_carver_transpose (LqrCarver * r)
 
   if (r->active)
     {
-      CATCH_MEM (new_bias = g_try_new0 (gdouble, r->w0 * r->h0));
+      CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w0 * r->h0));
       if (r->rigidity_mask)
         {
-	  CATCH_MEM (new_rigmask = g_try_new (gdouble, r->w0 * r->h0));
+	  CATCH_MEM (new_rigmask = g_try_new (gfloat, r->w0 * r->h0));
 	}
       g_free (r->_raw);
       g_free (r->raw);
@@ -1524,8 +1524,8 @@ lqr_carver_transpose (LqrCarver * r)
     }
   if (r->active)
     {
-      CATCH_MEM (r->en = g_try_new0 (gdouble, r->w0 * r->h0));
-      CATCH_MEM (r->m = g_try_new0 (gdouble, r->w0 * r->h0));
+      CATCH_MEM (r->en = g_try_new0 (gfloat, r->w0 * r->h0));
+      CATCH_MEM (r->m = g_try_new0 (gfloat, r->w0 * r->h0));
       CATCH_MEM (r->least = g_try_new (gint, r->w0 * r->h0));
     }
 
@@ -1573,7 +1573,7 @@ lqr_carver_transpose (LqrCarver * r)
     {
       for (x = -r->delta_x; x <= r->delta_x; x++)
         {
-          r->rigidity_map[x] = (gdouble) r->rigidity_map[x] * r->w0 / r->h0;
+          r->rigidity_map[x] = r->rigidity_map[x] * r->w0 / r->h0;
         }
     }
 

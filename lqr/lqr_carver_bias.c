@@ -36,7 +36,7 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
 {
   gint x, y;
   gint x1, y1, x2, y2;
-  gdouble bias;
+  gfloat bias;
 
   if (bias_factor == 0)
     {
@@ -63,7 +63,7 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
     {
       for (x = 0; x < x2 - x1; x++)
         {
-          bias = (double) bias_factor * buffer[y * width + x] / 2;
+          bias = (gfloat) ((gdouble) bias_factor * buffer[y * width + x] / 2);
 
           r->bias[(y + y1) * r->w0 + (x + x1)] += bias;
 
@@ -91,7 +91,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
   gint x0, y0, x1, y1, x2, y2;
   gint transposed = 0;
   gint sum;
-  gdouble bias;
+  gfloat bias;
 
   if (bias_factor == 0)
     {
@@ -130,10 +130,10 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
               sum += rgb[((y - y0) * width + (x - x0)) * channels + k];
             }
 
-          bias = (double) bias_factor * sum / (2 * 255 * c_channels);
+          bias = (gfloat) ((gdouble) bias_factor * sum / (2 * 255 * c_channels));
           if (has_alpha)
             {
-	      bias *= (gdouble) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
+	      bias *= (gfloat) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
             }
 
           r->bias[(y + y1) * r->w0 + (x + x1)] += bias;

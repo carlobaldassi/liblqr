@@ -37,7 +37,7 @@ lqr_carver_rigmask_init (LqrCarver *r)
 
   CATCH_F (r->active == TRUE);
 
-  CATCH_MEM (r->rigidity_mask = g_try_new (gdouble, r->w * r->h));
+  CATCH_MEM (r->rigidity_mask = g_try_new (gfloat, r->w * r->h));
 
   for (y = 0; y < r->h; y++)
     {
@@ -83,7 +83,7 @@ lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint heig
     {
       for (x = 0; x < x2 - x1; x++)
         {
-          r->rigidity_mask[(y + y1) * r->w0 + (x + x1)] = buffer[y * width + x];
+          r->rigidity_mask[(y + y1) * r->w0 + (x + x1)] = (gfloat) buffer[y * width + x];
         }
 
     }
@@ -154,7 +154,7 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint channels, gint w
 	      rigmask *= (gdouble) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
             }
 
-          r->rigidity_mask[(y + y1) * r->w0 + (x + x1)] = rigmask;
+          r->rigidity_mask[(y + y1) * r->w0 + (x + x1)] = (gfloat) rigmask;
 
         }
 
