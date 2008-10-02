@@ -90,6 +90,12 @@ enum _LqrImgDepth
 
 typedef enum _LqrImgDepth LqrImgDepth;
 
+/**** IMAGE BASE TYPES ****/
+typedef guchar lqr_8i;
+typedef gint16 lqr_16i;
+typedef gfloat lqr_32f;
+typedef gdouble lqr_64f;
+
 /**** RESIZE ORDER ****/
 enum _LqrResizeOrder
 {

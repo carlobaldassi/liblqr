@@ -111,9 +111,7 @@ struct _LqrCarver
 
 /* constructor & destructor */
 LqrCarver * lqr_carver_new (guchar * buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_16 (guint16 * buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_32f (gfloat * buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_64f (gdouble * buffer, gint width, gint height, gint channels);
+LqrCarver * lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrImgDepth colour_depth);
 void lqr_carver_destroy (LqrCarver * r);
 
 /* initialize */
@@ -135,13 +133,9 @@ LqrRetVal lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image 
 /* readout */
 void lqr_carver_scan_reset (LqrCarver * r);
 gboolean lqr_carver_scan (LqrCarver *r, gint *x, gint *y, guchar ** rgb);
-gboolean lqr_carver_scan_16 (LqrCarver *r, gint *x, gint *y, guint16 ** rgb);
-gboolean lqr_carver_scan_32f (LqrCarver *r, gint *x, gint *y, gfloat ** rgb);
-gboolean lqr_carver_scan_64f (LqrCarver *r, gint *x, gint *y, gdouble ** rgb);
+gboolean lqr_carver_scan_ext (LqrCarver *r, gint *x, gint *y, void ** rgb);
 gboolean lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb);
-gboolean lqr_carver_scan_line_16 (LqrCarver * r, gint * n, guint16 ** rgb);
-gboolean lqr_carver_scan_line_32f (LqrCarver * r, gint * n, gfloat ** rgb);
-gboolean lqr_carver_scan_line_64f (LqrCarver * r, gint * n, gdouble ** rgb);
+gboolean lqr_carver_scan_line_ext (LqrCarver * r, gint * n, void ** rgb);
 gboolean lqr_carver_scan_by_row (LqrCarver *r);
 gint lqr_carver_get_bpp (LqrCarver *r);
 gint lqr_carver_get_channels (LqrCarver *r);

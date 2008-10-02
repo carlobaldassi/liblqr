@@ -45,10 +45,15 @@
 
 /* Macros for internal use */
 
-#define AS_8I(x) ((guchar*)x)
-#define AS_16I(x) ((guint16*)x)
-#define AS_32F(x) ((gfloat*)x)
-#define AS_64F(x) ((gdouble*)x)
+#define AS_8I(x) ((lqr_8i*)x)
+#define AS_16I(x) ((lqr_16i*)x)
+#define AS_32F(x) ((lqr_32f*)x)
+#define AS_64F(x) ((lqr_64f*)x)
+
+#define AS2_8I(x) ((lqr_8i**)x)
+#define AS2_16I(x) ((lqr_16i**)x)
+#define AS2_32F(x) ((lqr_32f**)x)
+#define AS2_64F(x) ((lqr_64f**)x)
 
 /* LQR_CARVER CLASS PRIVATE FUNCTIONS */
 
