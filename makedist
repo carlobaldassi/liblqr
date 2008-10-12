@@ -21,11 +21,14 @@ REL_SUB_VER=$[ $REL_SUB_VER + 1 ] || exit 1;
 PACKAGE_NAME="${NAME}-${MAJOR_VER}.${MINOR_VER}.${MICRO_VER}"
 NEW_PACKAGE_NAME="${PACKAGE_NAME}-${REL_SUB_VER}"
 TGZ_NAME="${PACKAGE_NAME}.tar.gz"
+TBZ2_NAME="${PACKAGE_NAME}.tar.bz2"
 
-NEW_TGZ_NAME="${NEW_PACKAGE_NAME}.tar.gz"
+NEW_TBZ2_NAME="${NEW_PACKAGE_NAME}.tar.bz2"
 
 make distcheck || exit 1
+rm -f "${TGZ_NAME}" || exit 1
+make dist-bzip2 || exit 1
 
-mv "${TGZ_NAME}" "${NEW_TGZ_NAME}" || exit 1
+mv "${TBZ2_NAME}" "${NEW_TBZ2_NAME}" || exit 1
 
 echo $REL_SUB_VER > release_subv_src;
