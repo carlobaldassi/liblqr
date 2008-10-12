@@ -93,34 +93,22 @@ LQR_PUBLIC
 LqrCarver *
 lqr_carver_new (guchar * buffer, gint width, gint height, gint channels)
 {
-  return lqr_carver_new_ext (buffer, width, height, channels, LQR_IMG_8I);
+  return lqr_carver_new_ext (buffer, width, height, channels, LQR_COLDEPTH_8I);
 }
 
 LQR_PUBLIC
 LqrCarver *
-lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrImgDepth colour_depth)
+lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth)
 {
   LqrCarver *r;
 
   TRY_N_N (r = lqr_carver_new_common (width, height, channels));
 
   r->rgb = (void*) buffer;
-  switch (colour_depth)
-    {
-      case LQR_IMG_8I:
-        TRY_N_N (r->rgb_ro_buffer = g_try_new (guchar, r->channels * r->w));
-        break;
-      case LQR_IMG_16I:
-        TRY_N_N (r->rgb_ro_buffer = g_try_new (gint16, r->channels * r->w));
-        break;
-      case LQR_IMG_32F:
-        TRY_N_N (r->rgb_ro_buffer = g_try_new (gfloat, r->channels * r->w));
-        break;
-      case LQR_IMG_64F:
-        TRY_N_N (r->rgb_ro_buffer = g_try_new (gdouble, r->channels * r->w));
-        break;
-    }
-  r->img_depth = colour_depth;
+
+  BUF_TRY_NEW_RET_POINTER(r->rgb_ro_buffer, r->channels * r->w, colour_depth);
+
+  r->col_depth = colour_depth;
 
   return r;
 }
@@ -577,20 +565,8 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   w1 = r->w0 + l - r->max_level + 1;
 
   /* allocate room for new maps */
-  switch (r->img_depth) {
-    case LQR_IMG_8I:
-      CATCH_MEM (new_rgb = g_try_new0 (guchar, w1 * r->h0 * r->channels));
-      break;
-    case LQR_IMG_16I:
-      CATCH_MEM (new_rgb = g_try_new0 (guint16, w1 * r->h0 * r->channels));
-      break;
-    case LQR_IMG_32F:
-      CATCH_MEM (new_rgb = g_try_new0 (gfloat, w1 * r->h0 * r->channels));
-      break;
-    case LQR_IMG_64F:
-      CATCH_MEM (new_rgb = g_try_new0 (gdouble, w1 * r->h0 * r->channels));
-      break;
-  }
+  BUF_TRY_NEW0_RET_LQR(new_rgb, w1 * r->h0 * r->channels, r->col_depth);
+
   if (r->root == NULL)
     {
       CATCH_MEM (new_vs = g_try_new0 (gint, w1 * r->h0));
@@ -634,24 +610,24 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
 	  for (k = 0; k < r->channels; k++)
 	    {
-	      switch (r->img_depth)
+	      switch (r->col_depth)
 		{
-		  case LQR_IMG_8I:
+		  case LQR_COLDEPTH_8I:
 		    tmp_rgb = (AS_8I(r->rgb)[c_left * r->channels + k] +
 		               AS_8I(r->rgb)[r->c->now * r->channels + k]) / 2;
 		    AS_8I(new_rgb)[z0 * r->channels + k] = (guchar) (tmp_rgb + 0.499999);
 		    break;
-		  case LQR_IMG_16I:
+		  case LQR_COLDEPTH_16I:
 		    tmp_rgb = (AS_16I(r->rgb)[c_left * r->channels + k] +
 		               AS_16I(r->rgb)[r->c->now * r->channels + k]) / 2;
 		    AS_16I(new_rgb)[z0 * r->channels + k] = (guint16) (tmp_rgb + 0.499999);
 		    break;
-		  case LQR_IMG_32F:
+		  case LQR_COLDEPTH_32F:
 		    tmp_rgb = (AS_32F(r->rgb)[c_left * r->channels + k] +
 		               AS_32F(r->rgb)[r->c->now * r->channels + k]) / 2;
 		    AS_32F(new_rgb)[z0 * r->channels + k] = (gfloat) tmp_rgb;
 		    break;
-		  case LQR_IMG_64F:
+		  case LQR_COLDEPTH_64F:
 		    tmp_rgb = (AS_64F(r->rgb)[c_left * r->channels + k] +
 		               AS_64F(r->rgb)[r->c->now * r->channels + k]) / 2;
 		    AS_64F(new_rgb)[z0 * r->channels + k] = (gdouble) tmp_rgb;
@@ -679,21 +655,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
         }
       for (k = 0; k < r->channels; k++)
         {
-	  switch (r->img_depth)
-	    {
-	      case LQR_IMG_8I:
-		AS_8I(new_rgb)[z0 * r->channels + k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
-		break;
-	      case LQR_IMG_16I:
-		AS_16I(new_rgb)[z0 * r->channels + k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
-		break;
-	      case LQR_IMG_32F:
-		AS_32F(new_rgb)[z0 * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
-		break;
-	      case LQR_IMG_64F:
-		AS_64F(new_rgb)[z0 * r->channels + k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
-		break;
-	    }
+          PXL_COPY(new_rgb, z0 * r->channels + k, r->rgb, r->c->now * r->channels + k, r->col_depth);
         }
       if (r->active)
         {
@@ -777,21 +739,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   /* reset readout buffer */
   g_free (r->rgb_ro_buffer);
-  switch (r->img_depth)
-    {
-      case LQR_IMG_8I:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
-	break;
-      case LQR_IMG_16I:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
-	break;
-      case LQR_IMG_32F:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gfloat, r->w0 * r->channels));
-	break;
-      case LQR_IMG_64F:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gdouble, r->w0 * r->channels));
-	break;
-    }
+  BUF_TRY_NEW0_RET_LQR(r->rgb_ro_buffer, r->w0 * r->channels, r->col_depth);
   
 #ifdef __LQR_VERBOSE__
   printf ("  [ inflating OK ]\n");
@@ -820,32 +768,32 @@ lqr_carver_read (LqrCarver * r, gint x, gint y)
   gint now = r->raw[y][x];
   for (k = 0; k < r->channels; k++)
     {
-      switch (r->img_depth)
+      switch (r->col_depth)
         {
-	  case LQR_IMG_8I:
+	  case LQR_COLDEPTH_8I:
 	    sum += AS_8I(r->rgb)[now * r->channels + k];
 	    break;
-	  case LQR_IMG_16I:
+	  case LQR_COLDEPTH_16I:
 	    sum += AS_16I(r->rgb)[now * r->channels + k];
 	    break;
-	  case LQR_IMG_32F:
+	  case LQR_COLDEPTH_32F:
 	    sum += AS_32F(r->rgb)[now * r->channels + k];
 	    break;
-	  case LQR_IMG_64F:
+	  case LQR_COLDEPTH_64F:
 	    sum += AS_64F(r->rgb)[now * r->channels + k];
 	    break;
 	}
     }
-  switch (r->img_depth)
+  switch (r->col_depth)
     {
-      case LQR_IMG_8I:
+      case LQR_COLDEPTH_8I:
 	sum /= (255 * r->channels);
 	break;
-      case LQR_IMG_16I:
-	sum /= ((gdouble)(65535) * r->channels);
+      case LQR_COLDEPTH_16I:
+	sum /= ((gdouble)(0xFFFF) * r->channels);
 	break;
-      case LQR_IMG_32F:
-      case LQR_IMG_64F:
+      case LQR_COLDEPTH_32F:
+      case LQR_COLDEPTH_64F:
 	sum /= r->channels;
 	break;
     }
@@ -1277,20 +1225,8 @@ lqr_carver_flatten (LqrCarver * r)
   g_free (r->least);
 
   /* allocate room for new map */
-  switch (r->img_depth) {
-    case LQR_IMG_8I:
-      CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w * r->h * r->channels));
-      break;
-    case LQR_IMG_16I:
-      CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w * r->h * r->channels));
-      break;
-    case LQR_IMG_32F:
-      CATCH_MEM (new_rgb = g_try_new0 (gfloat, r->w * r->h * r->channels));
-      break;
-    case LQR_IMG_64F:
-      CATCH_MEM (new_rgb = g_try_new0 (gdouble, r->w * r->h * r->channels));
-      break;
-  }
+  BUF_TRY_NEW0_RET_LQR(new_rgb, r->w * r->h * r->channels, r->col_depth);
+
   if (r->active)
     {
       CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w * r->h));
@@ -1318,21 +1254,7 @@ lqr_carver_flatten (LqrCarver * r)
           z0 = y * r->w + x;
           for (k = 0; k < r->channels; k++)
             {
-	      switch (r->img_depth)
-	        {
-		  case LQR_IMG_8I:
-		    AS_8I(new_rgb)[z0 * r->channels + k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
-		    break;
-		  case LQR_IMG_16I:
-		    AS_16I(new_rgb)[z0 * r->channels + k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
-		    break;
-		  case LQR_IMG_32F:
-		    AS_32F(new_rgb)[z0 * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
-		    break;
-		  case LQR_IMG_64F:
-		    AS_64F(new_rgb)[z0 * r->channels + k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
-		    break;
-		}
+              PXL_COPY(new_rgb, z0 * r->channels + k, r->rgb, r->c->now * r->channels + k, r->col_depth);
             }
           if (r->active)
             {
@@ -1434,21 +1356,7 @@ lqr_carver_transpose (LqrCarver * r)
   g_free (r->rgb_ro_buffer);
 
   /* allocate room for the new maps */
-  switch (r->img_depth)
-    {
-      case LQR_IMG_8I:
-	CATCH_MEM (new_rgb = g_try_new0 (guchar, r->w0 * r->h0 * r->channels));
-	break;
-      case LQR_IMG_16I:
-	CATCH_MEM (new_rgb = g_try_new0 (guint16, r->w0 * r->h0 * r->channels));
-	break;
-      case LQR_IMG_32F:
-	CATCH_MEM (new_rgb = g_try_new0 (gfloat, r->w0 * r->h0 * r->channels));
-	break;
-      case LQR_IMG_64F:
-	CATCH_MEM (new_rgb = g_try_new0 (gdouble, r->w0 * r->h0 * r->channels));
-	break;
-    }
+  BUF_TRY_NEW0_RET_LQR(new_rgb, r->w0 * r->h0 * r->channels, r->col_depth);
 
   if (r->active)
     {
@@ -1476,21 +1384,7 @@ lqr_carver_transpose (LqrCarver * r)
           z1 = x * r->h0 + y;
           for (k = 0; k < r->channels; k++)
             {
-	      switch (r->img_depth)
-	        {
-		  case LQR_IMG_8I:
-		    AS_8I(new_rgb)[z1 * r->channels + k] = AS_8I(r->rgb)[z0 * r->channels + k];
-		    break;
-		  case LQR_IMG_16I:
-		    AS_16I(new_rgb)[z1 * r->channels + k] = AS_16I(r->rgb)[z0 * r->channels + k];
-		    break;
-		  case LQR_IMG_32F:
-		    AS_32F(new_rgb)[z1 * r->channels + k] = AS_32F(r->rgb)[z0 * r->channels + k];
-		    break;
-		  case LQR_IMG_64F:
-		    AS_64F(new_rgb)[z1 * r->channels + k] = AS_64F(r->rgb)[z0 * r->channels + k];
-		    break;
-		}
+              PXL_COPY(new_rgb, z1 * r->channels + k, r->rgb, z0 * r->channels + k, r->col_depth);
             }
           if (r->active)
             {
@@ -1551,21 +1445,7 @@ lqr_carver_transpose (LqrCarver * r)
       CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
     }
 
-  switch (r->img_depth)
-    {
-      case LQR_IMG_8I:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guchar, r->w0 * r->channels));
-	break;
-      case LQR_IMG_16I:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (guint16, r->w0 * r->channels));
-	break;
-      case LQR_IMG_32F:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gfloat, r->w0 * r->channels));
-	break;
-      case LQR_IMG_64F:
-	CATCH_MEM (r->rgb_ro_buffer = g_try_new (gdouble, r->w0 * r->channels));
-	break;
-    }
+  BUF_TRY_NEW0_RET_LQR(r->rgb_ro_buffer, r->w0 * r->channels, r->col_depth);
 
   /* rescale rigidity */
 
@@ -1741,6 +1621,12 @@ lqr_carver_get_bpp (LqrCarver * r)
   return lqr_carver_get_channels(r);
 }
 
+LQR_PUBLIC
+LqrColDepth lqr_carver_get_col_depth (LqrCarver * r)
+{
+  return r->col_depth;
+}
+
 
 /* readout reset */
 LQR_PUBLIC
@@ -1774,7 +1660,7 @@ gboolean
 lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
   gint k;
-  if (r->img_depth != LQR_IMG_8I)
+  if (r->col_depth != LQR_COLDEPTH_8I)
     {
       return FALSE;
     }
@@ -1806,37 +1692,13 @@ lqr_carver_scan_ext (LqrCarver * r, gint * x, gint * y, void ** rgb)
     }
   (*x) = (r->transposed ? r->c->y : r->c->x);
   (*y) = (r->transposed ? r->c->x : r->c->y);
-  switch (r->img_depth)
+  for (k = 0; k < r->channels; k++)
     {
-      case LQR_IMG_8I:
-        for (k = 0; k < r->channels; k++)
-          {
-            AS_8I(r->rgb_ro_buffer)[k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
-          }
-        *AS2_8I(rgb) = AS_8I(r->rgb_ro_buffer);
-        break;
-      case LQR_IMG_16I:
-        for (k = 0; k < r->channels; k++)
-          {
-            AS_16I(r->rgb_ro_buffer)[k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
-          }
-        *AS2_16I(rgb) = AS_16I(r->rgb_ro_buffer);
-        break;
-      case LQR_IMG_32F:
-        for (k = 0; k < r->channels; k++)
-          {
-            AS_32F(r->rgb_ro_buffer)[k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
-          }
-        *AS2_32F(rgb) = AS_32F(r->rgb_ro_buffer);
-        break;
-      case LQR_IMG_64F:
-        for (k = 0; k < r->channels; k++)
-          {
-            AS_64F(r->rgb_ro_buffer)[k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
-          }
-        *AS2_64F(rgb) = AS_64F(r->rgb_ro_buffer);
-        break;
+      PXL_COPY(r->rgb_ro_buffer, k, r->rgb, r->c->now * r->channels + k, r->col_depth);
     }
+
+  BUF_POINTER_COPY(rgb, r->rgb_ro_buffer, r->col_depth);
+
   lqr_cursor_next(r->c);
   return TRUE;
 }
@@ -1853,7 +1715,7 @@ LQR_PUBLIC
 gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {
-  if (r->img_depth != LQR_IMG_8I)
+  if (r->col_depth != LQR_COLDEPTH_8I)
     {
       return FALSE;
     }
@@ -1881,40 +1743,14 @@ lqr_carver_scan_line_ext (LqrCarver * r, gint * n, void ** rgb)
     {
       for (k = 0; k < r->channels; k++)
 	{
-          switch (r->img_depth)
-            {
-              case LQR_IMG_8I:
-                AS_8I(r->rgb_ro_buffer)[x * r->channels + k] = AS_8I(r->rgb)[r->c->now * r->channels + k];
-                break;
-              case LQR_IMG_16I:
-                AS_16I(r->rgb_ro_buffer)[x * r->channels + k] = AS_16I(r->rgb)[r->c->now * r->channels + k];
-                break;
-              case LQR_IMG_32F:
-                AS_32F(r->rgb_ro_buffer)[x * r->channels + k] = AS_32F(r->rgb)[r->c->now * r->channels + k];
-                break;
-              case LQR_IMG_64F:
-                AS_64F(r->rgb_ro_buffer)[x * r->channels + k] = AS_64F(r->rgb)[r->c->now * r->channels + k];
-                break;
-            }
+          PXL_COPY(r->rgb_ro_buffer, x * r->channels + k, r->rgb, r->c->now * r->channels + k, r->col_depth);
 	}
       lqr_cursor_next(r->c);
     }
 
-  switch (r->img_depth)
-    {
-      case LQR_IMG_8I:
-        *AS2_8I(rgb) = AS_8I(r->rgb_ro_buffer);
-        break;
-      case LQR_IMG_16I:
-        *AS2_16I(rgb) = AS_16I(r->rgb_ro_buffer);
-        break;
-      case LQR_IMG_32F:
-        *AS2_32F(rgb) = AS_32F(r->rgb_ro_buffer);
-        break;
-      case LQR_IMG_64F:
-        *AS2_64F(rgb) = AS_64F(r->rgb_ro_buffer);
-        break;
-    }
+
+  BUF_POINTER_COPY(rgb, r->rgb_ro_buffer, r->col_depth);
+
   return TRUE;
 }
 

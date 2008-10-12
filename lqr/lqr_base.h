@@ -80,21 +80,21 @@ typedef enum _LqrRetVal LqrRetVal;
 
 
 /**** IMAGE DEPTH ****/
-enum _LqrImgDepth
+enum _LqrColDepth
 {
-  LQR_IMG_8I,
-  LQR_IMG_16I,
-  LQR_IMG_32F,
-  LQR_IMG_64F,
+  LQR_COLDEPTH_8I,
+  LQR_COLDEPTH_16I,
+  LQR_COLDEPTH_32F,
+  LQR_COLDEPTH_64F,
 };
 
-typedef enum _LqrImgDepth LqrImgDepth;
+typedef enum _LqrColDepth LqrColDepth;
 
 /**** IMAGE BASE TYPES ****/
-typedef guchar lqr_8i;
-typedef gint16 lqr_16i;
-typedef gfloat lqr_32f;
-typedef gdouble lqr_64f;
+typedef guchar lqr_t_8i;
+typedef gint16 lqr_t_16i;
+typedef gfloat lqr_t_32f;
+typedef gdouble lqr_t_64f;
 
 /**** RESIZE ORDER ****/
 enum _LqrResizeOrder

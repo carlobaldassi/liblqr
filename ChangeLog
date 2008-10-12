@@ -1,6 +1,11 @@
-2008-10-01  Carlo Baldassi  <carlobaldassi@gmail.com>
+2008-10-12  Carlo Baldassi  <carlobaldassi@gmail.com>
 
-	* Added 32 bit floating point support
+	* Added 32 bit and 64 bit floating point support
+	* Added get_col_depth
+	* Turned all internal floating point maps from
+	  gdouble to gfloat
+	* Collapsed all the nonstandard constructors
+	  and span functions to a single version (*_ext)
 
 2008-09-04  Carlo Baldassi  <carlobaldassi@gmail.com>
 

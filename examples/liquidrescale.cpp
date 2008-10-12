@@ -684,8 +684,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   CATCH_F (lqr_carver_get_channels(r) == 3);
 
   /* resize the image canvas as needed to
-   * fit for the new size
-   * (remember it may be transposed) */
+   * fit for the new size */
   w = lqr_carver_get_width (r);
   h = lqr_carver_get_height (r);
   png->resize (w, h);
@@ -693,7 +692,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   /* initialize image reading */
   lqr_carver_scan_reset (r);
 
-  /* readout (no nedd to init rgb) */
+  /* readout (no need to init rgb) */
   while (lqr_carver_scan(r, &x, &y, &rgb))
     {
       /* convert the output into doubles */

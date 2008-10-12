@@ -63,7 +63,7 @@ struct _LqrCarver
                                  */
 
   gint channels;                /* number of colour channels of the image */
-  LqrImgDepth img_depth;	/* image colour depth */
+  LqrColDepth col_depth;	/* image colour depth */
 
   gint transposed;              /* flag to set transposed state */
   gboolean active;              /* flag to set if carver is active */
@@ -111,7 +111,7 @@ struct _LqrCarver
 
 /* constructor & destructor */
 LqrCarver * lqr_carver_new (guchar * buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrImgDepth colour_depth);
+LqrCarver * lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth);
 void lqr_carver_destroy (LqrCarver * r);
 
 /* initialize */
@@ -141,6 +141,7 @@ gint lqr_carver_get_bpp (LqrCarver *r);
 gint lqr_carver_get_channels (LqrCarver *r);
 gint lqr_carver_get_width (LqrCarver * r);
 gint lqr_carver_get_height (LqrCarver * r);
+LqrColDepth lqr_carver_get_col_depth (LqrCarver * r);
 
 
 #endif /* __LQR_CARVER_PUB_H__ */
