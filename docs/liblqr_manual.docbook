@@ -14,6 +14,10 @@
 	<!ENTITY param_h "<parameter>height</parameter>">
 	<!ENTITY param_channels "<parameter>channels</parameter>">
 	<!ENTITY param_depth "<parameter>depth</parameter>">
+	<!ENTITY col_depth_8i "<literal>LQR_COLDEPTH_8I</literal>">
+	<!ENTITY col_depth_16i "<literal>LQR_COLDEPTH_16I</literal>">
+	<!ENTITY col_depth_32f "<literal>LQR_COLDEPTH_32F</literal>">
+	<!ENTITY col_depth_64f "<literal>LQR_COLDEPTH_64F</literal>">
 	<!ENTITY err_ok "<literal><errorcode>LQR_OK</errorcode></literal>">
 	<!ENTITY err_err "<literal><errorcode>LQR_ERROR</errorcode></literal>">
 	<!ENTITY err_nomem "<literal><errorcode>LQR_NOMEM</errorcode></literal>">
@@ -38,7 +42,7 @@
 			<year>2008</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>01 Oct 2008</date>
+		<date>12 Oct 2008</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -78,6 +82,10 @@
 			<para>
 				Refer to the <filename>README</filename> file for information about installing
 				and compiling.
+			</para>
+			<para>
+				The latest version of the &lqrl; and of this manual can be found at
+				<ulink url="http://liblqr.wikidot.com">http://liblqr.wikidot.com</ulink>.
 			</para>
 		</sect1>
 
@@ -155,13 +163,12 @@
 			<para>
 				Internally, multi-size images are stored simply as plain images with the addition
 				of a visibility map. Each pixel in the image has its own visibility level.
-				We decide whether to display a pixel or not simply by comparing each pixel's
-				visibility with a given global visibility level. In this way, we can read
-				out images of different sizes, simply by setting properly a global visibility
-				level.
+				Whether to display a pixel or not simply depends on the comparison of each pixel's
+				visibility with a given global visibility level. In this way, images of different sizes
+				can be read out, simply by setting a global visibility level.
 			</para>
 			<para>
-				Once the visibility map has been computed, it allows effortless,
+				Therefor, once the visibility map has been computed, it allows effortless,
 				real-time scaling.
 				However, visibility maps also necessarily have an orientation, either
 				horizontal or vertical. If we want to resize on the other direction, the
@@ -209,9 +216,7 @@
 						<para>
 							<programlisting>
 LqrCarver * lqr_carver_new (guchar *buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_16 (guint16 *buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_32f (gfloat *buffer, gint width, gint height, gint channels);
-LqrCarver * lqr_carver_new_64f (gdouble *buffer, gint width, gint height, gint channels);
+LqrCarver * lqr_carver_new_ext (void *buffer, gint width, gint height, gint channels, LqrColDepth colour_depth);
 void lqr_carver_destroy (LqrCarver *carver);
 							</programlisting>
 						</para>
@@ -244,13 +249,10 @@ LqrRetVal lqr_carver_flatten (LqrCarver *carver);
 						<para>
 							<programlisting>
 gboolean lqr_carver_scan (LqrCarver *carver, gint *x, gint *y, guchar **rgb);
-gboolean lqr_carver_scan_16 (LqrCarver *carver, gint *x, gint *y, guint16 **rgb);
-gboolean lqr_carver_scan_32f (LqrCarver *carver, gint *x, gint *y, gdouble **rgb);
-gboolean lqr_carver_scan_64f (LqrCarver *carver, gint *x, gint *y, gdouble **rgb);
+gboolean lqr_carver_scan_ext (LqrCarver *carver, gint *x, gint *y, void **rgb);
 gboolean lqr_carver_scan_by_row (LqrCarver *carver);
 gboolean lqr_carver_scan_line (LqrCarver *carver, gint *n, guchar **rgb);
-gboolean lqr_carver_scan_line_16 (LqrCarver *carver, gint *n, guint16 **rgb);
-gboolean lqr_carver_scan_line_64f (LqrCarver *carver, gint *n, gdouble **rgb);
+gboolean lqr_carver_scan_line_ext (LqrCarver *carver, gint *n, void **rgb);
 							</programlisting>
 						</para>
 					</listitem>
@@ -263,6 +265,7 @@ gboolean lqr_carver_scan_line_64f (LqrCarver *carver, gint *n, gdouble **rgb);
 gint lqr_carver_get_width (LqrCarver *carver);
 gint lqr_carver_get_height (LqrCarver *carver);
 gint lqr_carver_get_channels (LqrCarver *carver);
+LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 							</programlisting>
 						</para>
 					</listitem>
@@ -286,7 +289,7 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 				progress report from the resizing engine (by default it is turned off).
 			</para>
 			<para>
-				A complete list of the library public methods can be found at the
+				A complete list of the library public methods can be found in the reference at the
 				end of this document.
 			</para>
 		</sect1>
@@ -378,8 +381,8 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 				<title>Carver object creation</title>
 				<para>
 					The &carv_obj; objects are initialized from a plain buffer
-					representing an image. Depending on the buffer type, there are different
-					constructors. The constructor for 8-bit images is:
+					representing an image. The default constructor assumes a colour depth of 8 bits
+					per channel:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>LqrCarver * <function>lqr_carver_new</function></funcdef>
@@ -414,39 +417,62 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 					success, or <literal><returnvalue>NULL</returnvalue></literal> in case of insufficient memory.
 				</para>
 				<para>
-					The constructors for 16-bit integer and 32-bit or 64-bit floating point images is almost identical:
+					In order to create &carv_obj; objects with more than 8 bits per channel, an extended version
+					of the constructor must be used:
 					<funcsynopsis>
 						<funcprototype>
-							<funcdef>LqrCarver * <function>lqr_carver_new_16</function></funcdef>
-							<paramdef> guint16 * <parameter>buffer</parameter></paramdef>
+							<funcdef>LqrCarver * <function>lqr_carver_new_ext</function></funcdef>
+							<paramdef> void * <parameter>buffer</parameter></paramdef>
 							<paramdef> gint <parameter>width</parameter></paramdef>
 							<paramdef> gint <parameter>height</parameter></paramdef>
 							<paramdef> gint <parameter>channels</parameter></paramdef>
+							<paramdef> LqrColDepth <parameter>colour_depth</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
-					<funcsynopsis>
-						<funcprototype>
-							<funcdef>LqrCarver * <function>lqr_carver_new_32f</function></funcdef>
-							<paramdef> gfloat * <parameter>buffer</parameter></paramdef>
-							<paramdef> gint <parameter>width</parameter></paramdef>
-							<paramdef> gint <parameter>height</parameter></paramdef>
-							<paramdef> gint <parameter>channels</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-					<funcsynopsis>
-						<funcprototype>
-							<funcdef>LqrCarver * <function>lqr_carver_new_64f</function></funcdef>
-							<paramdef> gdouble * <parameter>buffer</parameter></paramdef>
-							<paramdef> gint <parameter>width</parameter></paramdef>
-							<paramdef> gint <parameter>height</parameter></paramdef>
-							<paramdef> gint <parameter>channels</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-					The only differences with the 8-bit version are the types of the buffers.
+					The differnece with the default version is that the input buffer must be passed as
+					void, and its type must be specified through the additional parameter
+					<parameter>colour_depth</parameter>, which can take one of the following values:
+					<variablelist>
+						<varlistentry>
+							<term>&col_depth_8i;</term>
+							<listitem>
+								<para>
+									8 bit unsigned integers (<type>guchar</type>)
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>&col_depth_16i;</term>
+							<listitem>
+								<para>
+									16 bit unsigned integers (<type>guint16</type>)
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>&col_depth_32f;</term>
+							<listitem>
+								<para>
+									32 bit floating point (<type>gfloat</type>)
+								</para>
+							</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>&col_depth_64f;</term>
+							<listitem>
+								<para>
+									64 bit floating point (<type>gdouble</type>)
+								</para>
+							</listitem>
+						</varlistentry>
+					</variablelist>
+				</para>
+				<para>
+					Floating point type values must range between <literal>0</literal> and <literal>1</literal>.
 				</para>
 				<important>
 					<para>
-						The buffer will be incorporated into the &carv_obj; object and
+						The buffer will become part of the &carv_obj; object and
 						must not be accessed directly any more.
 					</para>
 				</important>
@@ -458,8 +484,8 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 					The newly created &carv_obj; consists only of the image buffer plus
 					an uninitialized visibility map. If one had a previously computed
 					visibility map, it could be imported into the &carv_obj; and that would be
-					enough (see the <link linkend="import-vmap">Importing a visibility map
-							in a carver</link> section).
+					enough (see the <link linkend="import-vmap">Importing a visibility map in a
+					carver</link> section).
 
 					If the visibility map has to be computed, the &carv_obj; needs to be
 					initialized through this function:
@@ -574,7 +600,7 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 
 				<para>
 					Once you have rescaled the image, you can read out the result through
-					these functions:
+					the functions:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>gboolean <function>lqr_carver_scan</function></funcdef>
@@ -587,41 +613,24 @@ gint lqr_carver_get_channels (LqrCarver *carver);
 					or
 					<funcsynopsis>
 						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_16</function></funcdef>
+							<funcdef>gboolean <function>lqr_carver_scan_ext</function></funcdef>
 							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
 							<paramdef> gint* <parameter>x</parameter></paramdef>
 							<paramdef> gint* <parameter>y</parameter></paramdef>
-							<paramdef> guint16** <parameter>rgb</parameter></paramdef>
+							<paramdef> void** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
-					or
-					<funcsynopsis>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_32f</function></funcdef>
-							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
-							<paramdef> gint* <parameter>x</parameter></paramdef>
-							<paramdef> gint* <parameter>y</parameter></paramdef>
-							<paramdef> gfloat** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-					or
-					<funcsynopsis>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_64f</function></funcdef>
-							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
-							<paramdef> gint* <parameter>x</parameter></paramdef>
-							<paramdef> gint* <parameter>y</parameter></paramdef>
-							<paramdef> gdouble** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-
 				</para>
 				<para>
 					Here, <parameter>x</parameter> and <parameter>y</parameter> are pointers to
 					the varaibles which will hold the pixel coordinate, while 
 					<parameter>rgb</parameter> is a pointer to an array which will
-					contain the pixel colour information. The correct function must be chosen
-					depending on how the carver was created.
+					contain the pixel colour information. If the carver was created using the standard 8-bit constructor
+					<function>lqr_carver_new</function>, the first form can be used, otherwise you must
+					use the extended form <function>lqr_carver_scan_ext</function>. In this last case, the
+					output pointer <parameter>rgb</parameter> must be passed as a pointer to <type>void*</type>,
+					but the outcome should actually be cast to a pointer to an array of the appropriate type, depending
+					on the &carv_obj; colour depth.
 				</para>
 				<para>
 					The return value is &ret_false; when the end of the image is reached,
@@ -652,12 +661,36 @@ while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
 					channels, and that there exist some function
 					<function>my_plot</function> which writes out the pixels somewhere.
 				</para>
+				<para>
+					The same readout example with different colour depth would read like this:
+					<example id="ex-read-out-ext">
+						<title>A simple readout example - extended version</title>
+						<programlisting>
+gint x, y;
+void *rgb;
+gdouble *rgb_out;
+
+while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
+  {
+    rgb_out = (gdouble*) vrgb;
+    my_plot (x, y, rgb_out[0], rgb_out[1], rgb_out[2]);
+  }
+						</programlisting>
+					</example>
+
+					In this example it is assumed that the carver was loaded with the &col_depth_64f; as
+					the <parameter>colour_depth</parameter> argument in the constructor
+					<function>lqr_carver_new_ext</function>, and that it has <literal>3</literal> colour
+					channels (see the <link linkend="carver-new">constructor section</link> for details);
+					therefore, the output is cast to type <type>gdouble</type> before using it.
+				</para>
 				<important>
 					<para>
-						The <parameter>rgb</parameter> array is internal
-						to the carver object, so it doesn't need initialization
-						(but don't use pointers to it or its elements, always copy
-						the contents as in the example).
+						The <parameter>rgb</parameter> array is owned by
+						to the carver object, so it doesn't need initialization,
+						as in the example. Indeed, it must be used for read-only
+						purposes, and the content should always be copyed after
+						each call to a scan function.
 					</para>
 				</important>
 			</sect2>
@@ -695,32 +728,21 @@ while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
 					or
 					<funcsynopsis>
 						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_line_16</function></funcdef>
+							<funcdef>gboolean <function>lqr_carver_scan_line_ext</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gint* <parameter>n</parameter></paramdef>
-							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-					or
-					<funcsynopsis>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_line_32f</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gint* <parameter>n</parameter></paramdef>
-							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
+							<paramdef>void** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</para>
 				<para>
-					These functions work exactly the same way as <function>lqr_carver_scan</function>, 
-					<function>lqr_carver_scan_16</function>,
-					<function>lqr_carver_scan_32f</function> and
-					<function>lqr_carver_scan_64f</function>, but
+					These functions work exactly the same way as <function>lqr_carver_scan</function> and 
+					<function>lqr_carver_scan_ext</function>, but
 					only one coordinate is stored (either the row or the column number),
 					and the <parameter>rgb</parameter> array will contain a whole line.
 				</para>
 				<para>
-					Here is a sample code usage:
+					Here is a sample code usage for the standard 8-bit case:
 					<example id="ex-scan-line">
 						<title>Line-by-line readout example</title>
 						<programlisting>
@@ -741,6 +763,27 @@ while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
 					<function>my_plot_row</function> and
 					<function>my_plot_col</function> functions
 					have been previously defined and "know what to do".
+				</para>
+				<para>
+					The extended version for images with more colour depth is very similar, it only requires
+					an additional cast:
+					<example id="ex-scan-line-ext">
+						<title>Line-by-line readout example - extended version</title>
+						<programlisting>
+gint n;
+void *rgb;
+guchar *rgb_out;
+gboolean by_row;
+
+by_row = lqr_carver_scan_by_row (carver);
+
+while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
+  {
+    rgb_out = (gboolean*) rgb;
+    by_row ? my_plot_row (n, rgb_out) : my_plot_col (n, rgb_out);
+  }
+						</programlisting>
+					</example>
 				</para>
 			</sect2>
 
@@ -1867,6 +1910,151 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 		<title>LqR library API reference</title>
 
 
+		<sect1 id="ref-const">
+			<title>Types defined by the library</title>
+
+			<refentry id="ref-lqr-ret-val">
+				<refmeta>
+					<refentrytitle><type>LqrRetVal</type></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>LqrRetVal</refname>
+					<refpurpose>the return value of many &lqrl; functions</refpurpose>
+				</refnamediv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The return type of many functions in the &lqrl; is <type>LqrRetVal</type>,
+						which is an <literal>enum</literal> type that can take these values:
+						<variablelist>
+							<varlistentry>
+								<term>&err_ok;</term>
+								<listitem>
+									<para>
+										everyting OK
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>&err_err;</term>
+								<listitem>
+									<para>
+										generic <errortype>fatal</errortype> error
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>&err_nomem;</term>
+								<listitem>
+									<para>
+										not enough memory
+									</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+					</para>
+					<para>
+						The user should handle the error values explicitly at each function call returning
+						this type.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-col-depth">
+				<refmeta>
+					<refentrytitle><type>LqrColDepth</type></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>LqrColDepth</refname>
+					<refpurpose>carver objects colour depth specification</refpurpose>
+				</refnamediv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The default &carv_obj; object constructor <function>lqr_carver_new</function> uses a colour
+						depth of 8 bits per channel, and therefore its input must be an array of
+						<type>unsigned char</type>s.
+						However, the &carv_obj; objects can handle images of grater colour depth, if they are
+						created with the <function>lqr_carver_new_ext</function> constructor.
+						The possible colour depths are specified through variables of type <type>LqrColDepth</type>,
+						which is an enum type; its possible values, and the type of the input buffer associated
+						with them, are:
+						<variablelist>
+							<varlistentry>
+								<term>&col_depth_8i;</term>
+								<listitem>
+									<para>
+										use type <type>guchar</type> (8 bit unsigned integers) - the default
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>&col_depth_16i;</term>
+								<listitem>
+									<para>
+										use type <type>guint16</type> (16 bit unsigned integers)
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>&col_depth_32f;</term>
+								<listitem>
+									<para>
+										use type <type>gfloat</type> (32 bit floating point)
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>&col_depth_64f;</term>
+								<listitem>
+									<para>
+										use type <type>gdouble</type> (64 bit floating point)
+									</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+					</para>
+					<para>
+						These values are also relevant when reading out a &carv_obj; object with
+						the functions <function>lqr_carver_scan_ext</function> or
+						<function>lqr_carver_scan_line_ext</function>, since
+						the readout buffer must be cast to the appropriate type to be actually read. 
+					</para>
+					<para>
+						The colour depth of an &carv_obj; object can be obtained with the function
+						<function>lqr_carver_get_col_depth</function>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan"></xref></member>
+							<member><xref linkend="ref-lqr-carver-scan-line"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+		</sect1>
+		
 		<sect1 id="ref-carve">
 			<title>Carver objects</title>
 
@@ -1878,9 +2066,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 
 				<refnamediv>
 					<refname>lqr_carver_new</refname>
-					<refname>lqr_carver_new_16</refname>
-					<refname>lqr_carver_new_32f</refname>
-					<refname>lqr_carver_new_64f</refname>
+					<refname>lqr_carver_new_ext</refname>
 					<refpurpose>the &carv_obj; object constructors</refpurpose>
 				</refnamediv>
 
@@ -1895,25 +2081,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>gint <parameter>channels</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
-							<funcdef>LqrCarver* <function>lqr_carver_new_16</function></funcdef>
-							<paramdef>guint16* <parameter>buffer</parameter></paramdef>
+							<funcdef>LqrCarver* <function>lqr_carver_new_ext</function></funcdef>
+							<paramdef>void* <parameter>buffer</parameter></paramdef>
 							<paramdef>gint <parameter>width</parameter></paramdef>
 							<paramdef>gint <parameter>height</parameter></paramdef>
 							<paramdef>gint <parameter>channels</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>LqrCarver* <function>lqr_carver_new_32f</function></funcdef>
-							<paramdef>gfloat* <parameter>buffer</parameter></paramdef>
-							<paramdef>gint <parameter>width</parameter></paramdef>
-							<paramdef>gint <parameter>height</parameter></paramdef>
-							<paramdef>gint <parameter>channels</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>LqrCarver* <function>lqr_carver_new_64f</function></funcdef>
-							<paramdef>gdouble* <parameter>buffer</parameter></paramdef>
-							<paramdef>gint <parameter>width</parameter></paramdef>
-							<paramdef>gint <parameter>height</parameter></paramdef>
-							<paramdef>gint <parameter>channels</parameter></paramdef>
+							<paramdef>LqrColDepth <parameter>colour_depth</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
@@ -1921,24 +2094,25 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The functions <function>lqr_carver_new</function>,
-						<function>lqr_carver_new_16</function>,
-						<function>lqr_carver_new_32f</function> and
-						<function>lqr_carver_new_64f</function> create a new
+						The functions <function>lqr_carver_new</function> and
+						<function>lqr_carver_new_ext</function> create a new
 						&carv_obj; object from an image of size &param_w; * &param_h;
 						with &param_channels; colour channels.
 					</para>
 					<para>
 						The image must be stored in 
 						<parameter>buffer</parameter> as a plain array of unsigned chars
-						(for <function>lqr_carver_new</function>) or 16 bits unsigned integers
-						(for <function>lqr_carver_new_16</function>) or 32 bits floating points
-						(for <function>lqr_carver_new_32f</function>), or 64 bits floating points
-						(for <function>lqr_carver_new_64f</function>),
+						(for <function>lqr_carver_new</function>) or the appropriate
+						type cast to void (for <function>lqr_carver_new_ext</function>),
 						ordered by row, then by column, then by colour channel.
 					</para>
 					<para>
-						After calling the function, the buffer will be part of the &carv_obj; object and
+						In the extended constructor <function>lqr_carver_new_ext</function>, the additional
+						parameter <parameter>colour_depth</parameter> is required to specify the colour depth
+						of the buffer (see <xref linkend="ref-lqr-col-depth"></xref> for more information).
+					</para>
+					<para>
+						After calling the function, the buffer will be owned by the &carv_obj; object and
 						must not be accessed any more.
 					</para>
 				</refsect1>
@@ -1954,6 +2128,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-destroy"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 						</simplelist>
@@ -2060,6 +2235,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-new"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
 						</simplelist>
@@ -2137,6 +2313,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
@@ -2199,6 +2376,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
 						</simplelist>
@@ -2259,9 +2437,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 
 				<refnamediv>
 					<refname>lqr_carver_scan</refname>
-					<refname>lqr_carver_scan_16</refname>
-					<refname>lqr_carver_scan_32f</refname>
-					<refname>lqr_carver_scan_64f</refname>
+					<refname>lqr_carver_scan_ext</refname>
 					<refpurpose>read out a multi-size image one pixel at a time</refpurpose>
 				</refnamediv>
 
@@ -2276,25 +2452,11 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>guchar** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_16</function></funcdef>
+							<funcdef>gboolean <function>lqr_carver_scan_ext</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gint* <parameter>x</parameter></paramdef>
 							<paramdef>gint* <parameter>y</parameter></paramdef>
-							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_32f</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gint* <parameter>x</parameter></paramdef>
-							<paramdef>gint* <parameter>y</parameter></paramdef>
-							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_64f</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gint* <parameter>x</parameter></paramdef>
-							<paramdef>gint* <parameter>y</parameter></paramdef>
-							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
+							<paramdef>void** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
@@ -2302,20 +2464,28 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The functions <function>lqr_carver_scan</function>, <function>lqr_carver_scan_16</function>,
-						<function>lqr_carver_scan_32f</function> and <function>lqr_carver_scan_64f</function>
-						are used to read out the multi-size image
+						The functions <function>lqr_carver_scan</function> and
+					       	<function>lqr_carver_scan_ext</function> are used to read out the multi-size image
 						contained in the &carv_obj; object pointed to by <parameter>carver</parameter> one pixel
-						at a time in 8-bit or 16-bit integer, or 32-bit of 64-bit floating point images, respectively.
-						They store the pixel coordinates in the variables pointed to by <parameter>x</parameter> and
-						<parameter>y</parameter>, and the pixel content in the array pointed to by
-						<parameter>rgb</parameter>; then they move the readout pointer to the next pixel, or they
-						reset it if the end of the image is reached.
+						at a time. They store the pixel coordinates in the variables pointed to by
+						<parameter>x</parameter> and <parameter>y</parameter>, and the pixel content in the array
+						pointed to by <parameter>rgb</parameter>; then they move the readout pointer to the next
+						pixel, or they reset it if the end of the image is reached.
+					</para>
+					<para>
+						The first one must only be used on the &carv_obj; objects created with
+						<parameter>lqr_carver_new</parameter>, i.e. with 8-bit images, while the second
+						one is general (see <xref linkend="ref-lqr-col-depth"></xref>), but the
+						<parameter>rgb</parameter> pointer must be cast to the appropriate type to be used
+						(i.e pass the address of a pointer to <literal>void</literal> to the function
+						<function>lqr_carver_scan_ext</function>, then cast it to a pointer of the appropriate
+						type and use this last one for reading the output).
 					</para>
 					<para>
 						The <parameter>rgb</parameter> variable will point to an array which is internal
 						to the &carv_obj; object, so there is no need to allocate memory for it.
-						However, you must avoid writing to it or its elements.
+						However, it should only be accessed right after a call to the scan functions,
+						and writing to it must be avoided.
 					</para>
 				</refsect1>
 
@@ -2324,6 +2494,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						These functions return &ret_true; in case the readout is successful and the end of the image
 						was not reached, &ret_false; otherwise.
+						If <function>lqr_carver_scan</function> is called over a non-8-bit &carv_obj; object,
+						it will return &ret_false;.
 					</para>
 				</refsect1>
 
@@ -2331,6 +2503,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-scan-reset"></xref></member>
 							<member><xref linkend="ref-lqr-carver-scan-line"></xref></member>
 						</simplelist>
@@ -2365,11 +2538,9 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						The function <function>lqr_carver_scan_by_row</function> must be used before
 						calling the functions
-						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line</function></link>,
-						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_16</function></link>,
-						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_32f</function></link>,
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line</function></link>
 						and
-						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_64f</function></link>,
+						<link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link>,
 						in order to ascertain if those functions will scan the multi-size image contained in the 
 						&carv_obj; object pointed to by <parameter>carver</parameter> by row or by column,
 						which depends on which was last rescaling direction and cannot be controlled directly by the user.
@@ -2404,9 +2575,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 
 				<refnamediv>
 					<refname>lqr_carver_scan_line</refname>
-					<refname>lqr_carver_scan_line_16</refname>
-					<refname>lqr_carver_scan_line_32f</refname>
-					<refname>lqr_carver_scan_line_64f</refname>
+					<refname>lqr_carver_scan_line_ext</refname>
 					<refpurpose>read out a multi-size image one line at a time</refpurpose>
 				</refnamediv>
 
@@ -2420,22 +2589,10 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>guchar** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_line_16</function></funcdef>
+							<funcdef>gboolean <function>lqr_carver_scan_line_ext</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
 							<paramdef>gint* <parameter>n</parameter></paramdef>
-							<paramdef>guint16** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_line_32f</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gint* <parameter>n</parameter></paramdef>
-							<paramdef>gfloat** <parameter>rgb</parameter></paramdef>
-						</funcprototype>
-						<funcprototype>
-							<funcdef>gboolean <function>lqr_carver_scan_line_64f</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>gint* <parameter>n</parameter></paramdef>
-							<paramdef>gdouble** <parameter>rgb</parameter></paramdef>
+							<paramdef>void** <parameter>rgb</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
@@ -2443,16 +2600,22 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The functions <function>lqr_carver_scan_line</function>, 
-						<function>lqr_carver_scan_line_16</function>,
-						<function>lqr_carver_scan_line_32f</function> and
-						<function>lqr_carver_scan_line_64f</function> are used to read out the multi-size image
+						The functions <function>lqr_carver_scan_line</function> and
+						<function>lqr_carver_scan_line_ext</function> are used to read out the multi-size image
 						contained in the &carv_obj; object pointed to by <parameter>carver</parameter> one line 
-						at a time in 8-bit or 16-bit integer, or 32-bit or 64-bit floating point images, respectively.
-						They store the line number (row or column) in the variable pointed to by <parameter>n</parameter>
-						and the colour values in the array pointed to by <parameter>rgb</parameter>;
-						then they move the readout pointer to the next line, or they
+						at a time. They store the line number (row or column) in the variable pointed to by
+						<parameter>n</parameter> and the colour values in the array pointed to by
+						<parameter>rgb</parameter>; then they move the readout pointer to the next line, or they
 						reset it if the end of the image is reached.
+					</para>
+					<para>
+						The first one must only be used on the &carv_obj; objects created with
+						<parameter>lqr_carver_new</parameter>, i.e. with 8-bit images, while the second
+						one is general, but the <parameter>rgb</parameter> pointer must be cast to the
+						appropriate type to be used (i.e pass the address of a pointer to
+						<literal>void</literal> to the function <function>lqr_carver_scan_line_ext</function>,
+						then cast it to a pointer of the appropriate type and use this last one for reading
+						the output).
 					</para>
 					<para>
 						Use the function <xref linkend="ref-lqr-carver-scan-by-row"></xref> before calling these
@@ -2465,6 +2628,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						These functions return &ret_true; in case the readout is successful and the end of the image
 						was not reached, &ret_false; otherwise.
+						If <function>lqr_carver_scan_line</function> is called over a non-8-bit &carv_obj; object,
+						it will return &ret_false;.
 					</para>
 				</refsect1>
 
@@ -2472,6 +2637,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-scan-reset"></xref></member>
 							<member><xref linkend="ref-lqr-carver-scan"></xref></member>
 							<member><xref linkend="ref-lqr-carver-scan-by-row"></xref></member>
@@ -2516,6 +2682,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2557,6 +2724,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2608,6 +2776,50 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-col-depth">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_col_depth</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_col_depth</refname>
+					<refpurpose>get the colour depth of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrColDepth <function>lqr_carver_get_col_depth</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_col_depth</function> returns
+						the colour depth of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2639,9 +2851,9 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>Description</title>
 					<para>
 						Function <function>lqr_carver_set_gradient_function</function> is used
-						to determine which function of the gradient should be used by
+						to set the function of the gradient which will be used by
 						the &carv_obj; object pointed to by <parameter>carver</parameter>
-						to determine the relevance of a pixel (less relevant pixels being the ones which
+						in determining the relevance of a pixel (less relevant pixels being the ones which
 						tend to be crossed by the seams, and thus the ones affected by rescaling).
 						For each pixel, the gradient is computed for each direction as the difference
 						of the values of nighboring pixels, the value being computed as the average
@@ -2941,7 +3153,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<xref linkend="ref-lqr-progress-new"></xref>.
 					</para>
 					<para>
-						By default, no indicator is used.
+						By default, no progress indicator is used.
 					</para>
 				</refsect1>
 
@@ -3015,8 +3227,21 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>Return value</title>
 					<para>
 						The return value follows the &lqrl; signalling system.
-						A generic error &err_err; is returned if the sizes of <parameter>carver</parameter>
+						&err_err; is returned if the sizes of <parameter>carver</parameter>
 						and <parameter>aux</parameter> don't match.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-start"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-current"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-next"></xref></member>
+							<member><xref linkend="ref-lqr-carver-list-foreach"></xref></member>
+						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
@@ -3187,7 +3412,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>Description</title>
 					<para>
 						The function <function>lqr_carver_list_foreach</function> can be used
-						to apply function <parameter>func</parameter> to all the &carv_obj; objects
+						to apply the function <parameter>func</parameter> to all the &carv_obj; objects
 						listed in <parameter>list</parameter>. The parameter <parameter>data</parameter>
 						is used to pass arguments to the function.
 					</para>
@@ -3221,6 +3446,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-attach"></xref></member>
 							<member><xref linkend="ref-lqr-carver-list-start"></xref></member>
 							<member><xref linkend="ref-lqr-carver-list-current"></xref></member>
@@ -3270,7 +3496,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 					<para>
 						The parameter <parameter>buffer</parameter> must point to an an array of
 						<literal><parameter>width</parameter> * <parameter>height</parameter></literal>
-						<type>integers</type> carrying the visibility information.
+						<type>int</type>s holding the visibility information.
 					</para>
 					<para>
 						The parameter <parameter>depth</parameter> represents the maximum possible
@@ -3682,6 +3908,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-dump"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
@@ -3737,6 +3964,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-new"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-dump"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-internal-dump"></xref></member>
@@ -3916,7 +4144,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 					<title>Description</title>
 					<para>
 						The function <function>lqr_vmap_list_foreach</function> can be used
-						to apply function <parameter>func</parameter> to all the &vmap_obj; objects
+						to apply the function <parameter>func</parameter> to all the &vmap_obj; objects
 						listed in <parameter>list</parameter>. The parameter <parameter>data</parameter>
 						is used to pass arguments to the function.
 					</para>
@@ -3939,6 +4167,7 @@ typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-start"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
@@ -4081,6 +4310,7 @@ typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-rigmask-add-area"></xref></member>
 						</simplelist>
@@ -4222,6 +4452,7 @@ typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
 						</simplelist>
@@ -4381,6 +4612,7 @@ typedef LqrRetVal (*LqrProgressFuncInit) (const gchar* init_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
@@ -4453,6 +4685,7 @@ typedef LqrRetVal (*LqrProgressFuncUpdate) (gdouble completion_percentage);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-end"></xref></member>
@@ -4526,6 +4759,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
@@ -4588,6 +4822,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
@@ -4644,6 +4879,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
@@ -4706,6 +4942,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
@@ -4768,6 +5005,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
@@ -4830,6 +5068,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-init"></xref></member>
 							<member><xref linkend="ref-lqr-progress-set-update"></xref></member>
@@ -4857,6 +5096,25 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 			<ulink url="http://www.faculty.idc.ac.il/arik/imret.pdf">here</ulink>
 		</para>
 	</chapter>
+
+	<appendix id="app-new">
+		<title>New types and functions in API 0.1.0</title>
+		<para>
+			<simplelist>
+				<member><link linkend="ref-lqr-ret-val"><type>LqrRetVal</type></link></member>
+				<member><link linkend="ref-lqr-carver-new"><function>lqr_carver_new_ext</function></link></member>
+				<member><link linkend="ref-lqr-carver-scan"><function>lqr_carver_scan_ext</function></link></member>
+				<member><link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link></member>
+				<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_channels</function></link></member>
+				<member><link linkend="ref-lqr-carver-get-col-depth"><function>lqr_carver_get_col_depth</function></link></member>
+				<member><link linkend="ref-lqr-carver-set-side-switch-frequency"><function>lqr_carver_set_side_switch_frequency</function></link></member>
+				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add</function></link></member>
+				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_area</function></link></member>
+				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb</function></link></member>
+				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
+			</simplelist>
+		</para>
+	</appendix>
 </book>
 		
 
