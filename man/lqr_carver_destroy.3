@@ -1,0 +1,38 @@
+.\"     Title: \fBlqr_carver_destroy\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_DESTROY\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_destroy - the LqrCarver object destructor
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 24
+.BI "void lqr_carver_destroy(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_destroy\fR
+destroys the
+LqrCarver
+object pointed to by
+\fIcarver\fR, and all of its attched components (visibility maps and attached carvers)\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_new\fR(3), \fBlqr_vmap_destroy\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

@@ -1,0 +1,72 @@
+.\"     Title: \fBlqr_carver_set_gradient_function\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_SET_GRADIENT_FUN" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_set_gradient_function - set the gradient function for an LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 38
+.BI "void lqr_carver_set_gradient_function(LqrCarver*\ " "carver" ", LqrGradFuncType\ " "gf_ind" ");"
+.SH "DESCRIPTION"
+.PP
+Function
+\fBlqr_carver_set_gradient_function\fR
+is used to set the function of the gradient which will be used by the
+LqrCarver
+object pointed to by
+\fIcarver\fR
+in determining the relevance of a pixel (less relevant pixels being the ones which tend to be crossed by the seams, and thus the ones affected by rescaling)\. For each pixel, the gradient is computed for each direction as the difference of the values of nighboring pixels, the value being computed as the average over the colour channels multiplied by the alpha channel value (if present)\.
+.PP
+Possible values of the argument
+\fIgs_ind\fR
+are:
+.PP
+LQR_GF_XABS
+.RS 4
+absolute value of the gradient in the direction of the rescaling
+.RE
+.PP
+LQR_GF_SUMABS
+.RS 4
+sum of absolute values of the gradients in both directions
+.RE
+.PP
+LQR_GF_NORM
+.RS 4
+gradient norm
+.RE
+.PP
+LQR_GF_NULL
+.RS 4
+always returns 0
+.RE
+.PP
+The default value for newly created
+LqrCarver
+objects is
+LQR_GF_XABS\. The value
+LQR_GF_NULL
+can be used together with the function
+\fBlqr_carver_bias_add_area\fR(3)
+ant the like to override completely the automatic feature detection\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_init\fR(3), \fBlqr_carver_bias_add_area\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

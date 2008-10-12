@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd ../man
+echo "if INSTMAN" > Makefile.am
+echo -n "dist_man_MANS = " >> Makefile.am
+while read
+do
+	echo -n -e "\\\\\n\t${REPLY} " >> Makefile.am
+done < <(ls *.3)
+echo -e "\nendif INSTMAN!" >> Makefile.am

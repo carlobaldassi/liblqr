@@ -1,0 +1,50 @@
+.\"     Title: \fBlqr_vmap_load\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_VMAP_LOAD\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_vmap_load - load an LqrVMap object into an LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 24
+.BI "LqrRetVal lqr_vmap_load(LqrCarver*\ " "carver" ", LqrVMap*\ " "vmap" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_vmap_load\fR
+loads the visibility map contained in the
+LqrVMap
+object pointed to by
+\fIvmap\fR
+in the
+LqrCarver
+object pointed to by
+\fIcarver\fR\.
+.PP
+It can only be called over uninitialized carver objects, therefore care must be taken not to exceed the loaded map depth when resizing (see the
+LqrVMap
+objects format description in the page for
+\fBlqr_vmap_new\fR(3))\.
+.SH ""
+.PP
+The return value follows the Liquid Rescale library signalling system\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_vmap_new\fR(3), \fBlqr_vmap_dump\fR(3), \fBlqr_vmap_internal_dump\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

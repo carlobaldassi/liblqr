@@ -1,0 +1,51 @@
+.\"     Title: \fBlqr_carver_set_resize_order\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_SET_RESIZE_ORDER" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_set_resize_order - set LqrCarver object resize order
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 33
+.BI "void lqr_carver_set_resize_order(LqrCarver*\ " "carver" ", LqrResizeOrder\ " "resize_order" ");"
+.SH "DESCRIPTION"
+.PP
+When the function
+\fBlqr_carver_resize\fR(3)
+is invoked and both the horizontal and vertical sizes are different from the current ones, the rescaling occurs first in one direction and then in the other\.
+.PP
+The function
+\fBlqr_carver_set_resize_order\fR
+can be used to set which direction to rescale first for the
+LqrCarver
+object pointed to by
+\fIcarver\fR\. The parameter
+\fIresize_order\fR
+can take either the value
+LQR_RES_ORDER_HOR
+(horizontal rescale first) or
+LQR_RES_ORDER_VERT
+(vertical rescale first)\. By default, when an
+LqrCarver
+object is created, the value is set to
+LQR_RES_ORDER_HOR
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_set_gradient_function\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

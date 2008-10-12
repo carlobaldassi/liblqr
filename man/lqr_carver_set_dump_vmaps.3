@@ -1,0 +1,65 @@
+.\"     Title: \fBlqr_carver_set_dump_vmaps\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_SET_DUMP_VMAPS\F" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_set_dump_vmaps, lqr_carver_set_no_dump_vmaps - set the visibility maps autodump for an LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 31
+.BI "void lqr_carver_set_dump_vmaps(LqrCarver*\ " "carver" ");"
+.HP 34
+.BI "void lqr_carver_set_no_dump_vmaps(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+Invoking function
+\fBlqr_carver_set_dump_vmaps\fR
+over the
+LqrCarver
+object pointed to by
+\fIcarver\fR
+has the effect of activating the automatic dumping of visibility maps at each rescale operation (which by default is turned off)\.
+.PP
+Rescale operations involving both directions will dump two maps\.
+.PP
+The dumped maps will be attached to the
+LqrCarver
+object and can be accsessed at any later time using the functions
+\fBlqr_vmap_list_foreach\fR(3)
+or a combination of
+\fBlqr_vmap_list_start\fR(3),
+\fBlqr_vmap_list_current\fR(3)
+and
+\fBlqr_vmap_list_next\fR(3)\.
+.PP
+Using this setting is pointless if the
+LqrCarver
+object is not initialized\.
+.PP
+The function
+\fBlqr_carver_set_no_dump_vmaps\fR
+reverts the effect of the previous one (but the maps dumped so far will be kept)\.
+.PP
+Note that it is also possible to dump visibility maps manually; however, using the automatic dump is the only way to get intermidiate maps when the function
+\fBlqr_carver_resize\fR(3)
+performs the rescaling in both directions\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_init\fR(3), \fBlqr_carver_resize\fR(3), \fBlqr_carver_set_gradient_function\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3), \fBlqr_vmap_list_start\fR(3), \fBlqr_vmap_list_current\fR(3), \fBlqr_vmap_list_next\fR(3), \fBlqr_vmap_list_foreach\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

@@ -28,9 +28,9 @@ and converts them to a multi-size representation.
 Following is a list of features:
 
   * Easy to use API
-  * Currently supports 8bit and 16bit images
+  * Currently supports 8 bit to 64 bit per channel images
   * Areas in the image can be marked for preservation or
-    discard
+    discard, or for additional seam rigidity
   * Once the image has been fully processed, the scaling can
     be done in real-time. In fact, the information can be saved
     and read out later without any further processing
@@ -65,8 +65,11 @@ commands on Unix systems are simply
 ./configure --prefix=/usr && make && sudo make install
 
 The last step requires administrative privileges.
-(If the dynamic linker path includes /usr/local/lib, the --prefix
+(If the dynamic linker path includes /usr/local/lib, the `--prefix'
 option is not needed.)
+
+If you want to also install the man pages for the library functions,
+add the option `--enable-install-man' in the call to ./configure.
 
 See the INSTALL file for a full description.
 
@@ -99,8 +102,9 @@ See the README file in that directory for more information.
 The complete description of the library functions, together with
 some additional notes, can be found in the `docs' directory in
 docbook format. The makefile in that directory (hopefully)
-generates the html version, using docbook2html;
-you'll find the index named after `liblqr_manual_index.html'
+generates the html version, using xsltproc; then
+you'll find the index named after `liblqr_manual_index.html'.
+See the README file in that directory for further information.
 
 
 

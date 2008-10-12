@@ -1,0 +1,43 @@
+.\"     Title: \fBlqr_carver_set_progress\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_SET_PROGRESS\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_set_progress - set the progress report function for an LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 29
+.BI "void lqr_carver_set_progress(LqrCarver*\ " "carver" ", LqrProgress*\ " "p" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_set_progress\fR
+associates the progress indicator pointed to by
+\fIprogress\fR
+to the
+LqrCarver
+object pointed to by
+\fIcarver\fR\. Progress indicators objects are created with the function
+\fBlqr_progress_new\fR(3)\.
+.PP
+By default, no progress indicator is used\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_progress_new\fR(3), \fBlqr_carver_set_gradient_function\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

@@ -1,0 +1,65 @@
+.\"     Title: \fBlqr_vmap_list_foreach\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_VMAP_LIST_FOREACH\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_vmap_list_foreach - perform operations on all LqrVMap objects in an LqrVMapList object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 32
+.BI "LqrRetVal lqr_vmap_list_foreach(LqrVMapList*\ " "list" ", LqrVMapFunc\ " "func" ", gpointer\ " "data" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_vmap_list_foreach\fR
+can be used to apply the function
+\fIfunc\fR
+to all the
+LqrVMap
+objects listed in
+\fIlist\fR\. The parameter
+\fIdata\fR
+is used to pass arguments to the function\.
+.PP
+The
+\fIlist\fR
+value should be obtained through the function
+\fBlqr_vmap_list_start\fR(3)\.
+.PP
+The function
+\fIfunc\fR
+is of type
+LqrVMapFunc, whose prototype is defined by:
+.sp
+.RS 4
+.nf
+typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
+						
+.fi
+.RE
+.sp
+The
+\fIdata\fR
+argument is of type
+gpointer, which is just a pointer to
+\fBvoid\fR\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_vmap_list_start\fR(3), \fBlqr_vmap_list_current\fR(3), \fBlqr_vmap_list_next\fR(3), \fBlqr_vmap_internal_dump\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

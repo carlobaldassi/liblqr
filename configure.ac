@@ -103,8 +103,18 @@ AC_SUBST(DATADIR)
 AC_CONFIG_FILES([
 Makefile
 lqr/Makefile
+man/Makefile
 lqr-1.pc
 ])
+
+AC_ARG_ENABLE([install-man],
+     [  --enable-install-man    Install man pages],
+     [case "${enableval}" in
+       yes) install_man=true ;;
+       no)  install_man=false ;;
+       *) AC_MSG_ERROR([bad value ${enableval} for --enable-install-man]) ;;
+     esac],[install_man=false])
+AM_CONDITIONAL([INSTMAN], [test x$install_man = xtrue])
 
 
 AC_OUTPUT

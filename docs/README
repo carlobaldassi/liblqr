@@ -6,15 +6,13 @@ The library manual is provided in docbook format.
 Stylesheets and a makefile are also provided to get html versions and
 manual pages.
 
-*) Issuing `make html' will produce the manual in html format, with 
-   the file `liblqr_manual.html' pointing to the manual index.
+*) Issuing `make' or `make html' will produce the manual in html format,
+   with the file `liblqr_manual.html' pointing to the manual index.
 
 *) Issuing `make onepage' will produce the manual in html formal in a single
    page, under the name `liblqr_manual_onepage.html'.
 
 *) Issuing `make man' will produce the man pages in the directory `man3/'.
-
-(`make' alone is equivalent to `make html man'.)
 
 However, these assume that `xsltproc' is installed in your system and that
 your docbook specifications are located at:

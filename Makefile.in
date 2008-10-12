@@ -39,8 +39,8 @@ host_triplet = @host@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/lqr-1.pc.in $(top_srcdir)/configure AUTHORS COPYING \
-	COPYING.LESSER ChangeLog INSTALL NEWS config.guess config.sub \
-	depcomp install-sh ltmain.sh missing mkinstalldirs
+	COPYING.LESSER ChangeLog INSTALL NEWS TODO config.guess \
+	config.sub depcomp install-sh ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -122,6 +122,8 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INSTMAN_FALSE = @INSTMAN_FALSE@
+INSTMAN_TRUE = @INSTMAN_TRUE@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBRARY_BASE_NAME = @LIBRARY_BASE_NAME@
@@ -199,7 +201,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-SUBDIRS = lqr
+SUBDIRS = lqr man
 EXTRA_DIST = \
 	docs/liblqr_manual.docbook \
 	docs/lqr_style.xsl \

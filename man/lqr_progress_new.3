@@ -1,0 +1,60 @@
+.\"     Title: \fBlqr_progress_new\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_PROGRESS_NEW\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_progress_new - the LqrProgress object constructor
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 30
+.BI "LqrProgress* lqr_progress_new(void);"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_progress_new\fR
+is the constructor for
+LqrProgress
+objects\. It can be used to setup a progress report indicator for rescale operations performed through
+\fBlqr_carver_resize\fR(3)\.
+.PP
+Newly created
+LqrProgress
+objects are inactive, and need to be set up using the functions
+\fBlqr_progress_set_init\fR(3),
+\fBlqr_progress_set_update\fR(3)
+and
+\fBlqr_progress_set_end\fR(3)\.
+.PP
+
+LqrProgress
+objects are associated to
+LqrCarver
+objects using the function
+\fBlqr_carver_set_progress\fR(3)
+.SH "RETURN VALUE"
+.PP
+The function returns the newly created
+LqrProgress
+if successful, or
+NULL
+in case of insufficient memory\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_progress_set_init\fR(3), \fBlqr_progress_set_update\fR(3), \fBlqr_progress_set_end\fR(3), \fBlqr_progress_set_init_width_message\fR(3), \fBlqr_progress_set_init_height_message\fR(3), \fBlqr_progress_set_end_width_message\fR(3), \fBlqr_progress_set_end_height_message\fR(3), \fBlqr_progress_set_update_step\fR(3), \fBlqr_carver_set_progress\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

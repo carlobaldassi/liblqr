@@ -1,0 +1,54 @@
+.\"     Title: \fBlqr_carver_flatten\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_FLATTEN\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_flatten - flatten a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 29
+.BI "LqrRetVal lqr_carver_flatten(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_flatten\fR
+can be used to discard the visibility map information and flatten the multi\-size image contained in the
+LqrCarver
+object pointerd to by
+\fIcarver\fR
+to its current state\. This can be useful to perform more than one rescale step in the same direction, expecially for enlarging\.
+.PP
+This function must only be invoked over initialized
+LqrCarver
+objects\.
+.PP
+The discarded visibility map will not be dumped automatically in any case, use the function
+\fBlqr_vmap_dump\fR(3)
+or
+\fBlqr_vmap_internal_dump\fR(3)
+in order to save it before invoking this function\.
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\. Errors can occur for non\-initialized
+LqrCarver
+objects or in case of insufficient memory\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_resize\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

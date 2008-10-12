@@ -1,0 +1,40 @@
+.\"     Title: \fBlqr_carver_list_next\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_LIST_NEXT\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_list_next - advance the LqrCarverList object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 36
+.BI "LqrCarverList* lqr_carver_list_next(LqrCarverList*\ " "list" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_list_next\fR
+returns a pointer to the next attached
+LqrCarver
+object in
+\fIlist\fR, or
+NULL
+if the list has reached the end\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_attach\fR(3), \fBlqr_carver_list_start\fR(3), \fBlqr_carver_list_current\fR(3), \fBlqr_carver_list_foreach\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = lqr
+SUBDIRS = lqr man
 
 EXTRA_DIST = \
 	docs/liblqr_manual.docbook \

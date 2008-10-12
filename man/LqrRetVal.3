@@ -1,0 +1,46 @@
+.\"     Title: \fBLqrRetVal\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQRRETVAL\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+LqrRetVal - the return value of many Liquid Rescale library functions
+.SH "DESCRIPTION"
+.PP
+The return type of many functions in the Liquid Rescale library is
+\fBLqrRetVal\fR, which is an
+enum
+type that can take these values:
+.PP
+\fBLQR_OK\fR
+.RS 4
+everyting OK
+.RE
+.PP
+\fBLQR_ERROR\fR
+.RS 4
+generic
+fatal
+error
+.RE
+.PP
+\fBLQR_NOMEM\fR
+.RS 4
+not enough memory
+.RE
+.PP
+The user should handle the error values explicitly at each function call returning this type\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_init\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

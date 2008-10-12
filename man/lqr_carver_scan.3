@@ -1,0 +1,76 @@
+.\"     Title: \fBlqr_carver_scan\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_SCAN\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_scan, lqr_carver_scan_ext - read out a multi-size image one pixel at a time
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 25
+.BI "gboolean lqr_carver_scan(LqrCarver*\ " "carver" ", gint*\ " "x" ", gint*\ " "y" ", guchar**\ " "rgb" ");"
+.HP 29
+.BI "gboolean lqr_carver_scan_ext(LqrCarver*\ " "carver" ", gint*\ " "x" ", gint*\ " "y" ", void**\ " "rgb" ");"
+.SH "DESCRIPTION"
+.PP
+The functions
+\fBlqr_carver_scan\fR
+and
+\fBlqr_carver_scan_ext\fR
+are used to read out the multi\-size image contained in the
+LqrCarver
+object pointed to by
+\fIcarver\fR
+one pixel at a time\. They store the pixel coordinates in the variables pointed to by
+\fIx\fR
+and
+\fIy\fR, and the pixel content in the array pointed to by
+\fIrgb\fR; then they move the readout pointer to the next pixel, or they reset it if the end of the image is reached\.
+.PP
+The first one must only be used on the
+LqrCarver
+objects created with
+\fIlqr_carver_new\fR, i\.e\. with 8\-bit images, while the second one is general (see
+\fBLqrColDepth\fR(3)), but the
+\fIrgb\fR
+pointer must be cast to the appropriate type to be used (i\.e pass the address of a pointer to
+void
+to the function
+\fBlqr_carver_scan_ext\fR, then cast it to a pointer of the appropriate type and use this last one for reading the output)\.
+.PP
+The
+\fIrgb\fR
+variable will point to an array which is internal to the
+LqrCarver
+object, so there is no need to allocate memory for it\. However, it should only be accessed right after a call to the scan functions, and writing to it must be avoided\.
+.SH "RETURN VALUE"
+.PP
+These functions return
+TRUE
+in case the readout is successful and the end of the image was not reached,
+FALSE
+otherwise\. If
+\fBlqr_carver_scan\fR
+is called over a non\-8\-bit
+LqrCarver
+object, it will return
+FALSE\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrColDepth\fR(3), \fBlqr_carver_scan_reset\fR(3), \fBlqr_carver_scan_line\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

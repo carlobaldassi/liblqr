@@ -1,0 +1,40 @@
+.\"     Title: \fBlqr_vmap_dump\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_VMAP_DUMP\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_vmap_dump - dump an LqrVMap object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 23
+.BI "LqrVMap* lqr_vmap_dump(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_vmap_dump\fR
+returns the current visibility map of the
+LqrCarver
+object pointed to by
+\fIcarver\fR, or
+NULL
+in case of errors\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_vmap_internal_dump\fR(3), \fBlqr_vmap_load\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

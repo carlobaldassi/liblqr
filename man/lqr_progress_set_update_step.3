@@ -1,0 +1,53 @@
+.\"     Title: \fBlqr_progress_set_update_step\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_PROGRESS_SET_UPDATE_STE" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_progress_set_update_step - setup update step for LqrProgress objects
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 39
+.BI "LqrRetVal lqr_progress_set_update_step(LqrProgress*\ " "p" ", gfloat\ " "update_step" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_progress_set_update_step\fR
+sets the update step of the
+LqrProgress
+pointed to by
+\fIp\fR
+to the value
+\fIupdate_step\fR\.
+.PP
+The update step must be between
+0
+and
+1\.
+.PP
+The default value is
+0\.02
+(i\.e\.
+2%)\.
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_progress_new\fR(3), \fBlqr_progress_set_update\fR(3), \fBlqr_carver_set_progress\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

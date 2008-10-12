@@ -115,7 +115,7 @@ test $TEST_TYPE $FILE || {
 echo
 echo "I am going to run ./configure with the following arguments:"
 echo
-echo "  --enable-maintainer-mode --prefix=/usr $AUTOGEN_CONFIGURE_ARGS $@"
+echo "  --enable-maintainer-mode --prefix=/usr --enable-install-man $AUTOGEN_CONFIGURE_ARGS $@"
 echo
 
 if test -z "$*"; then
@@ -164,7 +164,7 @@ libtoolize --force --copy || exit 1
 
 cd $ORIGDIR
 
-$srcdir/configure --enable-maintainer-mode --prefix=/usr $AUTOGEN_CONFIGURE_ARGS "$@"
+$srcdir/configure --enable-maintainer-mode --prefix=/usr --enable-install-man $AUTOGEN_CONFIGURE_ARGS "$@"
 RC=$?
 if test $RC -ne 0; then
   echo

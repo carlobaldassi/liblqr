@@ -1,0 +1,71 @@
+.\"     Title: \fBlqr_carver_new\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_NEW\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_new, lqr_carver_new_ext - the LqrCarver object constructors
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 26
+.BI "LqrCarver* lqr_carver_new(guchar*\ " "buffer" ", gint\ " "width" ", gint\ " "height" ", gint\ " "channels" ");"
+.HP 30
+.BI "LqrCarver* lqr_carver_new_ext(void*\ " "buffer" ", gint\ " "width" ", gint\ " "height" ", gint\ " "channels" ", LqrColDepth\ " "colour_depth" ");"
+.SH "DESCRIPTION"
+.PP
+The functions
+\fBlqr_carver_new\fR
+and
+\fBlqr_carver_new_ext\fR
+create a new
+LqrCarver
+object from an image of size
+\fIwidth\fR
+*
+\fIheight\fR
+with
+\fIchannels\fR
+colour channels\.
+.PP
+The image must be stored in
+\fIbuffer\fR
+as a plain array of unsigned chars (for
+\fBlqr_carver_new\fR) or the appropriate type cast to void (for
+\fBlqr_carver_new_ext\fR), ordered by row, then by column, then by colour channel\.
+.PP
+In the extended constructor
+\fBlqr_carver_new_ext\fR, the additional parameter
+\fIcolour_depth\fR
+is required to specify the colour depth of the buffer (see
+\fBLqrColDepth\fR(3)
+for more information)\.
+.PP
+After calling the function, the buffer will be owned by the
+LqrCarver
+object and must not be accessed any more\.
+.SH "RETURN VALUE"
+.PP
+The return value is the address of the newly created
+LqrCarver
+object, or
+NULL
+in case of failure (insufficient memory)\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrColDepth\fR(3), \fBlqr_carver_destroy\fR(3), \fBlqr_carver_init\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br

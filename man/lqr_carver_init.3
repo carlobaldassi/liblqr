@@ -1,0 +1,54 @@
+.\"     Title: \fBlqr_carver_init\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 12 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.1.1 (API 0.1.0)
+.\"
+.TH "\FBLQR_CARVER_INIT\FR" "3" "12 Oct 2008" "LqR library 0.1.1 (API 0.1.0)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_init - activates an LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 26
+.BI "LqrRetVal lqr_carver_init(LqrCarver*\ " "carver" ", gint\ " "delta_x" ", gfloat\ " "rigidity" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_init\fR
+initializes the
+LqrCarver
+pointed to by
+\fIcarver\fR, so that it can compute the visibility maps as needed upon calls of
+\fBlqr_carver_resize\fR\.
+.PP
+The parameter
+\fIdelta_x\fR
+controls the maximum transversal step a seam can make\. A value of 0 means straight seams\. Normally, it is set to 1\.
+.PP
+The parameter
+\fIrigidity\fR
+can be used to add a negative bias to non\-straight seams, and it is normally set to 0\.
+.PP
+Visibility maps must not be loaded with the function
+\fBlqr_vmap_load\fR
+when using this function, neither before nor after invoking it\.
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_carver_new\fR(3), \fBlqr_vmap_load\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br
