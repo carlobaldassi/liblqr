@@ -7,4 +7,4 @@ while read
 do
 	echo -n -e "\\\\\n\t${REPLY} " >> Makefile.am
 done < <(ls *.3)
-echo -e "\nendif INSTMAN!" >> Makefile.am
+echo -e "\nendif" >> Makefile.am

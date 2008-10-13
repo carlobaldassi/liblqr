@@ -1,6 +1,6 @@
 
-LiquidRescale library
-=====================
+LiquidRescale library 0.2.0
+===========================
 
 Table of contents
 -----------------
@@ -53,9 +53,9 @@ Following is a list of features:
 + Installation
 --------------
 
-++ Requirements
+++ Dependencies
 
-The lqr library requires the glib-2.0 libraries
+The lqr library depends on the glib-2.0 libraries
 
 ++ Normal setup
 
@@ -99,11 +99,12 @@ flags.
 
 See the README file in that directory for more information.
 
-The complete description of the library functions, together with
+The complete manual and reference for the library, together with
 some additional notes, can be found in the `docs' directory in
-docbook format. The makefile in that directory (hopefully)
-generates the html version, using xsltproc; then
-you'll find the index named after `liblqr_manual_index.html'.
+docbook format. The reference is also provided in man page format.
+The makefile in that directory (hopefully) generates the manual in
+html format, using xsltproc; then you'll find the index named after
+`liblqr_manual_index.html'.
 See the README file in that directory for further information.
 
 

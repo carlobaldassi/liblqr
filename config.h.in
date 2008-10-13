@@ -42,8 +42,8 @@
 /* Library current version */
 #undef LTVERSION_CURRENT
 
-/* Library release */
-#undef LTVERSION_RELEASE
+/* Library revision */
+#undef LTVERSION_REVISON
 
 /* Name of package */
 #undef PACKAGE

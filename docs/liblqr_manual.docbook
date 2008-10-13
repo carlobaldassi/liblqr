@@ -36,7 +36,7 @@
 			<surname>Baldassi</surname>
 		</author>
 		<productname class='copyright'>LqR library</productname>
-		<productnumber>0.1.1 (API 0.1.0)</productnumber>
+		<productnumber>0.2.0 API (1:0:1)</productnumber>
 		<copyright>
 			<year>2007</year>
 			<year>2008</year>
@@ -5098,7 +5098,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 	</chapter>
 
 	<appendix id="app-new">
-		<title>New types and functions in API 0.1.0</title>
+		<title>New symbols in version 0.2.0</title>
 		<para>
 			<simplelist>
 				<member><link linkend="ref-lqr-ret-val"><type>LqrRetVal</type></link></member>
