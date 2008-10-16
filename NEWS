@@ -1,0 +1,18 @@
+Version 0.2.0:
+
+* New fetures:
+  * Support for 16-bit, 32-bit and 64-bit
+    images
+  * Rigidity masks
+  * Left-right/top-bottom balance
+
+* Performace related:
+  * Improved attached visibility maps
+    management (lower memory requirements)
+  * All internal buffers turned from
+    double to float, improving both speed
+    and memory requirements
+
+* Documentation:
+  * Reviewed manual and completed refence
+  * Added man pages
