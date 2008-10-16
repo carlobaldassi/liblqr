@@ -12,23 +12,23 @@ MAJOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_major_version\],
 MINOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_minor_version\], \[.*\])" | sed "s/m4_define(\[package_minor_version\], \[\(.*\)\])/\1/")
 MICRO_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_micro_version\], \[.*\])" | sed "s/m4_define(\[package_micro_version\], \[\(.*\)\])/\1/")
 
-[ -f "release_subv_src" ] || { echo "error: release_subv_src not found"; exit 1; }
+#[ -f "release_subv_src" ] || { echo "error: release_subv_src not found"; exit 1; }
 
-REL_SUB_VER="$(cat release_subv_src)";
-echo "$REL_SUB_VER" | grep -q "[[:digit:]]\+" || { echo "error: invalid release subversion: $REL_SUB_VER"; exit 1;}
-REL_SUB_VER=$[ $REL_SUB_VER + 1 ] || exit 1;
+#REL_SUB_VER="$(cat release_subv_src)";
+#echo "$REL_SUB_VER" | grep -q "[[:digit:]]\+" || { echo "error: invalid release subversion: $REL_SUB_VER"; exit 1;}
+#REL_SUB_VER=$[ $REL_SUB_VER + 1 ] || exit 1;
 
 PACKAGE_NAME="${NAME}-${MAJOR_VER}.${MINOR_VER}.${MICRO_VER}"
-NEW_PACKAGE_NAME="${PACKAGE_NAME}-${REL_SUB_VER}"
+#NEW_PACKAGE_NAME="${PACKAGE_NAME}-${REL_SUB_VER}"
 TGZ_NAME="${PACKAGE_NAME}.tar.gz"
 TBZ2_NAME="${PACKAGE_NAME}.tar.bz2"
 
-NEW_TBZ2_NAME="${NEW_PACKAGE_NAME}.tar.bz2"
+#NEW_TBZ2_NAME="${NEW_PACKAGE_NAME}.tar.bz2"
 
 make distcheck || exit 1
 rm -f "${TGZ_NAME}" || exit 1
 make dist-bzip2 || exit 1
 
-mv "${TBZ2_NAME}" "${NEW_TBZ2_NAME}" || exit 1
+#mv "${TBZ2_NAME}" "${NEW_TBZ2_NAME}" || exit 1
 
-echo $REL_SUB_VER > release_subv_src;
+#echo $REL_SUB_VER > release_subv_src;
