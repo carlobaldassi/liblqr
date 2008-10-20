@@ -2,7 +2,7 @@ Version 0.2.0:
 
 * New fetures:
   * Support for 16-bit, 32-bit and 64-bit
-    images
+    per channel images
   * Rigidity masks
   * Left-right/top-bottom balance
 

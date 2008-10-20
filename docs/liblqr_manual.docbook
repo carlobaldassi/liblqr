@@ -395,7 +395,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				</para>
 				<para>
 					Here, <parameter>buffer</parameter> is the array representing an image of size
-					<parameter>width</parameter> by <parameter>height</parameter> width
+					<parameter>width</parameter> by <parameter>height</parameter> with
 					<parameter>channels</parameter> colour channels per pixels.
 					Thus, the overall buffer size has to be of
 					<literal><parameter>widht</parameter> * <parameter>height</parameter> * <parameter>channels</parameter>
@@ -984,7 +984,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					rigidity coefficient, which has to be multiplied with the overall rigidity parameter
 					to get the actual pixel's rigidity.
 					This is useful in some situations to reduce distorsions in specific areas of
-					the image while keeping se seams optimal in other areas.
+					the image while keeping the seams optimal in other areas.
 				</para>
 				<para>
 					The library interface to deal with rigidity masks follows verty closely
@@ -1242,7 +1242,9 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					When the function <function>lqr_carver_resize</function> is invoked,
 					it chooses at each step the optimal seam to carve based on the relvance value for each pixel.
 					However, in the case two seams are equivalent (which may happen when large portions of the image
-					have the same colour, for example), the algorithm always chooses the seams from one side.
+					have the same colour, for example), the algorithm always chooses the seams from one side,
+					which might be a problem (e.g. an object centered in the original image might not be centered
+					any more in the resulting image).
 				</para>
 				<para>
 					In order to overcome this effect, an option is given to automatically switch the favoured
@@ -1257,7 +1259,8 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					</funcsynopsis>
 				</para>
 				<para>
-					The default value for newly created &carv_obj; objects is <literal>0</literal>.
+					The default value for newly created &carv_obj; objects is <literal>0</literal>, which is
+					equivalent to disabling this feature.
 					Giving a value greater than the number of pixels by which to rescale produces
 					a switch for each pixel, therefore you could set <parameter>switch_freqency</parameter> to
 					a ridicolously high value in order to be sure to get this effect.
@@ -1265,7 +1268,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				<para>
 					As for the final result, a very small value (e.g. <literal>1<literal> to </literal>4</literal>)
 					will normally suffice to balance the left and right side of the image (or the
-					top and the boddom sides for vertical rescalings), without noticeable
+					top and the bottom sides for vertical rescalings), without noticeable
 					computational costs. However, in order to obtain a smoother behaviour for the visibiliy
 					map, i.e. for the intermediate steps, higher values may be required.
 				</para>
@@ -5101,7 +5104,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 		<title>New symbols in version 0.2.0</title>
 		<para>
 			<simplelist>
-				<member><link linkend="ref-lqr-ret-val"><type>LqrRetVal</type></link></member>
+				<member><link linkend="ref-lqr-col-depth"><type>LqrColDepth</type></link></member>
 				<member><link linkend="ref-lqr-carver-new"><function>lqr_carver_new_ext</function></link></member>
 				<member><link linkend="ref-lqr-carver-scan"><function>lqr_carver_scan_ext</function></link></member>
 				<member><link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link></member>
