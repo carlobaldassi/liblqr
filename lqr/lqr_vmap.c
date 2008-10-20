@@ -258,6 +258,8 @@ lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
 
   lqr_cursor_reset (r->c);
 
+  lqr_carver_set_enl_step(r, 2.0);
+
   return LQR_OK;
 }
 

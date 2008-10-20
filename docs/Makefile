@@ -45,6 +45,7 @@ dist-man : $(dest_dist_man)
 
 $(dest_dist_man) : man
 	[ -d ../man ] || mkdir ../man; \
+	rm ../man/*; \
 	cp man3/*.3 ../man; \
 	./gen-man-makefile.am
 

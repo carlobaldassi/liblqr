@@ -10,7 +10,8 @@ liblqr-1.so.0 liblqr-1-0 #MINVER#
  lqr_carver_get_height@Base 0.1.0
  lqr_carver_get_width@Base 0.1.0
  lqr_carver_get_channels@Base 0.2.0
- lqr_carver_get_coldepth@Base 0.2.0
+ lqr_carver_get_col_depth@Base 0.2.0
+ lqr_carver_get_enl_step@Base 0.3.0
  lqr_carver_init@Base 0.1.0
  lqr_carver_list_current@Base 0.1.0
  lqr_carver_list_foreach@Base 0.1.0
@@ -30,6 +31,7 @@ liblqr-1.so.0 liblqr-1-0 #MINVER#
  lqr_carver_set_gradient_function@Base 0.1.0
  lqr_carver_set_progress@Base 0.1.0
  lqr_carver_set_resize_order@Base 0.1.0
+ lqr_carver_set_enl_step@Base 0.3.0
  lqr_progress_new@Base 0.1.0
  lqr_progress_set_end@Base 0.1.0
  lqr_progress_set_end_height_message@Base 0.1.0

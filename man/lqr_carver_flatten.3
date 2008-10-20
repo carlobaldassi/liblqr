@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_flatten\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 12 Oct 2008
+.\"      Date: 21 Oct 2008
 .\"    Manual: LqR library API reference
 .\"    Source: LqR library 0.2.0 API (1:0:1)
 .\"
-.TH "\FBLQR_CARVER_FLATTEN\FR" "3" "12 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_FLATTEN\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -27,15 +27,19 @@ The function
 \fBlqr_carver_flatten\fR
 can be used to discard the visibility map information and flatten the multi\-size image contained in the
 LqrCarver
-object pointerd to by
+object pointed to by
 \fIcarver\fR
-to its current state\. This can be useful to perform more than one rescale step in the same direction, expecially for enlarging\.
+to its current state\.
+.PP
+It will also reset the internally stored original width and height, as if the image was just loaded in the
+LqrCarver
+object\.
 .PP
 This function must only be invoked over initialized
 LqrCarver
 objects\.
 .PP
-The discarded visibility map will not be dumped automatically in any case, use the function
+This function is called internally each time the rescaling direction changes, or at each new step in a multiple\-step enlargement, but, when calling it manually, the discarded visibility map will not be dumped automatically by it; use the functions
 \fBlqr_vmap_dump\fR(3)
 or
 \fBlqr_vmap_internal_dump\fR(3)

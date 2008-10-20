@@ -42,7 +42,7 @@
 			<year>2008</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>12 Oct 2008</date>
+		<date>21 Oct 2008</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -128,15 +128,16 @@
 					As mentioneed above, the enlargment process mirrors the carving
 					process. More precisely, in order to enlarge the image by a given
 					amount of pixels, say N, the library first computes which would be
-					the first N seams to be removed; then, it inserts new seams
+					the first N seams to be removed; then, it inserts N new seams
 					nearby those.
 				</para>
 				<para>
 					This means that it is clearly not possible to go beyond twice the
 					original size in a single step. It also means that doubling the
 					image size in this way is just equivalent to standard scaling, since
-					the result is that each seam is just duplicated. All in all, it is
-					not advisable to enlarge too much in a single step.
+					the result is that each seam is just duplicated. For these reasons,
+					the library rescaling engine automatically divides enlarging sessions
+					in steps, and allows to set the step size.
 				</para>
 				<para>
 					This same issue also affects in a tricky way the preservation of image
@@ -144,7 +145,15 @@
 					and you have protected an area which is 800 pixels wide. It is then
 					clear that you cannot shrink the image to less than 800 pixels without
 					affecting the preserved area, but the same is true when enlarging,
-					so you should not go beyond 1200 pixels (= 1000 + (1000 - 800)).
+					so you should not go beyond 1200 pixels in a single step
+					(= 1000 + (1000 - 800)), i.e. you should use a value lower than
+					1.2 for the enlargement step size.
+				</para>
+				<para>
+					In general, however, the optimal enlargement step size depends on the image,
+					since large step sizes have the disadvantages discussed above, while small
+					step sizes will tend to inflate the same areas of the image over and
+					over at each step.
 				</para>
 			</sect2>
 		</sect1>
@@ -168,7 +177,7 @@
 				can be read out, simply by setting a global visibility level.
 			</para>
 			<para>
-				Therefor, once the visibility map has been computed, it allows effortless,
+				Therefore, once the visibility map has been computed, it allows effortless,
 				real-time scaling.
 				However, visibility maps also necessarily have an orientation, either
 				horizontal or vertical. If we want to resize on the other direction, the
@@ -539,7 +548,9 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					This function decides automatically whether it can use the already computed
 					visibility map, it has to update it or waste it completely and start
 					afresh. This last event occurs when the map was computed for horizontal
-					resizing and a vertical resize has been requested, or vice versa.
+					resizing and a vertical resize has been requested, or vice versa, and
+					also when the required enlargment is bigger than the enlargement step value
+					(see <link linkend="lqr-enl-step">Setting the enlargement step</link>).
 					Note that only initialized carvers can update or change the visibility
 					map; if this is not the case, an error is returned.
 				</para>
@@ -553,14 +564,10 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					resizing in the whole range from
 					<literal>(<symbol>w0</symbol> - 100, <symbol>h0</symbol>)</literal> to
 					<literal>(<symbol>w0</symbol> + 100, <symbol>h0</symbol>)</literal>.
+					(But note that this may be overcome if
+					<literal><symbol>w0</symbol> + 100</literal> is bigger than the
+					enlargement step.)
 				</para>
-				<important>
-					<para>
-						It is an error to ask for a size greater than twice the initial
-						size in one step. See also the section
-						<link linkend="about-enlarge">About enlarging</link>.
-					</para>
-				</important>
 			</sect2>
 
 			<sect2 id="flatten">
@@ -586,10 +593,12 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				<note>
 					<para>
 						Every time that the image is flattened (including when changing
-						the resize direction) the original image is lost.
+						the resize direction) the original image and all information
+						about it is lost.
 					</para>
 				</note>
 			</sect2>
+
 		</sect1>
 
 		<sect1 id="read-out">
@@ -1197,6 +1206,56 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				</para>
 			</sect2>
 
+			<sect2 id="lqr-enl-step">
+				<title>Setting the enlargement step</title>
+				<para>
+					As mentioned in <link linkend="about-enlarge">About enlarging</link>, if
+					the requested final size is too big, the rescaling is automatically
+					divided in steps.
+				</para>
+				<para>
+					For example, let us suppose that we have created an &carv_obj; object
+					from a 100 by 100 pixels image, and that we call
+					<function>lqr_carver_resize</function> with 600 and 100 as width and height
+					arguments. With the default settings, the rescaling  of the width will
+					be performed in 3 steps: first, from 100 to 199, then from 199 to 397, and
+					finally from 397 to 600.
+				</para>
+				<para>
+					The rule here is that the maximum size which can be reached in a single step
+					is equal to twice the original size minus one, and that at each step the
+					original size is reset to the current size (through an internal call to
+					<function>lqr_carver_flatten</function>).
+				</para>
+				<para>
+					In most situations, however, the steps should be smaller in order to obtain
+					good results. This can be set with this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_enl_step</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+							<paramdef> gfloat <parameter>enl_step</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+					The value of <parameter>enl_step</parameter> must be strictly grater then
+					1.0 and less then (or equal to) 2.0. The default value is 2.0 (for back-compatibility
+					reasons); any other value will result in the function returning an error.
+					The new maximum size for a step will then be obtained by multiplying the
+					original size by the enlargement step and subtracting 1.
+				</para>
+				<para>
+					The current value of the enlargement step can be retrieved with this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>gfloat <function>lqr_carver_get_enl_step</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+			</sect2>
+
 			<sect2 id="res-order">
 				<title>Choosing the resize order</title>
 
@@ -1543,9 +1602,10 @@ vis =  buffer[y * width + x];
 						that it will only be possible to resize the carver by an
 						amount &param_depth; along the orientation
 						given by <function>lqr_vmap_orientation</function>.
+						The enlargment step is also set to its maximum, 2.0.
 						Invoking <function>lqr_carver_resize</function> with an
 						out-of-bounds argument results in a <errortype>fatal</errortype> error
-						(i.e. it returns &err_err;)
+						(i.e. it returns &err_err;).
 					</para>
 				</note>
 				<note>
@@ -1564,7 +1624,7 @@ vis =  buffer[y * width + x];
 				<para>
 					The library does not include methods to load/save
 					visibility maps to/from files. However, a way to do so
-					is included in the demo program
+					is shown in the demo program
 					`<application>liquidrescale</application>' in the
 					`<filename>examples</filename>' directory.
 				</para>
@@ -2278,10 +2338,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						and the carver was not initialized, the resizing operations must be limited to the direction
 						and the sizes included in the loaded map.
 						If the carver was initialized through the function
-						<function>lqr_carver_init</function>, the only limitation to the operations
-						is that the final size must not exceed twice the original size in any of
-						the two dimensions (the original size is reset by the function
-						<function>lqr_carver_flatten</function>).
+						<function>lqr_carver_init</function>, there are no limitations to the final size.
 					</para>
 					<para>
 						The resizing function can be called multiple times, and it will decide
@@ -2293,10 +2350,21 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						for a single direction at a time.
 					</para>
 					<para>
-						Whenever the resizing dirction change (this may happen
-						in a single call of the rescaling function or through multiple calls), the
+						If the new size (in one direction or in both) is greater than or equal to the
+						original size multiplied by the enlargement step of the
+						<parameter>carver</parameter> object (as obtained through
+						<xref linkend="ref-lqr-carver-get-enl-step"></xref>), the
+						rescaling will be performed in multiple steps. At each step, the original
+						size stored internally is reset to the new value; therefore, each
+						step in the process can be bigger then the previous one.
+					</para>
+					<para>
+						Whenever the resizing dirction changes (this may happen
+						in a single call of the rescaling function or through multiple calls), or
+						if performing a multiple steps enlargement as per the previous paragraph, the
 						visibility map computed during the first direction rescale is dropped to
-						make place for the one for the second. These visibility maps can be
+						make place for the one for the second (and the original size of the image is
+						reset to the current value). These visibility maps can be
 						saved by using the <function>lqr_carver_set_vmap_dump</function> function,
 						for inspection or future use.
 					</para>
@@ -2307,8 +2375,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						The return value follows the &lqrl; signalling system.
 						It returns an error if trying to exceed the limitations of a loaded
-						visibility map, or if trying to increase the size of the image
-						by more than twice the original size.
+						visibility map, or if passed a negative or null size.
 					</para>
 				</refsect1>
 
@@ -2319,6 +2386,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
 						</simplelist>
 					</para>
@@ -2351,17 +2420,21 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						The function <function>lqr_carver_flatten</function> can be used to discard
 						the visibility map information and flatten the multi-size image contained in
-						the &carv_obj; object pointerd to by <parameter>carver</parameter>
+						the &carv_obj; object pointed to by <parameter>carver</parameter>
 						to its current state.
-						This can be useful to perform more than one rescale step in the same direction,
-						expecially for enlarging.
+					</para>
+					<para>
+						It will also reset the internally stored original width and height, as if
+						the image was just loaded in the &carv_obj; object.
 					</para>
 					<para>
 						This function must only be invoked over initialized &carv_obj; objects.
 					</para>
 					<para>
-						The discarded visibility map will not be dumped automatically in any case, use the
-						function <xref linkend="ref-lqr-vmap-dump"></xref> or
+						This function is called internally each time the rescaling direction changes,
+						or at each new step in a multiple-step enlargement, but, when calling it manually,
+						the discarded visibility map will not be dumped automatically by it;
+						use the functions <xref linkend="ref-lqr-vmap-dump"></xref> or
 						<xref linkend="ref-lqr-vmap-internal-dump"></xref> in order to save it before invoking
 						this function.
 					</para>
@@ -2686,6 +2759,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2728,6 +2802,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2780,6 +2855,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2823,10 +2899,61 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
+
+			<refentry id="ref-lqr-carver-get-enl-step">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_enl_step</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_enl_step</refname>
+					<refpurpose>get the enlargement step of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gfloat <function>lqr_carver_get_enl_step</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_enl_step</function> returns
+						the enlargement step of the &carv_obj; object pointed to by
+						<parameter>carver</parameter>, i.e. the maximum enlargement
+						allowed in a single step for that carver, expressed as the ratio with respect
+						to its original width (for horizontal rescalings) or height (for vertical
+						rescalings).
+						The returned value is strictly greater than 1 and less than 2.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
 
 			<refentry id="ref-lqr-carver-set-gradient-function">
 				<refmeta>
@@ -2914,6 +3041,73 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-enl-step">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_enl_step</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_enl_step</refname>
+					<refpurpose>set the enlargement step of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_enl_step</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gfloat <parameter>enl_step</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_set_enl_step</function> sets
+						the enlargement step of the &carv_obj; object pointed to by
+						<parameter>carver</parameter> to the value specified in
+						<parameter>enl_step</parameter>, which must be strictly greater
+						than 1 and less than 2.
+					</para>
+					<para>
+						The enlargement step is the maximum enlargement ratio (with respect to
+						either the orignal width or original height of <parameter>carver</parameter>)
+						which the function <function>lqr_carver_resize</function> applies in a single
+						step; if that function is asked a greater enlargement, it divides the process in
+						multiple steps (and updates the original sizes accordingly at each new step).
+					</para>
+					<para>
+						The default value for new &carv_obj; objects is 2.0.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+						&err_err; is returned if the <parameter>enl_step</parameter>
+						parameter is out of bounds.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
@@ -5101,22 +5295,36 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 	</chapter>
 
 	<appendix id="app-new">
-		<title>New symbols in version 0.2.0</title>
-		<para>
-			<simplelist>
-				<member><link linkend="ref-lqr-col-depth"><type>LqrColDepth</type></link></member>
-				<member><link linkend="ref-lqr-carver-new"><function>lqr_carver_new_ext</function></link></member>
-				<member><link linkend="ref-lqr-carver-scan"><function>lqr_carver_scan_ext</function></link></member>
-				<member><link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link></member>
-				<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_channels</function></link></member>
-				<member><link linkend="ref-lqr-carver-get-col-depth"><function>lqr_carver_get_col_depth</function></link></member>
-				<member><link linkend="ref-lqr-carver-set-side-switch-frequency"><function>lqr_carver_set_side_switch_frequency</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_area</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
-			</simplelist>
-		</para>
+		<title>API changes in new versions of the library</title>
+
+		<sect1 id="app-new-0-3">
+			<title>New symbols in version 0.3</title>
+			<para>
+				<simplelist>
+					<member><link linkend="ref-lqr-carver-get-enl-step"><function>lqr_carver_get_enl_step</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-enl-step"><function>lqr_carver_set_enl_step</function></link></member>
+				</simplelist>
+			</para>
+		</sect1>
+
+		<sect1 id="app-new-0-2">
+			<title>New symbols in version 0.2</title>
+			<para>
+				<simplelist>
+					<member><link linkend="ref-lqr-col-depth"><type>LqrColDepth</type></link></member>
+					<member><link linkend="ref-lqr-carver-new"><function>lqr_carver_new_ext</function></link></member>
+					<member><link linkend="ref-lqr-carver-scan"><function>lqr_carver_scan_ext</function></link></member>
+					<member><link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_channels</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-col-depth"><function>lqr_carver_get_col_depth</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-side-switch-frequency"><function>lqr_carver_set_side_switch_frequency</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_area</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
+				</simplelist>
+			</para>
+		</sect1>
 	</appendix>
 </book>
 		

@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_resize\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 12 Oct 2008
+.\"      Date: 21 Oct 2008
 .\"    Manual: LqR library API reference
 .\"    Source: LqR library 0.2.0 API (1:0:1)
 .\"
-.TH "\FBLQR_CARVER_RESIZE\FR" "3" "12 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_RESIZE\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -30,22 +30,26 @@ LqrCarver
 object pointed to by
 \fIcarver\fR\. If a visibility map was loaded through the function
 \fBlqr_vmap_load\fR, and the carver was not initialized, the resizing operations must be limited to the direction and the sizes included in the loaded map\. If the carver was initialized through the function
-\fBlqr_carver_init\fR, the only limitation to the operations is that the final size must not exceed twice the original size in any of the two dimensions (the original size is reset by the function
-\fBlqr_carver_flatten\fR)\.
+\fBlqr_carver_init\fR, there are no limitations to the final size\.
 .PP
 The resizing function can be called multiple times, and it will decide automatically whether the computation of the visibility map is necessary or not\. In case it isn\'t, the function returns almost immediately, otherwise operations will proceed following the order given through the function
 \fBlqr_carver_set_resize_order\fR\. Currently, on\-the\-fly rescaling without computation is only possible for a single direction at a time\.
 .PP
-Whenever the resizing dirction change (this may happen in a single call of the rescaling function or through multiple calls), the visibility map computed during the first direction rescale is dropped to make place for the one for the second\. These visibility maps can be saved by using the
+If the new size (in one direction or in both) is greater than or equal to the original size multiplied by the enlargement step of the
+\fIcarver\fR
+object (as obtained through
+\fBlqr_carver_get_enl_step\fR(3)), the rescaling will be performed in multiple steps\. At each step, the original size stored internally is reset to the new value; therefore, each step in the process can be bigger then the previous one\.
+.PP
+Whenever the resizing dirction changes (this may happen in a single call of the rescaling function or through multiple calls), or if performing a multiple steps enlargement as per the previous paragraph, the visibility map computed during the first direction rescale is dropped to make place for the one for the second (and the original size of the image is reset to the current value)\. These visibility maps can be saved by using the
 \fBlqr_carver_set_vmap_dump\fR
 function, for inspection or future use\.
 .SH "RETURN VALUE"
 .PP
-The return value follows the Liquid Rescale library signalling system\. It returns an error if trying to exceed the limitations of a loaded visibility map, or if trying to increase the size of the image by more than twice the original size\.
+The return value follows the Liquid Rescale library signalling system\. It returns an error if trying to exceed the limitations of a loaded visibility map, or if passed a negative or null size\.
 .SH "SEE ALSO"
 .PP
 
-\fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_flatten\fR(3), \fBlqr_vmap_load\fR(3)
+\fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_flatten\fR(3), \fBlqr_carver_set_enl_step\fR(3), \fBlqr_carver_get_enl_step\fR(3), \fBlqr_vmap_load\fR(3)
 .SH "COPYRIGHT"
 Copyright \(co 2007-2008 Carlo Baldassi
 .br

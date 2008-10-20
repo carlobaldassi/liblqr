@@ -50,15 +50,15 @@ main (int argc, char **argv)
   new_width = (new_width ? new_width : old_width);
   new_height = (new_height ? new_height : old_height);
 
-  if ((new_width < 2) || (new_width >= 2 * old_width))
+  if (new_width < 2)
     {
-      cerr << "The width should be between 2 and twice the original width" << endl;
+      cerr << "The width should be greater than 2" << endl;
       exit (1);
     }
 
-  if ((new_height < 2) || (new_height >= 2 * old_height))
+  if (new_height < 2)
     {
-      cerr << "The height should be between 2 and twice the original height" << endl;
+      cerr << "The height should be greater than 2" << endl;
       exit (1);
     }
 
@@ -197,13 +197,13 @@ void help(char *command)
   cout << "    -o <out-file> or --out-file <out-file>" << endl;
   cout << "        Specifies the output file." << endl;
   cout << "    -w <width> or --width <width>" << endl;
-  cout << "        The new width. It must be between 2 and twice the origianl width." << endl;
+  cout << "        The new width. It must be greater than 2." << endl;
   cout << "        If it is 0, or it is not given, the width is unchanged." << endl;
   cout << "    -h <height> or --height <height>" << endl;
   cout << "        Same as -w for the height." << endl;
   cout << "    -r <rigidity> or --rigidity < rigidity>" << endl;
   cout << "        Seams rigidity. Any non-negative value is allowed. Defaults to 0." << endl;
-  cout << "    -s <max-step> or --max-step <mask-step>" << endl;
+  cout << "    -s <max-step> or --max-step <max-step>" << endl;
   cout << "        Maximum seam transversal step. Default value is 1." << endl;
   cout << "    --help" << endl;
   cout << "        This help." << endl;
@@ -261,8 +261,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   CATCH_F (lqr_carver_get_channels(r) == 3);
 
   /* resize the image canvas as needed to
-   * fit for the new size
-   * (remember it may be transposed) */
+   * fit for the new size */
   w = lqr_carver_get_width (r);
   h = lqr_carver_get_height (r);
   png->resize (w, h);
@@ -270,7 +269,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   /* initialize image reading */
   lqr_carver_scan_reset (r);
 
-  /* readout (no nedd to init rgb) */
+  /* readout (no need to init rgb) */
   while (lqr_carver_scan(r, &x, &y, &rgb))
     {
       /* convert the output into doubles */

@@ -1,3 +1,8 @@
+2008-10-21  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Removed 2-fold scale-up limit, added
+	  enl_step setting
+
 2008-10-12  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Added 32 bit and 64 bit floating point support

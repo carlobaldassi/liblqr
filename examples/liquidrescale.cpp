@@ -40,6 +40,7 @@ gint pres_strength = 1000;
 gint disc_strength = 1000;
 LqrResizeOrder res_order = LQR_RES_ORDER_HOR;
 gint side_switch_frequency = 0;
+gfloat enl_step = 1.5;
 
 gfloat new_width_p = 0;
 gfloat new_height_p = 0;
@@ -78,15 +79,15 @@ main (int argc, char **argv)
   new_width = (new_width ? new_width : old_width);
   new_height = (new_height ? new_height : old_height);
 
-  if ((new_width < 2) || (new_width >= 2 * old_width))
+  if (new_width < 2)
     {
-      cerr << "The width should be between 2 and twice the original width" << endl;
+      cerr << "The width should be greater than 2" << endl;
       exit (1);
     }
 
-  if ((new_height < 2) || (new_height >= 2 * old_height))
+  if (new_height < 2)
     {
-      cerr << "The height should be between 2 and twice the original height" << endl;
+      cerr << "The height should be greater than 2" << endl;
       exit (1);
     }
 
@@ -288,6 +289,8 @@ main (int argc, char **argv)
 	}
       /* (I.3b.3) set the side switch frequency */
       lqr_carver_set_side_switch_frequency(carver, side_switch_frequency);
+      /* (I.3b.4) set the enlargement step */
+      TRAP (lqr_carver_set_enl_step(carver, enl_step));
     }
   else
     {
@@ -422,7 +425,8 @@ LqrRetVal parse_command_line (int argc, char **argv)
     {"vmap-out-file", required_argument, NULL, 'v'},
     {"vmap-in-file", required_argument, NULL, 'V'},
     {"vertical-first", no_argument, NULL, 't'},
-    {"side-switch-frequency", no_argument, NULL, 'n'},
+    {"side-switch-frequency", required_argument, NULL, 'n'},
+    {"enl-step", required_argument, NULL, 'e'},
     {"quiet", no_argument, NULL, 'q'},
     {"help", no_argument, NULL, '#'},
     {NULL,0,NULL,0}
@@ -430,7 +434,7 @@ LqrRetVal parse_command_line (int argc, char **argv)
 
 
 
-  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,k:,K:,v:,V:,t,n:,q", lopts, &i)) != EOF) {
+  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,k:,K:,v:,V:,t,n:,e:,q", lopts, &i)) != EOF) {
     switch (c)
     {
       case 'f':
@@ -502,6 +506,9 @@ LqrRetVal parse_command_line (int argc, char **argv)
 	break;
       case 'n':
 	side_switch_frequency = atoi(optarg);
+	break;
+      case 'e':
+	enl_step = atof(optarg);
 	break;
       case 'q':
 	quiet = 1;
@@ -576,6 +583,12 @@ LqrRetVal parse_command_line (int argc, char **argv)
       return LQR_ERROR;
     }
 
+  if ((enl_step <= 1) || (enl_step > 2))
+    {
+      cerr << "Enlargement step must be greater than 1 and not greater than 2." << endl;
+      return LQR_ERROR;
+    }
+
 
   return LQR_OK;
 }/*}}}*/
@@ -589,7 +602,7 @@ void help(char *command)
   cout << "    -o <out-file> or --out-file <out-file>" << endl;
   cout << "        Specifies the output file." << endl;
   cout << "    -w <width> or --width <width>" << endl;
-  cout << "        The new width. It must be between 2 and twice the origianl width." << endl;
+  cout << "        The new width. It must be greater than 2." << endl;
   cout << "        If it is 0, or it is not given, the width is unchanged." << endl;
   cout << "        If it is followed by a %, it is interpreted as a percentage with" << endl;
   cout << "        respect to the original width (and needs not to be an integer)." << endl;
@@ -626,6 +639,9 @@ void help(char *command)
   cout << "        Rescale vertically first (instead of horizontally)." << endl;
   cout << "    -n <frequency> or --side-switch-frequency <frequency>" << endl;
   cout << "        Set the number of switches of the side choice for each size modification." << endl;
+  cout << "    -e <step> or --enl-step <step>" << endl;
+  cout << "        Set the maximum enlargement in a single step." << endl;
+  cout << "        It must be greater than 1 and not greater than 2 (default = 1.5)" << endl;
   cout << "    -q or --quiet" << endl;
   cout << "        Quiet mode." << endl;
   cout << "    --help" << endl;

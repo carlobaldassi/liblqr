@@ -80,6 +80,8 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->leftright = 0;
   r->lr_switch_frequency = 0;
 
+  r->enl_step = 2.0;
+
   TRY_N_N (r->vs = g_try_new0 (gint, r->w * r->h));
 
   /* initialize cursor */
@@ -269,6 +271,16 @@ void
 lqr_carver_set_side_switch_frequency (LqrCarver *r, guint switch_frequency)
 {
   r->lr_switch_frequency = switch_frequency;
+}
+
+/* set enlargement step */
+LQR_PUBLIC
+LqrRetVal
+lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step)
+{
+  CATCH_F ((enl_step > 1) && (enl_step <= 2));
+  r->enl_step = enl_step;
+  return LQR_OK;
 }
 
 /* set progress reprot */
@@ -1483,31 +1495,47 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
 {
   LqrDataTok data_tok;
   gint delta, gamma;
+  gint delta_max;
   /* delta is used to determine the required depth
    * gamma to decide if action is necessary */
   if (!r->transposed)
     {
       delta = w1 - r->w_start;
       gamma = w1 - r->w;
+      delta_max = (gint) ((r->enl_step - 1) * r->w_start) - 1;
     }
   else
     {
       delta = w1 - r->h_start;
       gamma = w1 - r->h;
+      delta_max = (gint) ((r->enl_step - 1) * r->h_start) - 1;
+    }
+  if (delta_max < 1)
+    {
+      delta_max = 1;
+    }
+  if (delta < 0)
+    {
+      delta_max = -delta;
     }
   delta = delta > 0 ? delta : -delta;
 
-  if (gamma)
+  while (gamma)
     {
+      gint delta0 = MIN (delta, delta_max);
+      gint new_w;
+      delta -= delta0;
       if (r->transposed)
         {
           CATCH (lqr_carver_transpose (r));
         }
+      new_w = MIN (w1, r->w + delta0);
+      gamma = w1 - new_w;
       lqr_progress_init (r->progress, r->progress->init_width_message);
-      CATCH (lqr_carver_build_maps (r, delta + 1));
-      lqr_carver_set_width (r, w1);
+      CATCH (lqr_carver_build_maps (r, delta0 + 1));
+      lqr_carver_set_width (r, new_w);
 
-      data_tok.integer = w1;
+      data_tok.integer = new_w;
       lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width_attached, data_tok);
 
       if (r->dump_vmaps)
@@ -1515,6 +1543,15 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
           CATCH (lqr_vmap_internal_dump (r));
         }
       lqr_progress_end (r->progress, r->progress->end_width_message);
+      if (new_w < w1)
+        {
+          lqr_carver_flatten(r);
+          delta_max = (gint) ((r->enl_step - 1) * r->w_start) - 1;
+          if (delta_max < 1)
+            {
+              delta_max = 1;
+            }
+        }
     }
   return LQR_OK;
 }
@@ -1524,28 +1561,47 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
 {
   LqrDataTok data_tok;
   gint delta, gamma;
+  gint delta_max;
+  /* delta is used to determine the required depth
+   * gamma to decide if action is necessary */
   if (!r->transposed)
     {
       delta = h1 - r->h_start;
       gamma = h1 - r->h;
+      delta_max = (gint) ((r->enl_step - 1) * r->h_start) - 1;
     }
   else
     {
       delta = h1 - r->w_start;
       gamma = h1 - r->w;
+      delta_max = (gint) ((r->enl_step - 1) * r->w_start) - 1;
+    }
+  if (delta_max < 1)
+    {
+      delta_max = 1;
+    }
+  if (delta < 0)
+    {
+      delta_max = -delta;
     }
   delta = delta > 0 ? delta : -delta;
-  if (gamma)
+
+  while (gamma)
     {
+      gint delta0 = MIN (delta, delta_max);
+      gint new_w;
+      delta -= delta0;
       if (!r->transposed)
         {
           CATCH (lqr_carver_transpose (r));
         }
+      new_w = MIN (h1, r->w + delta0);
+      gamma = h1 - new_w;
       lqr_progress_init (r->progress, r->progress->init_height_message);
-      CATCH (lqr_carver_build_maps (r, delta + 1));
-      lqr_carver_set_width (r, h1);
+      CATCH (lqr_carver_build_maps (r, delta0 + 1));
+      lqr_carver_set_width (r, new_w);
 
-      data_tok.integer = h1;
+      data_tok.integer = new_w;
       lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width_attached, data_tok);
       
       if (r->dump_vmaps)
@@ -1553,6 +1609,15 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
           CATCH (lqr_vmap_internal_dump (r));
         }
       lqr_progress_end (r->progress, r->progress->end_height_message);
+      if (new_w < h1)
+        {
+          lqr_carver_flatten(r);
+          delta_max = (gint) ((r->enl_step - 1) * r->w_start) - 1;
+          if (delta_max < 1)
+            {
+              delta_max = 1;
+            }
+        }
     }
 
   return LQR_OK;
@@ -1567,6 +1632,7 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
   printf("[ Rescale from %i,%i to %i,%i ]\n", (r->transposed ? r->h : r->w), (r->transposed ? r->w : r->h), w1, h1);
   fflush(stdout);
 #endif /* __LQR_VERBOSE__ */
+  CATCH_F ((w1 >= 1) && (h1 >= 1));
   switch (r->resize_order)
     {
       case LQR_RES_ORDER_HOR:
@@ -1621,11 +1687,22 @@ lqr_carver_get_bpp (LqrCarver * r)
   return lqr_carver_get_channels(r);
 }
 
+/* get colour depth */
 LQR_PUBLIC
-LqrColDepth lqr_carver_get_col_depth (LqrCarver * r)
+LqrColDepth
+lqr_carver_get_col_depth (LqrCarver * r)
 {
   return r->col_depth;
 }
+
+/* get enlargement step */
+LQR_PUBLIC
+gfloat
+lqr_carver_get_enl_step (LqrCarver * r)
+{
+  return r->enl_step;
+}
+
 
 
 /* readout reset */

@@ -1,0 +1,38 @@
+.\"     Title: \fBlqr_carver_get_enl_step\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 21 Oct 2008
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"
+.TH "\FBLQR_CARVER_GET_ENL_STEP\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_get_enl_step - get the enlargement step of a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\.h>
+.fi
+.ft
+.HP 31
+.BI "gfloat lqr_carver_get_enl_step(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_get_enl_step\fR
+returns the enlargement step of the
+LqrCarver
+object pointed to by
+\fIcarver\fR, i\.e\. the maximum enlargement allowed in a single step for that carver, expressed as the ratio with respect to its original width (for horizontal rescalings) or height (for vertical rescalings)\. The returned value is strictly greater than 1 and less than 2\.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_get_width\fR(3), \fBlqr_carver_get_height\fR(3), \fBlqr_carver_get_channels\fR(3), \fBlqr_carver_get_col_depth\fR(3), \fBlqr_carver_set_enl_step\fR(3), \fBlqr_carver_resize\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2008 Carlo Baldassi
+.br
