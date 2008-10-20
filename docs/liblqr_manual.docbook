@@ -128,7 +128,7 @@
 					As mentioneed above, the enlargment process mirrors the carving
 					process. More precisely, in order to enlarge the image by a given
 					amount of pixels, say N, the library first computes which would be
-					the first N seams to be removed; then, it inserts new seams
+					the first N seams to be removed; then, it inserts N new seams
 					nearby those.
 				</para>
 				<para>
@@ -168,7 +168,7 @@
 				can be read out, simply by setting a global visibility level.
 			</para>
 			<para>
-				Therefor, once the visibility map has been computed, it allows effortless,
+				Therefore, once the visibility map has been computed, it allows effortless,
 				real-time scaling.
 				However, visibility maps also necessarily have an orientation, either
 				horizontal or vertical. If we want to resize on the other direction, the
@@ -395,7 +395,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				</para>
 				<para>
 					Here, <parameter>buffer</parameter> is the array representing an image of size
-					<parameter>width</parameter> by <parameter>height</parameter> width
+					<parameter>width</parameter> by <parameter>height</parameter> with
 					<parameter>channels</parameter> colour channels per pixels.
 					Thus, the overall buffer size has to be of
 					<literal><parameter>widht</parameter> * <parameter>height</parameter> * <parameter>channels</parameter>
@@ -586,10 +586,12 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				<note>
 					<para>
 						Every time that the image is flattened (including when changing
-						the resize direction) the original image is lost.
+						the resize direction) the original image and all information
+						about it is lost.
 					</para>
 				</note>
 			</sect2>
+
 		</sect1>
 
 		<sect1 id="read-out">
@@ -984,7 +986,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					rigidity coefficient, which has to be multiplied with the overall rigidity parameter
 					to get the actual pixel's rigidity.
 					This is useful in some situations to reduce distorsions in specific areas of
-					the image while keeping se seams optimal in other areas.
+					the image while keeping the seams optimal in other areas.
 				</para>
 				<para>
 					The library interface to deal with rigidity masks follows verty closely
@@ -1242,7 +1244,9 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					When the function <function>lqr_carver_resize</function> is invoked,
 					it chooses at each step the optimal seam to carve based on the relvance value for each pixel.
 					However, in the case two seams are equivalent (which may happen when large portions of the image
-					have the same colour, for example), the algorithm always chooses the seams from one side.
+					have the same colour, for example), the algorithm always chooses the seams from one side,
+					which might be a problem (e.g. an object centered in the original image might not be centered
+					any more in the resulting image).
 				</para>
 				<para>
 					In order to overcome this effect, an option is given to automatically switch the favoured
@@ -1257,7 +1261,8 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					</funcsynopsis>
 				</para>
 				<para>
-					The default value for newly created &carv_obj; objects is <literal>0</literal>.
+					The default value for newly created &carv_obj; objects is <literal>0</literal>, which is
+					equivalent to disabling this feature.
 					Giving a value greater than the number of pixels by which to rescale produces
 					a switch for each pixel, therefore you could set <parameter>switch_freqency</parameter> to
 					a ridicolously high value in order to be sure to get this effect.
@@ -1265,7 +1270,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				<para>
 					As for the final result, a very small value (e.g. <literal>1<literal> to </literal>4</literal>)
 					will normally suffice to balance the left and right side of the image (or the
-					top and the boddom sides for vertical rescalings), without noticeable
+					top and the bottom sides for vertical rescalings), without noticeable
 					computational costs. However, in order to obtain a smoother behaviour for the visibiliy
 					map, i.e. for the intermediate steps, higher values may be required.
 				</para>
@@ -1542,7 +1547,7 @@ vis =  buffer[y * width + x];
 						given by <function>lqr_vmap_orientation</function>.
 						Invoking <function>lqr_carver_resize</function> with an
 						out-of-bounds argument results in a <errortype>fatal</errortype> error
-						(i.e. it returns &err_err;)
+						(i.e. it returns &err_err;).
 					</para>
 				</note>
 				<note>
@@ -1561,7 +1566,7 @@ vis =  buffer[y * width + x];
 				<para>
 					The library does not include methods to load/save
 					visibility maps to/from files. However, a way to do so
-					is included in the demo program
+					is shown in the demo program
 					`<application>liquidrescale</application>' in the
 					`<filename>examples</filename>' directory.
 				</para>
@@ -2348,7 +2353,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						The function <function>lqr_carver_flatten</function> can be used to discard
 						the visibility map information and flatten the multi-size image contained in
-						the &carv_obj; object pointerd to by <parameter>carver</parameter>
+						the &carv_obj; object pointed to by <parameter>carver</parameter>
 						to its current state.
 						This can be useful to perform more than one rescale step in the same direction,
 						expecially for enlarging.
@@ -2357,9 +2362,10 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						This function must only be invoked over initialized &carv_obj; objects.
 					</para>
 					<para>
-						The discarded visibility map will not be dumped automatically in any case, use the
-						function <xref linkend="ref-lqr-vmap-dump"></xref> or
-						<xref linkend="ref-lqr-vmap-internal-dump"></xref> in order to save it before invoking
+						This function is called internally each time the rescaling direction changes,
+						but, when calling it manually, the discarded visibility map will not be 
+						dumped automatically by it; use the functions <xref linkend="ref-lqr-vmap-dump"></xref>
+						or <xref linkend="ref-lqr-vmap-internal-dump"></xref> in order to save it before invoking
 						this function.
 					</para>
 				</refsect1>
@@ -5098,22 +5104,25 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 	</chapter>
 
 	<appendix id="app-new">
-		<title>New symbols in version 0.2.0</title>
-		<para>
-			<simplelist>
-				<member><link linkend="ref-lqr-ret-val"><type>LqrRetVal</type></link></member>
-				<member><link linkend="ref-lqr-carver-new"><function>lqr_carver_new_ext</function></link></member>
-				<member><link linkend="ref-lqr-carver-scan"><function>lqr_carver_scan_ext</function></link></member>
-				<member><link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link></member>
-				<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_channels</function></link></member>
-				<member><link linkend="ref-lqr-carver-get-col-depth"><function>lqr_carver_get_col_depth</function></link></member>
-				<member><link linkend="ref-lqr-carver-set-side-switch-frequency"><function>lqr_carver_set_side_switch_frequency</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_area</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb</function></link></member>
-				<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
-			</simplelist>
-		</para>
+		<title>API changes in new versions of the library</title>
+		<sect1 id="app-new-0-2">
+			<title>New symbols in version 0.2</title>
+			<para>
+				<simplelist>
+					<member><link linkend="ref-lqr-col-depth"><type>LqrColDepth</type></link></member>
+					<member><link linkend="ref-lqr-carver-new"><function>lqr_carver_new_ext</function></link></member>
+					<member><link linkend="ref-lqr-carver-scan"><function>lqr_carver_scan_ext</function></link></member>
+					<member><link linkend="ref-lqr-carver-scan-line"><function>lqr_carver_scan_line_ext</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_channels</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-col-depth"><function>lqr_carver_get_col_depth</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-side-switch-frequency"><function>lqr_carver_set_side_switch_frequency</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_area</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
+				</simplelist>
+			</para>
+		</sect1>
 	</appendix>
 </book>
 		
