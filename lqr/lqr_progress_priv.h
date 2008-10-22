@@ -24,6 +24,20 @@
 #ifndef __LQR_PROGRESS_PRIV_H__
 #define __LQR_PROGRESS_PRIV_H__
 
+/*** LQR_PROGRESS CLASS DEFINITION ***/
+
+struct _LqrProgress
+{
+  gfloat update_step;
+  LqrProgressFuncInit init;
+  LqrProgressFuncUpdate update;
+  LqrProgressFuncEnd end;
+  gchar init_width_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
+  gchar end_width_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
+  gchar init_height_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
+  gchar end_height_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
+};
+
 /* LQR_PROGRESS CLASS PRIVATE FUNCTIONS */
 
 LqrRetVal lqr_progress_init(LqrProgress * p, const gchar * message);
