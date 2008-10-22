@@ -26,27 +26,15 @@
 
 #define LQR_PROGRESS_MAX_MESSAGE_LENGTH (1024)
 
+/* LQR_PROGRESS CLASS DECLARATION */
 struct _LqrProgress;
 
 typedef struct _LqrProgress LqrProgress;
 
+/* LQR_PROGRESS HOOKS DECLARATIONS */
 typedef LqrRetVal (*LqrProgressFuncInit)(const gchar*);
 typedef LqrRetVal (*LqrProgressFuncUpdate)(gdouble);
 typedef LqrRetVal (*LqrProgressFuncEnd)(const gchar*);
-
-/*** LQR_PROGRESS CLASS DEFINITION ***/
-
-struct _LqrProgress
-{
-  gfloat update_step;
-  LqrProgressFuncInit init;
-  LqrProgressFuncUpdate update;
-  LqrProgressFuncEnd end;
-  gchar init_width_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-  gchar end_width_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-  gchar init_height_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-  gchar end_height_message[LQR_PROGRESS_MAX_MESSAGE_LENGTH];
-};
 
 /* LQR_PROGRESS CLASS PUBLIC FUNCTIONS */
 

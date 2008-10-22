@@ -28,6 +28,7 @@
 #endif /* __LQR_BASE_H__ */
 
 
+/**** LQR_DATA_TOK STRUCT DEFINITION ****/
 union _LqrDataTok;
 typedef union _LqrDataTok LqrDataTok;
 
@@ -41,16 +42,10 @@ union _LqrDataTok
 typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 
 
-/**** LQR_CARVER_LIST CLASS DEFINITION ****/
+/**** LQR_CARVER_LIST CLASS DECLARATION ****/
 struct _LqrCarverList;
 
 typedef struct _LqrCarverList LqrCarverList;
-
-struct _LqrCarverList
-{
-  LqrCarver * current;
-  LqrCarverList * next;
-};
 
 /* LQR_CARVER_LIST PUBLIC FUNCTIONS */
 

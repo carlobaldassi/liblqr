@@ -27,6 +27,14 @@
 #error "lqr_base.h must be included prior to lqr_carver_list_priv.h"
 #endif /* __LQR_BASE_H__ */
 
+/**** LQR_CARVER_LIST CLASS DEFINITION ****/
+
+struct _LqrCarverList
+{
+  LqrCarver * current;
+  LqrCarverList * next;
+};
+
 /* LQR_CARVER_LIST PRIVATE FUNCTIONS */
 
 LqrCarverList * lqr_carver_list_append (LqrCarverList * list, LqrCarver * buffer);

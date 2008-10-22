@@ -27,6 +27,16 @@
 #error "lqr_base.h must be included prior to lqr_vmap_priv.h"
 #endif /* __LQR_BASE_H__ */
 
+/*** LQR_VMAP CLASS DEFINITION ***/
+
+struct _LqrVMap
+{
+  gint * buffer;
+  gint width;
+  gint height;
+  gint depth;
+  gint orientation;
+};
 
 /* LQR_VMAP CLASS PRIVATE FUNCTIONS */
 

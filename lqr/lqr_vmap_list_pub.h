@@ -31,16 +31,10 @@
 #error "lqr_vmap_pub.h must be included prior to lqr_vmap_list_pub.h"
 #endif /* __LQR_VMAP_PUB_H__ */
 
-/**** LQR_VMAP_LIST CLASS DEFINITION ****/
+/**** LQR_VMAP_LIST CLASS DECLARATION ****/
 struct _LqrVMapList;
 
 typedef struct _LqrVMapList LqrVMapList;
-
-struct _LqrVMapList
-{
-  LqrVMap * current;
-  LqrVMapList * next;
-};
 
 /* LQR_VMAP_LIST CLASS PUBLIC FUNCTIONS */
 

@@ -28,17 +28,11 @@
 #endif /* __LQR_BASE_H__ */
 
 
-/*** LQR_VMAP CLASS DEFINITION ***/
-struct _LqrVMap
-{
-  gint * buffer;
-  gint width;
-  gint height;
-  gint depth;
-  gint orientation;
-};
+/*** LQR_VMAP CLASS DECLARATION ***/
 
 typedef struct _LqrVMap LqrVMap;
+
+/* LQR_VMAP FUNCTION DECLARATION */
 
 typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 

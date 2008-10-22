@@ -1,3 +1,7 @@
+2008-10-22  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Moved classes definitions to private headers
+
 2008-10-21  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Removed 2-fold scale-up limit, added
