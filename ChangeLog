@@ -1,3 +1,10 @@
+2008-11-01  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Bugfix in update_mmap causing crashes with
+	  delta_x > 1
+	* Removed unnecessary includes of stdio.h
+	* Added debug_checkrows
+
 2008-10-22  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Moved classes definitions to private headers

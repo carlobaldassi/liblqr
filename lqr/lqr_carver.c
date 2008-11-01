@@ -20,13 +20,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 #include <lqr/lqr_all.h>
 
+#ifdef __LQR_VERBOSE__
+#include <stdio.h>
+#endif /* __LQR_VERBOSE__ */
+
 #ifdef __LQR_DEBUG__
+#include <stdio.h>
 #include <assert.h>
 #endif /* __LQR_DEBUG__ */
 
@@ -472,6 +475,11 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
                                 (gdouble) (depth - r->max_level));
         }
 
+#ifdef __LQR_DEBUG__
+      /* check raw rows */
+      lqr_carver_debug_check_rows (r);
+#endif /* __LQR_DEBUG__ */
+
       /* compute vertical seam */
       lqr_carver_build_vpath (r);
 
@@ -501,6 +509,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 	    }
 	  else
 	    {
+	      //lqr_carver_build_mmap (r);
 	      lqr_carver_update_mmap (r);
 	    }
         }
@@ -910,23 +919,27 @@ lqr_carver_update_mmap (LqrCarver * r)
   gint data, data_down, least;
   gfloat m, m1, r_fact;
   gint stop;
+  gint x_stop;
 
   /* span first row */
-  x_min = MAX (r->vpath_x[0] - r->delta_x, 0);
+  //x_min = MAX (r->vpath_x[0] - r->delta_x, 0);
+  x_min = MAX (r->vpath_x[0] - 1, 0);
   //x_max = MIN (r->vpath_x[0] + r->delta_x - 1, r->w - 1);
-  x_max = MIN (r->vpath_x[0] + r->delta_x, r->w - 1);
+  //x_max = MIN (r->vpath_x[0] + r->delta_x, r->w - 1);
+  x_max = MIN (r->vpath_x[0], r->w - 1);
 
   for (x = x_min; x <= x_max; x++)
     {
-      r->m[r->raw[0][x]] = r->en[r->raw[0][x]];
+      data = r->raw[0][x];
+      r->m[data] = r->en[data];
     }
 
   /* other rows */
   for (y = 1; y < r->h; y++)
     {
       /* make sure to include the seam */
-      x_min = MIN (x_min, r->vpath_x[y]);
-      x_max = MAX (x_max, r->vpath_x[y]);
+      x_min = MIN (x_min, MAX(r->vpath_x[y] - 1, 0));
+      x_max = MAX (x_max, MIN(r->vpath_x[y], r->w - 1));
       //x_max = MAX (x_max, r->vpath_x[y] - 1);
 
       /* expand the affected region by delta_x */
@@ -935,6 +948,7 @@ lqr_carver_update_mmap (LqrCarver * r)
 
       /* span the affected region */
       stop = 0;
+      x_stop = 0;
       for (x = x_min; x <= x_max; x++)
         {
           data = r->raw[y][x];
@@ -989,16 +1003,27 @@ lqr_carver_update_mmap (LqrCarver * r)
 	   * with the previous map */
           if (r->least[data] == least)
             {
-              if ((x == x_min) && (x < r->vpath_x[y])
+              if ((x == x_min) && (x < r->vpath_x[y] - 1)
                   && (r->m[data] == r->en[data] + m))
                 {
                   x_min++;
                 }
-              if ((x >= r->vpath_x[y]) && (r->m[data] == r->en[data] + m))
+              if ((x > r->vpath_x[y]) && (r->m[data] == r->en[data] + m))
                 {
+                  if (stop == 0)
+                    {
+                      x_stop = x;
+                    }
                   stop = 1;
-                  x_max = x;
                 }
+              else
+                {
+                  stop = 0;
+                }
+            }
+          else
+            {
+              stop = 0;
             }
 //#endif
 
@@ -1007,9 +1032,9 @@ lqr_carver_update_mmap (LqrCarver * r)
           r->m[data] = r->en[data] + m;
           r->least[data] = least;
 
-          if (stop)
+          if ((x == x_max) && (stop))
             {
-              break;
+              x_max = x_stop;
             }
         }
 
@@ -1753,5 +1778,27 @@ lqr_carver_scan_line_ext (LqrCarver * r, gint * n, void ** rgb)
 
   return TRUE;
 }
+
+#ifdef __LQR_DEBUG__
+void lqr_carver_debug_check_rows(LqrCarver * r)
+{
+  int x, y;
+  int data;
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+        {
+          data = r->raw[y][x];
+          if (data / r->w0 != y)
+            {
+              //fprintf(stderr, "y=%i x=%i w0=%i w=%i data=%i data/w0=%i\n", y, x, r->w0, r->w, data, data / r->w0);
+              fflush(stderr);
+            }
+          assert(data / r->w0 == y);
+        }
+    }
+}
+#endif /* __LQR_DEBUG__ */
+
 
 /**** END OF LQR_CARVER CLASS FUNCTIONS ****/
