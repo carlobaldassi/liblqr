@@ -230,4 +230,9 @@ LqrRetVal lqr_carver_flatten_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_transpose_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_propagate_vsmap_attached (LqrCarver * r, LqrDataTok data);
 
+#ifdef __LQR_DEBUG__
+/* debug */
+void lqr_carver_debug_check_rows(LqrCarver * r);
+#endif /* __LQR_DEBUG__ */
+
 #endif /* __LQR_CARVER_PRIV_H__ */
