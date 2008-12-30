@@ -160,7 +160,7 @@ fi
 $AUTOMAKE --add-missing --copy || exit 1
 autoconf || exit 1
 
-libtoolize --force --copy || exit 1
+libtoolize --force --copy --install || exit 1
 
 cd $ORIGDIR
 

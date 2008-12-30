@@ -20,6 +20,8 @@ EXTRA_DIST = \
 DISTCLEANFILES = \
 		 autom4te.cache
 
+ACLOCAL_AMFLAGS = -I m4
+
 
 lqr_pkgconfig_DATA = @LIBRARY_SNAME@.pc
 

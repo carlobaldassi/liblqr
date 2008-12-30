@@ -54,6 +54,8 @@ AC_SUBST(LTVERSION)
 AC_CONFIG_SRCDIR([lqr/lqr_carver.c])
 AM_CONFIG_HEADER(config.h)
 
+AC_CONFIG_MACRO_DIR([m4])
+
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
 AC_ISC_POSIX
