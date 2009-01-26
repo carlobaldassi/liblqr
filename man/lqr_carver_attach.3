@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_attach\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_ATTACH\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_ATTACH\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_attach - attach an LqrCarver to another LqrCarver
+lqr_carver_attach \- attach an LqrCarver to another LqrCarver
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 28
@@ -29,38 +29,38 @@ is used to attach an
 LqrCarver
 object (pointed to by
 \fIaux\fR) to another one (pointed to by
-\fIcarver\fR)\. This will have the effect that each operation performed over the
+\fIcarver\fR)\&. This will have the effect that each operation performed over the
 \fIcarver\fR
 object will be reflected on
 \fIaux\fR
-(they will share the same visibility map)\.
+(they will share the same visibility map)\&.
 .PP
 This function must not be used after a visibility map was loaded into the base object (the one pointed to by
-\fIcarver\fR)\.
+\fIcarver\fR)\&.
 .PP
 The object pointed to by
 \fIaux\fR
-must have the same original size as the base object\. Note that the original size information is reset whenever a flattening operation occurs, or the rescaling direction changes, so that this function should be called befor rescaling occurs\.
+must have the same original size as the base object\&. Note that the original size information is reset whenever a flattening operation occurs, or the rescaling direction changes, so that this function should be called befor rescaling occurs\&.
 .PP
 There is no limitation on the number of
 LqrCarver
-objects which is possible to attach\. Nesting is also possible\. It is irrelevant if the
+objects which is possible to attach\&. Nesting is also possible\&. It is irrelevant if the
 \fIaux\fR
 carver is initialized or not; from the moment of attachment, it will passively undergo all transformations performed over
-\fIcarver\fR\.
+\fIcarver\fR\&.
 .SH "RETURN VALUE"
 .PP
-The return value follows the Liquid Rescale library signalling system\.
+The return value follows the Liquid Rescale library signalling system\&.
 \fBLQR_ERROR\fR
 is returned if the sizes of
 \fIcarver\fR
 and
 \fIaux\fR
-don\'t match\.
+don\'t match\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrRetVal\fR(3), \fBlqr_carver_list_start\fR(3), \fBlqr_carver_list_current\fR(3), \fBlqr_carver_list_next\fR(3), \fBlqr_carver_list_foreach\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

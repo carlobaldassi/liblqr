@@ -1,3 +1,7 @@
+2009-01-26  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Added readouts for current visiblity map
+
 2008-11-01  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Bugfix in update_mmap causing crashes with

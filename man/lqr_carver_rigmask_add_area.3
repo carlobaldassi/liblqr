@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_rigmask_add_area\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_RIGMASK_ADD_AREA" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_RIGMASK_ADD_AREA" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_rigmask_add_area, lqr_carver_rigmask_add, lqr_carver_rigmask_add_rgb_area, lqr_carver_rigmask_add_rgb - update an LqrCarver rigidity mask
+lqr_carver_rigmask_add_area, lqr_carver_rigmask_add, lqr_carver_rigmask_add_rgb_area, lqr_carver_rigmask_add_rgb \- update an LqrCarver rigidity mask
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 38
@@ -34,45 +34,45 @@ The function
 adds a rigidity mask to an area of the image loaded in the
 LqrCarver
 object pointed to by
-\fIcarver\fR\. Adding a positive rigidity to an area will give a bias towards straighter seams (in the transversal direction with respect to the rescaling direction), if they happen to cross that area\.
+\fIcarver\fR\&. Adding a positive rigidity to an area will give a bias towards straighter seams (in the transversal direction with respect to the rescaling direction), if they happen to cross that area\&.
 .PP
 This function must be called after
 \fBlqr_carver_init\fR
 and before
-\fBlqr_carver_resize\fR\.
+\fBlqr_carver_resize\fR\&.
 .PP
 The parameter
 \fIbuffer\fR
 must point to an array of
 \fBdoubles\fR
 of size
-\fIwidth\fR * \fIheight\fR, ordered first by rows, then by columns\.
+\fIwidth\fR * \fIheight\fR, ordered first by rows, then by columns\&.
 .PP
 The offset of the area relative to the image are specified through
 \fIx_off\fR
 and
-\fIy_off\fR\. The rigidity mask area can exceed the boundary of the image, and the offsets can be negative\.
+\fIy_off\fR\&. The rigidity mask area can exceed the boundary of the image, and the offsets can be negative\&.
 .PP
 The values in the given
 \fIbuffer\fR
 are scaled by the overall
 \fIrigidity\fR
 value set when calling the function
-\fBlqr_carver_init\fR\.
+\fBlqr_carver_init\fR\&.
 .PP
 Note that using no rigidity masks at all is equivalent to use a rigidity mask over the whole image with all the values set to
-1\.0, but, when first adding a rigidity mask to a
+1\&.0, but, when first adding a rigidity mask to a
 LqrCarver
 object, all the pixels outside the affected area will have their rigidity set to zero; therefore, the function
 \fBlqr_carver_rigmask_add_area\fR
-actually affects the whole image, despite its name\.
+actually affects the whole image, despite its name\&.
 .PP
 The function
 \fBlqr_carver_rigmask_add\fR
 can be used when the area to add is of the same size of the image loaded in the
 LqrCarver
 object and the offsets are
-0\.
+0\&.
 .SH "ADDING A RIGIDITY MASK FROM AN IMAGE"
 .PP
 The functions
@@ -82,28 +82,28 @@ and
 are very similar to
 \fBlqr_carver_rigmask_add_area\fR
 and
-\fBlqr_carver_rigmask_add\fR, but use 8\-bit multi\-channel images as inputs\.
+\fBlqr_carver_rigmask_add\fR, but use 8\-bit multi\-channel images as inputs\&.
 .PP
 The number of channels in the image is passed via the parameter
-\fIchannels\fR\. The last channel is assumed to be the alpha (opacity) channel if
+\fIchannels\fR\&. The last channel is assumed to be the alpha (opacity) channel if
 \fIchannels\fR
 is equal to
 2
 or greater than
 3
-(if this is not the case, use the previous functions)\.
+(if this is not the case, use the previous functions)\&.
 .PP
-The rigidity value is computed from the average of the colour channels, multiplied by the value of the alpha channel if present\. For example, in RGBA images a white, nontransparent pixel is equivalent to a value of
-1\.0
+The rigidity value is computed from the average of the colour channels, multiplied by the value of the alpha channel if present\&. For example, in RGBA images a white, nontransparent pixel is equivalent to a value of
+1\&.0
 when using a buffer in
-\fBlqr_carver_rigmask_add_area\fR\.
+\fBlqr_carver_rigmask_add_area\fR\&.
 .SH "RETURN VALUE"
 .PP
-The return values follow the Liquid Rescale library signalling system\.
+The return values follow the Liquid Rescale library signalling system\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_bias_add_area\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

@@ -36,13 +36,14 @@
 			<surname>Baldassi</surname>
 		</author>
 		<productname class='copyright'>LqR library</productname>
-		<productnumber>0.2.0 API (1:0:1)</productnumber>
+		<productnumber>0.3.0 API (2:0:2)</productnumber>
 		<copyright>
 			<year>2007</year>
 			<year>2008</year>
+			<year>2009</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>21 Oct 2008</date>
+		<date>26 Jan 2009</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -52,7 +53,7 @@
 			<title>Copyright</title>
 			<para>
 				Liquid Rescale Library Manual.
-				Copyright (C) 2007-2008 Carlo Baldassi <email>carlobaldassi@gmail.com</email>
+				Copyright (C) 2007-2009 Carlo Baldassi <email>carlobaldassi@gmail.com</email>
 			</para>
 			<para>
 				This manual is released under the terms of the GNU General Public License
@@ -2757,9 +2758,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2800,9 +2804,122 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-ref-width">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_ref_width</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_ref_width</refname>
+					<refpurpose>get the reference width of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_ref_width</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_ref_width</function> returns
+						the internal reference width of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, in pixel units.
+					</para>
+					<para>
+						The reference width is set as the original height at carver initialization,
+						and reset any time the carver gets subsequently flattened, either
+						explicitly through <xref linkend="ref-lqr-carver-flatten"></xref> or implicitly
+						when the rescale direction changes or an enlargment beyond the 
+						maximum enlargement step is performed.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-ref-height">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_ref_height</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_ref_height</refname>
+					<refpurpose>get the reference height of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_ref_height</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_ref_height</function> returns
+						the internal reference height of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, in pixel units.
+					</para>
+					<para>
+						The reference height is set as the original height at carver initialization,
+						and reset any time the carver gets subsequently flattened, either
+						explicitly through <xref linkend="ref-lqr-carver-flatten"></xref> or implicitly
+						when the rescale direction changes or an enlargment beyond the 
+						maximum enlargement step is performed.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2854,8 +2971,11 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2898,8 +3018,11 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2933,7 +3056,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						the enlargement step of the &carv_obj; object pointed to by
 						<parameter>carver</parameter>, i.e. the maximum enlargement
 						allowed in a single step for that carver, expressed as the ratio with respect
-						to its original width (for horizontal rescalings) or height (for vertical
+						to its reference width (for horizontal rescalings) or height (for vertical
 						rescalings).
 						The returned value is strictly greater than 1 and less than 2.
 					</para>
@@ -2945,10 +3068,116 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-orientation">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_orientation</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_orientation</refname>
+					<refpurpose>get the orientation of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_orientation</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_orientation</function> returns the
+						current orientation of the visibility map internal to the &carv_obj; object
+						pointed to by <parameter>carver</parameter>, which is <literal>0</literal> if the last
+						rescale operation has been in the horizontal direction, <literal>1</literal>
+						if it has been in the vertical direction.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-get-depth">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_depth</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_depth</refname>
+					<refpurpose>get the depth of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_carver_get_depth</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_depth</function> returns the current
+						depth of the visibility map internal to the &carv_obj; object pointed to by
+						<parameter>vmap</parameter>, i.e. the maximum amount of scaling which
+						can be performed with respect to the internal reference sizes in the current
+						orientation without updating the internal map.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-get-depth"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3082,10 +3311,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					</para>
 					<para>
 						The enlargement step is the maximum enlargement ratio (with respect to
-						either the orignal width or original height of <parameter>carver</parameter>)
+						either the original width or original height of <parameter>carver</parameter>)
 						which the function <function>lqr_carver_resize</function> applies in a single
 						step; if that function is asked a greater enlargement, it divides the process in
-						multiple steps (and updates the original sizes accordingly at each new step).
+						multiple steps (and updates the original sizes accordingly at each new step - these
+						can be readout at any time with <xref linkend="ref-lqr-carver-get-ref-width"></xref>
+						and <xref linkend="ref-lqr-carver-get-ref-height"></xref>).
 					</para>
 					<para>
 						The default value for new &carv_obj; objects is 2.0.
@@ -3107,6 +3338,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
@@ -4003,7 +4236,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The function <function>lqr_vmap_get_orientation</function> returns the height
+						The function <function>lqr_vmap_get_orientation</function> returns the orientation
 						of the &vmap_obj; object pointed to by <parameter>vmap</parameter>,
 						which is <literal>0</literal> for horizontally oriented maps, 
 						<literal>1</literal> for vertically oriented ones.
@@ -5303,6 +5536,10 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 				<simplelist>
 					<member><link linkend="ref-lqr-carver-get-enl-step"><function>lqr_carver_get_enl_step</function></link></member>
 					<member><link linkend="ref-lqr-carver-set-enl-step"><function>lqr_carver_set_enl_step</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-ref-width"><function>lqr_carver_get_ref_width</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-ref-height"><function>lqr_carver_get_ref_height</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-orientation"><function>lqr_carver_get_orientation</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-depth"><function>lqr_carver_get_depth</function></link></member>
 				</simplelist>
 			</para>
 		</sect1>

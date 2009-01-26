@@ -1,17 +1,17 @@
 .\"     Title: \fBLqrColDepth\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQRCOLDEPTH\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQRCOLDEPTH\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-LqrColDepth - carver objects colour depth specification
+LqrColDepth \- carver objects colour depth specification
 .SH "DESCRIPTION"
 .PP
 The default
@@ -19,11 +19,11 @@ LqrCarver
 object constructor
 \fBlqr_carver_new\fR
 uses a colour depth of 8 bits per channel, and therefore its input must be an array of
-\fBunsigned char\fRs\. However, the
+\fBunsigned char\fRs\&. However, the
 LqrCarver
 objects can handle images of grater colour depth, if they are created with the
 \fBlqr_carver_new_ext\fR
-constructor\. The possible colour depths are specified through variables of type
+constructor\&. The possible colour depths are specified through variables of type
 \fBLqrColDepth\fR, which is an enum type; its possible values, and the type of the input buffer associated with them, are:
 .PP
 LQR_COLDEPTH_8I
@@ -59,16 +59,16 @@ LqrCarver
 object with the functions
 \fBlqr_carver_scan_ext\fR
 or
-\fBlqr_carver_scan_line_ext\fR, since the readout buffer must be cast to the appropriate type to be actually read\.
+\fBlqr_carver_scan_line_ext\fR, since the readout buffer must be cast to the appropriate type to be actually read\&.
 .PP
 The colour depth of an
 LqrCarver
 object can be obtained with the function
-\fBlqr_carver_get_col_depth\fR\.
+\fBlqr_carver_get_col_depth\fR\&.
 .SH "SEE ALSO"
 .PP
 
 \fBlqr_carver_new\fR(3), \fBlqr_carver_get_col_depth\fR(3), \fBlqr_carver_scan\fR(3), \fBlqr_carver_scan_line\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

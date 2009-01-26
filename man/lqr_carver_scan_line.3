@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_scan_line\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_SCAN_LINE\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SCAN_LINE\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_scan_line, lqr_carver_scan_line_ext - read out a multi-size image one line at a time
+lqr_carver_scan_line, lqr_carver_scan_line_ext \- read out a multi-size image one line at a time
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 30
@@ -33,40 +33,40 @@ are used to read out the multi\-size image contained in the
 LqrCarver
 object pointed to by
 \fIcarver\fR
-one line at a time\. They store the line number (row or column) in the variable pointed to by
+one line at a time\&. They store the line number (row or column) in the variable pointed to by
 \fIn\fR
 and the colour values in the array pointed to by
-\fIrgb\fR; then they move the readout pointer to the next line, or they reset it if the end of the image is reached\.
+\fIrgb\fR; then they move the readout pointer to the next line, or they reset it if the end of the image is reached\&.
 .PP
 The first one must only be used on the
 LqrCarver
 objects created with
-\fIlqr_carver_new\fR, i\.e\. with 8\-bit images, while the second one is general, but the
+\fIlqr_carver_new\fR, i\&.e\&. with 8\-bit images, while the second one is general, but the
 \fIrgb\fR
-pointer must be cast to the appropriate type to be used (i\.e pass the address of a pointer to
+pointer must be cast to the appropriate type to be used (i\&.e pass the address of a pointer to
 void
 to the function
-\fBlqr_carver_scan_line_ext\fR, then cast it to a pointer of the appropriate type and use this last one for reading the output)\.
+\fBlqr_carver_scan_line_ext\fR, then cast it to a pointer of the appropriate type and use this last one for reading the output)\&.
 .PP
 Use the function
 \fBlqr_carver_scan_by_row\fR(3)
-before calling these to know whether your image will be scanned by row or by column\.
+before calling these to know whether your image will be scanned by row or by column\&.
 .SH "RETURN VALUE"
 .PP
 These functions return
 TRUE
 in case the readout is successful and the end of the image was not reached,
 FALSE
-otherwise\. If
+otherwise\&. If
 \fBlqr_carver_scan_line\fR
 is called over a non\-8\-bit
 LqrCarver
 object, it will return
-FALSE\.
+FALSE\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrColDepth\fR(3), \fBlqr_carver_scan_reset\fR(3), \fBlqr_carver_scan\fR(3), \fBlqr_carver_scan_by_row\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

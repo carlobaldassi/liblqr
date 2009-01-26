@@ -83,8 +83,12 @@ gint lqr_carver_get_bpp (LqrCarver *r);
 gint lqr_carver_get_channels (LqrCarver *r);
 gint lqr_carver_get_width (LqrCarver * r);
 gint lqr_carver_get_height (LqrCarver * r);
+gint lqr_carver_get_ref_width (LqrCarver * r);
+gint lqr_carver_get_ref_height (LqrCarver * r);
+gint lqr_carver_get_orientation (LqrCarver * r);
 LqrColDepth lqr_carver_get_col_depth (LqrCarver * r);
 gfloat lqr_carver_get_enl_step (LqrCarver *r);
+gint lqr_carver_get_depth (LqrCarver *r);
 
 
 #endif /* __LQR_CARVER_PUB_H__ */

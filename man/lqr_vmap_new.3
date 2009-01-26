@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_vmap_new\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_VMAP_NEW\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_VMAP_NEW\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_vmap_new - the LqrVMap object constructor
+lqr_vmap_new \- the LqrVMap object constructor
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 22
@@ -27,19 +27,19 @@ The function
 \fBlqr_vmap_new\fR
 is the constructor for
 LqrVMap
-objects\. It can be used to convert saved data in a format which can be loaded in an
+objects\&. It can be used to convert saved data in a format which can be loaded in an
 LqrCarver
-object\.
+object\&.
 .PP
 The parameter
 \fIbuffer\fR
 must point to an an array of
 \fIwidth\fR * \fIheight\fR
-\fBint\fRs holding the visibility information\.
+\fBint\fRs holding the visibility information\&.
 .PP
 The parameter
 \fIdepth\fR
-represents the maximum possible amount of rescaling with the given map\.
+represents the maximum possible amount of rescaling with the given map\&.
 .PP
 The parameter
 \fIorientation\fR
@@ -47,32 +47,32 @@ must be
 0
 if the map is to be used for horizontal rescaling,
 1
-if it is to be used for vertical rescaling\.
+if it is to be used for vertical rescaling\&.
 .SH "VISIBILITY MAPS FORMAT"
 .PP
 The
 \fIbuffer\fR
 must be an array of integers of size
-\fIwidth\fR * \fIheight\fR\. For an horizontally oriented visibility map, the format is as such: each row must contain all values between 1 and
+\fIwidth\fR * \fIheight\fR\&. For an horizontally oriented visibility map, the format is as such: each row must contain all values between 1 and
 \fIdepth\fR
-(included) exactly once, with low values indicating the pixels which will be operated on first during rescaling\. All other pixels must be 0, which means that they won\'t be affected by rescaling\. Such a map allows for horizontal rescaling in the range from
+(included) exactly once, with low values indicating the pixels which will be operated on first during rescaling\&. All other pixels must be 0, which means that they won\'t be affected by rescaling\&. Such a map allows for horizontal rescaling in the range from
 \fIwidth\fR \- \fIdepth\fR
 to
-\fIwidth\fR + \fIdepth\fR\. The same applies to vertically oriented visibility maps, with columns in place of rows and
+\fIwidth\fR + \fIdepth\fR\&. The same applies to vertically oriented visibility maps, with columns in place of rows and
 \fIheight\fR
 in place of
-\fIwidth\fR\.
+\fIwidth\fR\&.
 .SH "RETURN VALUE"
 .PP
 The function returns the newly created
 LqrVMap
 if successful, or
 NULL
-in case of insufficient memory\.
+in case of insufficient memory\&.
 .SH "SEE ALSO"
 .PP
 
 \fBlqr_vmap_destroy\fR(3), \fBlqr_vmap_load\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

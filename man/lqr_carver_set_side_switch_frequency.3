@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_set_side_switch_frequency\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_SET_SIDE_SWITCH_" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SET_SIDE_SWITCH_" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_set_side_switch_frequency - set LqrCarver object side switch frequency
+lqr_carver_set_side_switch_frequency \- set LqrCarver object side switch frequency
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 42
@@ -25,9 +25,9 @@ lqr_carver_set_side_switch_frequency - set LqrCarver object side switch frequenc
 .PP
 When the function
 \fBlqr_carver_resize\fR(3)
-is invoked, it computes a relevance value for each pixel in the image, then chooses the optimal seam to carve based on such relvance values\. However, in the case two seams are equivalent (which may happen when large portions of the image have the same colour, for example), the algorithm always chooses the seams from one side\.
+is invoked, it computes a relevance value for each pixel in the image, then chooses the optimal seam to carve based on such relvance values\&. However, in the case two seams are equivalent (which may happen when large portions of the image have the same colour, for example), the algorithm always chooses the seams from one side\&.
 .PP
-In order to overcome this effect, an option is given to automatically switch the favoured side during rescaling, at the cost of a slightly worse performance\.
+In order to overcome this effect, an option is given to automatically switch the favoured side during rescaling, at the cost of a slightly worse performance\&.
 .PP
 The function
 \fBlqr_carver_set_side_switch_frequency\fR
@@ -36,21 +36,21 @@ sets the side switch frequency to
 for the
 LqrCarver
 object pointed to by
-\fIcarver\fR\. This will have the effect that, for each rescale operation, the favoured side will be switched
+\fIcarver\fR\&. This will have the effect that, for each rescale operation, the favoured side will be switched
 \fIswitch_frequency\fR
-times (or as much times as the number of pixels to rescale)\.
+times (or as much times as the number of pixels to rescale)\&.
 .PP
 The default value for newly created
 LqrCarver
 objects is
-0\.
+0\&.
 .PP
-As for the final result, a very small value (e\.g\.
-1 to 4) will normally suffice to balance the left and right side of the image (or the top and the boddom sides for vertical rescalings), without noticeable computational costs\. However, in order to obtain a smoother behaviour for the visibiliy map, i\.e\. for the intermediate steps, higher values may be required\.
+As for the final result, a very small value (e\&.g\&.
+1 to 4) will normally suffice to balance the left and right side of the image (or the top and the boddom sides for vertical rescalings), without noticeable computational costs\&. However, in order to obtain a smoother behaviour for the visibiliy map, i\&.e\&. for the intermediate steps, higher values may be required\&.
 .SH "SEE ALSO"
 .PP
 
 \fBlqr_carver_set_gradient_function\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_progress\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

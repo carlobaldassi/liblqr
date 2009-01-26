@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_vmap_get_data\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_VMAP_GET_DATA\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_VMAP_GET_DATA\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_vmap_get_data - get varous LqrVMap object quantities
+lqr_vmap_get_data \- get varous LqrVMap object quantities
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 24
@@ -28,23 +28,23 @@ The function
 returns an array with the data stored into the
 LqrVMap
 object pointed to by
-\fIvmap\fR, ordered first by row, then by column\.
+\fIvmap\fR, ordered first by row, then by column\&.
 .PP
 Reading the data requires retrieval of the other quantities, through the functions
 \fBlqr_vmap_get_depth\fR(3),
 \fBlqr_vmap_get_width\fR(3),
 \fBlqr_vmap_get_height\fR(3)
 and
-\fBlqr_vmap_get_orientation\fR(3)\.
+\fBlqr_vmap_get_orientation\fR(3)\&.
 .PP
 See the
 LqrVMap
 objects format description in the page for
-\fBlqr_vmap_new\fR(3)\.
+\fBlqr_vmap_new\fR(3)\&.
 .SH "SEE ALSO"
 .PP
 
 \fBlqr_vmap_new\fR(3), \fBlqr_vmap_get_depth\fR(3), \fBlqr_vmap_get_width\fR(3), \fBlqr_vmap_get_height\fR(3), \fBlqr_vmap_get_orientation\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

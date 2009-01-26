@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_set_gradient_function\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_SET_GRADIENT_FUN" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SET_GRADIENT_FUN" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_set_gradient_function - set the gradient function for an LqrCarver object
+lqr_carver_set_gradient_function \- set the gradient function for an LqrCarver object
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 38
@@ -29,7 +29,7 @@ is used to set the function of the gradient which will be used by the
 LqrCarver
 object pointed to by
 \fIcarver\fR
-in determining the relevance of a pixel (less relevant pixels being the ones which tend to be crossed by the seams, and thus the ones affected by rescaling)\. For each pixel, the gradient is computed for each direction as the difference of the values of nighboring pixels, the value being computed as the average over the colour channels multiplied by the alpha channel value (if present)\.
+in determining the relevance of a pixel (less relevant pixels being the ones which tend to be crossed by the seams, and thus the ones affected by rescaling)\&. For each pixel, the gradient is computed for each direction as the difference of the values of nighboring pixels, the value being computed as the average over the colour channels multiplied by the alpha channel value (if present)\&.
 .PP
 Possible values of the argument
 \fIgs_ind\fR
@@ -58,15 +58,15 @@ always returns 0
 The default value for newly created
 LqrCarver
 objects is
-LQR_GF_XABS\. The value
+LQR_GF_XABS\&. The value
 LQR_GF_NULL
 can be used together with the function
 \fBlqr_carver_bias_add_area\fR(3)
-ant the like to override completely the automatic feature detection\.
+ant the like to override completely the automatic feature detection\&.
 .SH "SEE ALSO"
 .PP
 
 \fBlqr_carver_init\fR(3), \fBlqr_carver_bias_add_area\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_progress_set_init\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_PROGRESS_SET_INIT\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_PROGRESS_SET_INIT\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_progress_set_init - execude custom code before each rescaling operation
+lqr_progress_set_init \- execude custom code before each rescaling operation
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 32
@@ -30,7 +30,7 @@ sets the hook
 to the
 LqrProgress
 object pointed to by
-\fIp\fR\.
+\fIp\fR\&.
 .PP
 The function
 \fIinit_func\fR
@@ -47,12 +47,12 @@ typedef LqrRetVal (*LqrProgressFuncInit) (const gchar* init_message);
 Each time that the function
 \fBlqr_carver_resize\fR(3)
 performs a rescale operation (recall that it can perform more than one rescale operation at each call) this function will be called first, with a string argument passed through the parameter
-\fIinit_message\fR, which is different for horizontal and vertical rescalings\.
+\fIinit_message\fR, which is different for horizontal and vertical rescalings\&.
 .PP
 The message arguments can be set with the functions
 \fBlqr_progress_set_init_width_message\fR(3)
 and
-\fBlqr_progress_set_init_height_message\fR(3)\.
+\fBlqr_progress_set_init_height_message\fR(3)\&.
 .PP
 The default values for newly created
 LqrProgress
@@ -61,21 +61,21 @@ objects are:
 Horizontal:
 .RS 4
 
-"Resizing width\.\.\."
+"Resizing width\&.\&.\&."
 .RE
 .PP
 Vertical:
 .RS 4
 
-"Resizing height\.\.\."
+"Resizing height\&.\&.\&."
 .RE
 .SH "RETURN VALUE"
 .PP
-The return value follows the Liquid Rescale library signalling system\.
+The return value follows the Liquid Rescale library signalling system\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrRetVal\fR(3), \fBlqr_progress_new\fR(3), \fBlqr_progress_set_update\fR(3), \fBlqr_progress_set_end\fR(3), \fBlqr_progress_set_init_width_message\fR(3), \fBlqr_progress_set_init_height_message\fR(3), \fBlqr_progress_set_end_width_message\fR(3), \fBlqr_progress_set_end_height_message\fR(3), \fBlqr_progress_set_update_step\fR(3), \fBlqr_carver_set_progress\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

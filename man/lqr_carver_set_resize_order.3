@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_set_resize_order\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_SET_RESIZE_ORDER" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SET_RESIZE_ORDER" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_set_resize_order - set LqrCarver object resize order
+lqr_carver_set_resize_order \- set LqrCarver object resize order
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 33
@@ -25,20 +25,20 @@ lqr_carver_set_resize_order - set LqrCarver object resize order
 .PP
 When the function
 \fBlqr_carver_resize\fR(3)
-is invoked and both the horizontal and vertical sizes are different from the current ones, the rescaling occurs first in one direction and then in the other\.
+is invoked and both the horizontal and vertical sizes are different from the current ones, the rescaling occurs first in one direction and then in the other\&.
 .PP
 The function
 \fBlqr_carver_set_resize_order\fR
 can be used to set which direction to rescale first for the
 LqrCarver
 object pointed to by
-\fIcarver\fR\. The parameter
+\fIcarver\fR\&. The parameter
 \fIresize_order\fR
 can take either the value
 LQR_RES_ORDER_HOR
 (horizontal rescale first) or
 LQR_RES_ORDER_VERT
-(vertical rescale first)\. By default, when an
+(vertical rescale first)\&. By default, when an
 LqrCarver
 object is created, the value is set to
 LQR_RES_ORDER_HOR
@@ -47,5 +47,5 @@ LQR_RES_ORDER_HOR
 
 \fBlqr_carver_set_gradient_function\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

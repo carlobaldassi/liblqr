@@ -10,8 +10,12 @@ dist_man_MANS = \
 	lqr_carver_get_bpp.3 \
 	lqr_carver_get_channels.3 \
 	lqr_carver_get_col_depth.3 \
+	lqr_carver_get_depth.3 \
 	lqr_carver_get_enl_step.3 \
 	lqr_carver_get_height.3 \
+	lqr_carver_get_orientation.3 \
+	lqr_carver_get_ref_height.3 \
+	lqr_carver_get_ref_width.3 \
 	lqr_carver_get_width.3 \
 	lqr_carver_init.3 \
 	lqr_carver_list_current.3 \

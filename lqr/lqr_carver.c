@@ -1682,7 +1682,7 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
   return TRUE;
 }
 
-/* get size */
+/* get current size */
 LQR_PUBLIC
 gint
 lqr_carver_get_width(LqrCarver* r)
@@ -1695,6 +1695,21 @@ gint
 lqr_carver_get_height(LqrCarver* r)
 {
   return (r->transposed ? r->w : r->h);
+}
+
+/* get reference size */
+LQR_PUBLIC
+gint
+lqr_carver_get_ref_width(LqrCarver* r)
+{
+  return (r->transposed ? r->h_start : r->w_start);
+}
+
+LQR_PUBLIC
+gint
+lqr_carver_get_ref_height(LqrCarver* r)
+{
+  return (r->transposed ? r->w_start : r->h_start);
 }
 
 /* get colour channels */
@@ -1728,6 +1743,21 @@ lqr_carver_get_enl_step (LqrCarver * r)
   return r->enl_step;
 }
 
+/* get orientation */
+LQR_PUBLIC
+gint
+lqr_carver_get_orientation (LqrCarver* r)
+{
+  return (r->transposed ? 1 : 0);
+}
+
+/* get depth */
+LQR_PUBLIC
+gint
+lqr_carver_get_depth (LqrCarver *r)
+{
+  return r->w0 - r->w_start;
+}
 
 
 /* readout reset */

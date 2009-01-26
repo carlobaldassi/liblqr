@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_bias_add_area\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_BIAS_ADD_AREA\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_BIAS_ADD_AREA\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_bias_add_area, lqr_carver_bias_add, lqr_carver_bias_add_rgb_area, lqr_carver_bias_add_rgb - update an LqrCarver bias
+lqr_carver_bias_add_area, lqr_carver_bias_add, lqr_carver_bias_add_rgb_area, lqr_carver_bias_add_rgb \- update an LqrCarver bias
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 35
@@ -34,38 +34,38 @@ The function
 adds a bias to an area of the image loaded into the
 LqrCarver
 object pointed to by
-\fIcarver\fR\. A positive biased area will be more likely to be avoided by seams, and thus be preserved during rescaling, while a negative bias has the opposite effect\.
+\fIcarver\fR\&. A positive biased area will be more likely to be avoided by seams, and thus be preserved during rescaling, while a negative bias has the opposite effect\&.
 .PP
 This function must be called after
 \fBlqr_carver_init\fR(3)
 and before
-\fBlqr_carver_resize\fR(3)\. If called multiple times, the biases added at each call will sum up\.
+\fBlqr_carver_resize\fR(3)\&. If called multiple times, the biases added at each call will sum up\&.
 .PP
 The parameter
 \fIbuffer\fR
 must point to an array of
 \fBdoubles\fR
 of size
-\fIwidth\fR * \fIheight\fR, ordered first by rows, then by columns\.
+\fIwidth\fR * \fIheight\fR, ordered first by rows, then by columns\&.
 .PP
 The offset of the area relative to the image can be specified through
 \fIx_off\fR
 and
-\fIy_off\fR\. The bias area can exceed the boundary of the image, and the offsets can be negative\.
+\fIy_off\fR\&. The bias area can exceed the boundary of the image, and the offsets can be negative\&.
 .PP
 The parameter
 \fIbias_factor\fR
-is an overall bias scale\. A typical value when the buffer contents are of the order of
+is an overall bias scale\&. A typical value when the buffer contents are of the order of
 1
 would be
-1000\.
+1000\&.
 .PP
 The function
 \fBlqr_carver_bias_add\fR
 can be used when the area to add is of the same size of the image loaded in the
 LqrCarver
 object and the offsets are
-0\.
+0\&.
 .SH "ADDING A BIAS FROM AN IMAGE"
 .PP
 The functions
@@ -75,28 +75,28 @@ and
 are very similar to
 \fBlqr_carver_bias_add_area\fR
 and
-\fBlqr_carver_bias_add\fR, except that they use 8\-bit multi\-channel images as inputs\.
+\fBlqr_carver_bias_add\fR, except that they use 8\-bit multi\-channel images as inputs\&.
 .PP
 The number of channels in the image is passed via the parameter
-\fIchannels\fR\. The last channel is assumed to be the alpha (opacity) channel if
+\fIchannels\fR\&. The last channel is assumed to be the alpha (opacity) channel if
 \fIchannels\fR
 is equal to
 2
 or greater than
 3
-(if this is not the case, use the previous functions)\.
+(if this is not the case, use the previous functions)\&.
 .PP
-The bias is computed from the average of the colour channels, multiplied by the value of the alpha channel if present\. For example, in RGBA images a white, nontransparent pixel is equivalent to a value of
-1\.0
+The bias is computed from the average of the colour channels, multiplied by the value of the alpha channel if present\&. For example, in RGBA images a white, nontransparent pixel is equivalent to a value of
+1\&.0
 when using a buffer in
-\fBlqr_carver_bias_add_area\fR\.
+\fBlqr_carver_bias_add_area\fR\&.
 .SH "RETURN VALUES"
 .PP
-The return values follow the Liquid Rescale library signalling system\.
+The return values follow the Liquid Rescale library signalling system\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_rigmask_add_area\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

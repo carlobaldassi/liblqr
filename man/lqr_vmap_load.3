@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_vmap_load\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_VMAP_LOAD\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_VMAP_LOAD\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_vmap_load - load an LqrVMap object into an LqrCarver object
+lqr_vmap_load \- load an LqrVMap object into an LqrCarver object
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 24
@@ -32,19 +32,19 @@ object pointed to by
 in the
 LqrCarver
 object pointed to by
-\fIcarver\fR\.
+\fIcarver\fR\&.
 .PP
 It can only be called over uninitialized carver objects, therefore care must be taken not to exceed the loaded map depth when resizing (see the
 LqrVMap
 objects format description in the page for
-\fBlqr_vmap_new\fR(3))\.
+\fBlqr_vmap_new\fR(3))\&.
 .SH ""
 .PP
-The return value follows the Liquid Rescale library signalling system\.
+The return value follows the Liquid Rescale library signalling system\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrRetVal\fR(3), \fBlqr_vmap_new\fR(3), \fBlqr_vmap_dump\fR(3), \fBlqr_vmap_internal_dump\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

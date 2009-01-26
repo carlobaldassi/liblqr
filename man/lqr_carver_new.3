@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_new\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_NEW\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_NEW\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_new, lqr_carver_new_ext - the LqrCarver object constructors
+lqr_carver_new, lqr_carver_new_ext \- the LqrCarver object constructors
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 26
@@ -37,35 +37,35 @@ object from an image of size
 \fIheight\fR
 with
 \fIchannels\fR
-colour channels\.
+colour channels\&.
 .PP
 The image must be stored in
 \fIbuffer\fR
 as a plain array of unsigned chars (for
 \fBlqr_carver_new\fR) or the appropriate type cast to void (for
-\fBlqr_carver_new_ext\fR), ordered by row, then by column, then by colour channel\.
+\fBlqr_carver_new_ext\fR), ordered by row, then by column, then by colour channel\&.
 .PP
 In the extended constructor
 \fBlqr_carver_new_ext\fR, the additional parameter
 \fIcolour_depth\fR
 is required to specify the colour depth of the buffer (see
 \fBLqrColDepth\fR(3)
-for more information)\.
+for more information)\&.
 .PP
 After calling the function, the buffer will be owned by the
 LqrCarver
-object and must not be accessed any more\.
+object and must not be accessed any more\&.
 .SH "RETURN VALUE"
 .PP
 The return value is the address of the newly created
 LqrCarver
 object, or
 NULL
-in case of failure (insufficient memory)\.
+in case of failure (insufficient memory)\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrColDepth\fR(3), \fBlqr_carver_destroy\fR(3), \fBlqr_carver_init\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_list_foreach\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_LIST_FOREACH\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_LIST_FOREACH\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_list_foreach - perform operations on all LqrCarver objects in an LqrCarverList object
+lqr_carver_list_foreach \- perform operations on all LqrCarver objects in an LqrCarverList object
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 34
@@ -30,14 +30,14 @@ can be used to apply the function
 to all the
 LqrCarver
 objects listed in
-\fIlist\fR\. The parameter
+\fIlist\fR\&. The parameter
 \fIdata\fR
-is used to pass arguments to the function\.
+is used to pass arguments to the function\&.
 .PP
 The
 \fIlist\fR
 value should be obtained through the function
-\fBlqr_carver_list_start\fR(3)\.
+\fBlqr_carver_list_start\fR(3)\&.
 .PP
 The function
 \fIfunc\fR
@@ -58,17 +58,17 @@ LqrDataTok, which is defined as a union with the following fields:
 .sp
 .RS 4
 \h'-04'\(bu\h'+03'\fBLqrCarver\fR\fB*\fR
-carver
+\fIcarver\fR
 .RE
 .sp
 .RS 4
 \h'-04'\(bu\h'+03'\fBgint\fR
-integer
+\fIinteger\fR
 .RE
 .sp
 .RS 4
 \h'-04'\(bu\h'+03'\fBgpointer\fR
-data
+\fIdata\fR
 .RE
 .sp
 .RE
@@ -77,5 +77,5 @@ data
 
 \fBLqrRetVal\fR(3), \fBlqr_carver_attach\fR(3), \fBlqr_carver_list_start\fR(3), \fBlqr_carver_list_current\fR(3), \fBlqr_carver_list_next\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

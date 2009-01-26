@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_flatten\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_FLATTEN\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_FLATTEN\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_flatten - flatten a LqrCarver object
+lqr_carver_flatten \- flatten a LqrCarver object
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 29
@@ -29,30 +29,30 @@ can be used to discard the visibility map information and flatten the multi\-siz
 LqrCarver
 object pointed to by
 \fIcarver\fR
-to its current state\.
+to its current state\&.
 .PP
 It will also reset the internally stored original width and height, as if the image was just loaded in the
 LqrCarver
-object\.
+object\&.
 .PP
 This function must only be invoked over initialized
 LqrCarver
-objects\.
+objects\&.
 .PP
 This function is called internally each time the rescaling direction changes, or at each new step in a multiple\-step enlargement, but, when calling it manually, the discarded visibility map will not be dumped automatically by it; use the functions
 \fBlqr_vmap_dump\fR(3)
 or
 \fBlqr_vmap_internal_dump\fR(3)
-in order to save it before invoking this function\.
+in order to save it before invoking this function\&.
 .SH "RETURN VALUE"
 .PP
-The return value follows the Liquid Rescale library signalling system\. Errors can occur for non\-initialized
+The return value follows the Liquid Rescale library signalling system\&. Errors can occur for non\-initialized
 LqrCarver
-objects or in case of insufficient memory\.
+objects or in case of insufficient memory\&.
 .SH "SEE ALSO"
 .PP
 
 \fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_resize\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

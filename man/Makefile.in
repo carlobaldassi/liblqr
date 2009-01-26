@@ -180,8 +180,12 @@ target_alias = @target_alias@
 @INSTMAN_TRUE@	lqr_carver_get_bpp.3 \
 @INSTMAN_TRUE@	lqr_carver_get_channels.3 \
 @INSTMAN_TRUE@	lqr_carver_get_col_depth.3 \
+@INSTMAN_TRUE@	lqr_carver_get_depth.3 \
 @INSTMAN_TRUE@	lqr_carver_get_enl_step.3 \
 @INSTMAN_TRUE@	lqr_carver_get_height.3 \
+@INSTMAN_TRUE@	lqr_carver_get_orientation.3 \
+@INSTMAN_TRUE@	lqr_carver_get_ref_height.3 \
+@INSTMAN_TRUE@	lqr_carver_get_ref_width.3 \
 @INSTMAN_TRUE@	lqr_carver_get_width.3 \
 @INSTMAN_TRUE@	lqr_carver_init.3 \
 @INSTMAN_TRUE@	lqr_carver_list_current.3 \

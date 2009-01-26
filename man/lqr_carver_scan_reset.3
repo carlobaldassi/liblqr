@@ -1,22 +1,22 @@
 .\"     Title: \fBlqr_carver_scan_reset\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 21 Oct 2008
+.\"      Date: 26 Jan 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.2.0 API (1:0:1)
+.\"    Source: LqR library 0.3.0 API (2:0:2)
 .\"
-.TH "\FBLQR_CARVER_SCAN_RESET\FR" "3" "21 Oct 2008" "LqR library 0.2.0 API (1:0:1)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SCAN_RESET\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_scan_reset - reset the readout cursor of a multi-size image
+lqr_carver_scan_reset \- reset the readout cursor of a multi-size image
 .SH "SYNOPSIS"
 .sp
 .ft B
 .nf
-#include <lqr\.h>
+#include <lqr\&.h>
 .fi
 .ft
 .HP 27
@@ -29,11 +29,11 @@ resets the readout pointer associated with the
 LqrCarver
 object pointed to by
 \fIcarver\fR
-to the start of the image\. (Normally, calling this function isn\'t needed, as the pointer is reset automatically whenever an operation is performed or once a readout has completed\.)
+to the start of the image\&. (Normally, calling this function isn\'t needed, as the pointer is reset automatically whenever an operation is performed or once a readout has completed\&.)
 .SH "SEE ALSO"
 .PP
 
 \fBlqr_carver_scan\fR(3), \fBlqr_carver_scan_by_row\fR(3), \fBlqr_carver_scan_line\fR(3)
 .SH "COPYRIGHT"
-Copyright \(co 2007-2008 Carlo Baldassi
+Copyright \(co 2007-2009 Carlo Baldassi
 .br

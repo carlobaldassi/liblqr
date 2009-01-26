@@ -1,0 +1,38 @@
+.\"     Title: \fBlqr_carver_get_depth\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 26 Jan 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.3.0 API (2:0:2)
+.\"
+.TH "\FBLQR_CARVER_GET_DEPTH\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_get_depth \- get the depth of a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 26
+.BI "gint lqr_carver_get_depth(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_get_depth\fR
+returns the current depth of the visibility map internal to the
+LqrCarver
+object pointed to by
+\fIvmap\fR, i\&.e\&. the maximum amount of scaling which can be performed with respect to the internal reference sizes in the current orientation without updating the internal map\&.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_get_width\fR(3), \fBlqr_carver_get_height\fR(3), \fBlqr_carver_get_ref_width\fR(3), \fBlqr_carver_get_ref_height\fR(3), \fBlqr_carver_get_channels\fR(3), \fBlqr_carver_get_col_depth\fR(3), \fBlqr_carver_set_enl_step\fR(3), \fBlqr_carver_resize\fR(3), \fBlqr_carver_get_enl_step\fR(3), \fBlqr_carver_get_orientation\fR(3), \fBlqr_vmap_get_depth\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br
