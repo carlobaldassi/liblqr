@@ -1541,9 +1541,9 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
     }
   if (delta < 0)
     {
-      delta_max = -delta;
+      delta = -delta;
+      delta_max = delta;
     }
-  delta = delta > 0 ? delta : -delta;
 
   while (gamma)
     {
@@ -1554,7 +1554,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
         {
           CATCH (lqr_carver_transpose (r));
         }
-      new_w = MIN (w1, r->w + delta0);
+      new_w = MIN (w1, r->w_start + delta_max);
       gamma = w1 - new_w;
       lqr_progress_init (r->progress, r->progress->init_width_message);
       CATCH (lqr_carver_build_maps (r, delta0 + 1));
@@ -1620,7 +1620,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
         {
           CATCH (lqr_carver_transpose (r));
         }
-      new_w = MIN (h1, r->w + delta0);
+      new_w = MIN (h1, r->w_start + delta_max);
       gamma = h1 - new_w;
       lqr_progress_init (r->progress, r->progress->init_height_message);
       CATCH (lqr_carver_build_maps (r, delta0 + 1));
