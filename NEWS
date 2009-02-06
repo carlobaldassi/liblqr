@@ -1,4 +1,12 @@
-Version 0.2.0:
+Version 0.3:
+
+* New features:
+  * Enlargement is not limited to 200% any more
+    (it is automatically performed in steps)
+  * Added readout functions for the internal
+    visibility map
+
+Version 0.2:
 
 * New fetures:
   * Support for 16-bit, 32-bit and 64-bit
