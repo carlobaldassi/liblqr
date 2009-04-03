@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -24,14 +24,13 @@
 #include <math.h>
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_gradient.h>
+#include <lqr/lqr_energy.h>
 #include <lqr/lqr_progress_pub.h>
 #include <lqr/lqr_cursor_pub.h>
-#include <lqr/lqr_vmap_pub.h>
-#include <lqr/lqr_vmap_list_pub.h>
-#include <lqr/lqr_carver_list_pub.h>
-#include <lqr/lqr_energy_pub.h>
-#include <lqr/lqr_carver_pub.h>
-#include <lqr/lqr_energy.h>
+#include <lqr/lqr_vmap.h>
+#include <lqr/lqr_vmap_list.h>
+#include <lqr/lqr_carver_list.h>
+#include <lqr/lqr_carver.h>
 
 /* read average pixel value at x, y 
  * for energy computation */
@@ -40,19 +39,61 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 {
   gdouble sum = 0;
   gint k;
-  gchar has_alpha = (r->alpha_channel > 0 ? 1 : 0);
+  gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+  gchar has_black = (r->black_channel >= 0 ? 1 : 0);
+  guint col_channels = r->channels - has_alpha - has_black;
+
+  gdouble alpha_fact = 1;
+  gdouble black_fact = 1;
+
   gint now = r->raw[y][x];
-  for (k = 0; k < r->channels; k++) if (k != r->alpha_channel)
-    {
-      sum += R_RGB(r->rgb, now * r->channels + k);
-    }
+
   if (has_alpha)
     {
-      sum *= R_RGB(r->rgb, now * r->channels + r->alpha_channel) / R_RGB_MAX;
+      alpha_fact = PXL_GET_NORM(r->rgb, now * r->channels + r->alpha_channel, r->col_depth);
     }
-  return sum / (R_RGB_MAX * (r->channels - has_alpha));
+
+  if (has_black)
+    {
+      black_fact = PXL_GET_NORM(r->rgb, now * r->channels + r->black_channel, r->col_depth);
+    }
+
+  for (k = 0; k < r->channels; k++) if ((k != r->alpha_channel) && (k != r->black_channel))
+    {
+      gdouble col = PXL_GET_NORM(r->rgb, now * r->channels + k, r->col_depth);
+      sum += 1 - (1 - col) * (1 - black_fact);
+    }
+
+  sum /= col_channels;
+
+  switch (r->image_type)
+    {
+      case LQR_RGB_IMAGE:
+      case LQR_RGBA_IMAGE:
+      case LQR_GREY_IMAGE:
+      case LQR_GREYA_IMAGE:
+      case LQR_CUSTOM_IMAGE:
+        break;
+      case LQR_CMY_IMAGE:
+      case LQR_CMYK_IMAGE:
+      case LQR_CMYKA_IMAGE:
+        sum = 1 - sum;
+        break;
+#ifdef __LQR_DEBUG__
+      default:
+        assert (0);
+#endif /* __LQR_DEBUG__ */
+    }
+
+  if (has_alpha)
+    {
+      sum *= alpha_fact;
+    }
+
+  return sum;
 }
 
+#if 0
 inline gdouble
 lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
 {
@@ -117,6 +158,7 @@ lqr_carver_read_luma_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
           0.0722 * fabs(R_RGB(r->rgb, p1 * r->channels + 2) * a1 - R_RGB(r->rgb, p2 * r->channels + 2) * a2)) /
           R_RGB_MAX;
 }
+#endif
 
 
 /* compute energy at x, y */
@@ -161,6 +203,7 @@ lqr_energy_null (LqrCarver * r, gint x, gint y)
   return 0;
 }
 
+#if 0
 /* compute energy at x, y */
 double
 lqr_energy_abs (LqrCarver * r, gint x, gint y)
@@ -194,83 +237,35 @@ lqr_energy_abs (LqrCarver * r, gint x, gint y)
     }
   return (*(r->nrg->gf))(gx, gy);
 }
+#endif
 
 /* gradient function for energy computation */
+LQR_PUBLIC
 LqrRetVal
-lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFuncType ef_ind, LqrGradFuncType gf_ind, LqrReadFuncType rf_ind)
+lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFuncType ef_ind)
 {
   switch (ef_ind)
     {
-      case LQR_EF_STD:
+      case LQR_EF_GRAD_NORM:
         r->nrg->ef = &lqr_energy_std;
-        switch (rf_ind)
-          {
-            case LQR_RF_BRIGHTNESS:
-              r->nrg->rf = &lqr_carver_read_brightness;
-              break;
-            case LQR_RF_LUMA:
-              switch (r->image_type)
-              {
-                case LQR_RGB_IMAGE:
-                case LQR_RGBA_IMAGE:
-                  r->nrg->rf = &lqr_carver_read_luma;
-                  break;
-                default:
-                  r->nrg->rf = &lqr_carver_read_brightness;
-                  break;
-              }
-
-              break;
-            default:
-              return LQR_ERROR;
-          }
+        r->nrg->rf = &lqr_carver_read_brightness;
+        r->nrg->gf = &lqr_grad_norm;
         break;
-      case LQR_EF_ABS:
-        r->nrg->ef = &lqr_energy_abs;
-        switch (rf_ind)
-          {
-            case LQR_RF_BRIGHTNESS:
-              r->nrg->rfabs = &lqr_carver_read_brightness_abs;
-              break;
-            case LQR_RF_LUMA:
-              switch (r->image_type)
-              {
-                case LQR_RGB_IMAGE:
-                case LQR_RGBA_IMAGE:
-                  r->nrg->rfabs = &lqr_carver_read_luma_abs;
-                  break;
-                default:
-                  r->nrg->rfabs = &lqr_carver_read_brightness_abs;
-                  break;
-              }
-
-              break;
-            default:
-              return LQR_ERROR;
-          }
+      case LQR_EF_GRAD_SUMABS:
+        r->nrg->ef = &lqr_energy_std;
+        r->nrg->rf = &lqr_carver_read_brightness;
+        r->nrg->gf = &lqr_grad_sumabs;
+        break;
+      case LQR_EF_GRAD_XABS:
+        r->nrg->ef = &lqr_energy_std;
+        r->nrg->rf = &lqr_carver_read_brightness;
+        r->nrg->gf = &lqr_grad_xabs;
         break;
       case LQR_EF_NULL:
         r->nrg->ef = &lqr_energy_null;
         return LQR_OK;
       default:
         return LQR_ERROR;
-    }
-
-  switch (gf_ind)
-    {
-    case LQR_GF_NORM:
-      r->nrg->gf = &lqr_grad_norm;
-      break;
-    case LQR_GF_SUMABS:
-      r->nrg->gf = &lqr_grad_sumabs;
-      break;
-    case LQR_GF_XABS:
-      r->nrg->gf = &lqr_grad_xabs;
-      break;
-    case LQR_GF_NULL:
-      r->nrg->gf = &lqr_grad_null;
-    default:
-      return LQR_ERROR;
     }
 
   return LQR_OK;

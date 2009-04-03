@@ -28,15 +28,21 @@
 #error "lqr_base.h must be included prior to lqr_energy_priv.h"
 #endif /* __LQR_BASE_H__ */
 
+#ifndef __LQR_GRADIENT_PUB_H__
+#error "lqr_gradient_pub.h must be included prior to lqr_energy_pub.h"
+#endif /* __LQR_GRADIENT_PUB_H__ */
+
+typedef double (*LqrEnergyFunc) (LqrCarver*, gint, gint);
 typedef double (*LqrReadFunc) (LqrCarver*, gint, gint);
-typedef double (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint);
+//typedef double (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint);
+
 
 struct _LqrEnergy
 {
   LqrEnergyFunc ef;
-  LqrGradFunc gf;
   LqrReadFunc rf;
-  LqrReadFuncAbs rfabs;
+  LqrGradFunc gf;
+  //LqrReadFuncAbs rfabs;
 };
 
 inline gdouble lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);

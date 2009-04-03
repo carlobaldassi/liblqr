@@ -84,7 +84,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->h_start = r->h;
 
   TRY_N_N (r->nrg = g_try_new (LqrEnergy, 1));
-  lqr_carver_set_energy_function(r, LQR_EF_STD, LQR_GF_XABS, LQR_RF_BRIGHTNESS);
+  lqr_carver_set_energy_function(r, LQR_EF_GRAD_XABS);
 
   r->leftright = 0;
   r->lr_switch_frequency = 0;
@@ -237,7 +237,9 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
 /*** set attributes ***/
 
-LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
+LQR_PUBLIC
+LqrRetVal
+lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
 {
   switch (image_type) {
     case LQR_GREY_IMAGE:
@@ -245,6 +247,7 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
         return LQR_ERROR;
       }
       r->alpha_channel = -1;
+      r->black_channel = -1;
       break;
     case LQR_GREYA_IMAGE:
       if (r->channels != 2)
@@ -252,6 +255,7 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
           return LQR_ERROR;
         }
       r->alpha_channel = 1;
+      r->black_channel = -1;
       break;
     case LQR_CMY_IMAGE:
     case LQR_RGB_IMAGE:
@@ -260,6 +264,7 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
           return LQR_ERROR;
         }
       r->alpha_channel = -1;
+      r->black_channel = -1;
       break;
     case LQR_CMYK_IMAGE:
       if (r->channels != 4)
@@ -267,6 +272,7 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
           return LQR_ERROR;
         }
       r->alpha_channel = -1;
+      r->black_channel = 3;
       break;
     case LQR_RGBA_IMAGE:
       if (r->channels != 4)
@@ -274,6 +280,7 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
           return LQR_ERROR;
         }
       r->alpha_channel = 3;
+      r->black_channel = -1;
       break;
     case LQR_CMYKA_IMAGE:
       if (r->channels != 5)
@@ -281,9 +288,11 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
           return LQR_ERROR;
         }
       r->alpha_channel = 4;
+      r->black_channel = 3;
       break;
     case LQR_CUSTOM_IMAGE:
       r->alpha_channel = r->channels - 1;
+      r->black_channel = -1;
       break;
     default:
       return LQR_ERROR;
@@ -293,6 +302,7 @@ LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
   return LQR_OK;
 }
 
+LQR_PUBLIC
 LqrRetVal
 lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
 {
@@ -307,25 +317,41 @@ lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
   return LQR_OK;
 }
 
+LQR_PUBLIC
+LqrRetVal
+lqr_carver_set_black_channel (LqrCarver * r, gint channel_index)
+{
+  if (channel_index < 0) {
+    r->black_channel = -1;
+  } else if (channel_index < r->channels) {
+    r->black_channel = channel_index;
+  } else {
+    return LQR_ERROR;
+  }
+  r->image_type = LQR_CUSTOM_IMAGE;
+  return LQR_OK;
+}
+
 /* set gradient function */
 /* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
 /* lqr_carver_set_energy_function() should be used in newly written code instead */
+LQR_PUBLIC
 void
 lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 {
   switch (gf_ind)
     {
     case LQR_GF_NORM:
-      r->nrg->gf = &lqr_grad_norm;
+      lqr_carver_set_energy_function(r, LQR_EF_GRAD_NORM);
       break;
     case LQR_GF_SUMABS:
-      r->nrg->gf = &lqr_grad_sumabs;
+      lqr_carver_set_energy_function(r, LQR_EF_GRAD_SUMABS);
       break;
     case LQR_GF_XABS:
-      r->nrg->gf = &lqr_grad_xabs;
+      lqr_carver_set_energy_function(r, LQR_EF_GRAD_XABS);
       break;
     case LQR_GF_NULL:
-      r->nrg->gf = &lqr_grad_null;
+      lqr_carver_set_energy_function(r, LQR_EF_NULL);
       break;
 #ifdef __LQR_DEBUG__
     default:

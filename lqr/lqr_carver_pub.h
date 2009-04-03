@@ -59,9 +59,6 @@
 #error "lqr_progress_pub.h must be included prior to lqr_carver_pub.h"
 #endif /* __LQR_PROGRESS_PUB_H__ */
 
-#define R_RGB(rgb, z) ((r->bits == 8) ? ((guchar*)rgb)[z] : ((guint16*)rgb)[z])
-#define R_RGB_MAX ((1 << r->bits) - 1)
-
 
 /* LQR_CARVER CLASS PUBLIC FUNCTIONS */
 

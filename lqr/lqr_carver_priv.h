@@ -59,6 +59,20 @@
 #define AS2_32F(x) ((lqr_t_32f**)x)
 #define AS2_64F(x) ((lqr_t_64f**)x)
 
+#define PXL_GET(src, src_ind, col_depth) ( \
+	(col_depth) == LQR_COLDEPTH_8I ? AS_8I(src)[(src_ind)] : \
+	(col_depth) == LQR_COLDEPTH_16I ? AS_16I(src)[(src_ind)] : \
+	(col_depth) == LQR_COLDEPTH_32F ? AS_32F(src)[(src_ind)] : \
+	(col_depth) == LQR_COLDEPTH_64F ? AS_64F(src)[(src_ind)] : \
+	0)
+
+#define PXL_GET_NORM(src, src_ind, col_depth) ( \
+	(col_depth) == LQR_COLDEPTH_8I ? (gdouble) AS_8I(src)[(src_ind)] / 0xFF : \
+	(col_depth) == LQR_COLDEPTH_16I ? (gdouble) AS_16I(src)[(src_ind)] / 0xFFFF : \
+	(col_depth) == LQR_COLDEPTH_32F ? (gdouble) AS_32F(src)[(src_ind)] : \
+	(col_depth) == LQR_COLDEPTH_64F ? (gdouble) AS_64F(src)[(src_ind)] : \
+	0.0)
+
 #define PXL_COPY(dest, dest_ind, src, src_ind, col_depth) \
         do { \
           switch (col_depth) \
@@ -172,7 +186,10 @@ struct _LqrCarver
                                    * since levels are shifted upon inflation
                                    */
 
+  LqrImageType image_type;        /* image type */
   gint channels;                  /* number of colour channels of the image */
+  gint alpha_channel;             /* opacity channel index (-1 if absent) */
+  gint black_channel;             /* black channel index (-1 if absent) */
   LqrColDepth col_depth;          /* image colour depth */
 
   gint transposed;                /* flag to set transposed state */
@@ -212,6 +229,8 @@ struct _LqrCarver
   gfloat enl_step;                /* maximum enlargement ratio in a single step */
 
   LqrProgress * progress;         /* pointer to progress update functions */
+
+  LqrEnergy *nrg;                 /* pointer to an energy function */
 
   LqrVMapList * flushed_vs;       /* linked list of pointers to flushed visibility maps buffers */
 
