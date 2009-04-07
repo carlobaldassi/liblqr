@@ -636,22 +636,22 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 		  case LQR_COLDEPTH_8I:
 		    tmp_rgb = (AS_8I(r->rgb)[c_left * r->channels + k] +
 		               AS_8I(r->rgb)[r->c->now * r->channels + k]) / 2;
-		    AS_8I(new_rgb)[z0 * r->channels + k] = (guchar) (tmp_rgb + 0.499999);
+		    AS_8I(new_rgb)[z0 * r->channels + k] = (lqr_t_8i) (tmp_rgb + 0.499999);
 		    break;
 		  case LQR_COLDEPTH_16I:
 		    tmp_rgb = (AS_16I(r->rgb)[c_left * r->channels + k] +
 		               AS_16I(r->rgb)[r->c->now * r->channels + k]) / 2;
-		    AS_16I(new_rgb)[z0 * r->channels + k] = (guint16) (tmp_rgb + 0.499999);
+		    AS_16I(new_rgb)[z0 * r->channels + k] = (lqr_t_16i) (tmp_rgb + 0.499999);
 		    break;
 		  case LQR_COLDEPTH_32F:
 		    tmp_rgb = (AS_32F(r->rgb)[c_left * r->channels + k] +
 		               AS_32F(r->rgb)[r->c->now * r->channels + k]) / 2;
-		    AS_32F(new_rgb)[z0 * r->channels + k] = (gfloat) tmp_rgb;
+		    AS_32F(new_rgb)[z0 * r->channels + k] = (lqr_t_32f) tmp_rgb;
 		    break;
 		  case LQR_COLDEPTH_64F:
 		    tmp_rgb = (AS_64F(r->rgb)[c_left * r->channels + k] +
 		               AS_64F(r->rgb)[r->c->now * r->channels + k]) / 2;
-		    AS_64F(new_rgb)[z0 * r->channels + k] = (gdouble) tmp_rgb;
+		    AS_64F(new_rgb)[z0 * r->channels + k] = (lqr_t_64f) tmp_rgb;
 		    break;
 		}
 	    }

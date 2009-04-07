@@ -92,7 +92,7 @@ typedef enum _LqrColDepth LqrColDepth;
 
 /**** IMAGE BASE TYPES ****/
 typedef guchar lqr_t_8i;
-typedef gint16 lqr_t_16i;
+typedef guint16 lqr_t_16i;
 typedef gfloat lqr_t_32f;
 typedef gdouble lqr_t_64f;
 
