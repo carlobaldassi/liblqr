@@ -682,7 +682,7 @@ gdouble *rgb_out;
 
 while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
   {
-    rgb_out = (gdouble*) vrgb;
+    rgb_out = (gdouble*) rgb;
     my_plot (x, y, rgb_out[0], rgb_out[1], rgb_out[2]);
   }
 						</programlisting>
