@@ -29,9 +29,11 @@
 #define LQR_PUBLIC __attribute__((visibility("default")))
 
 #define TRY_N_N(assign) if ((assign) == NULL) { return NULL; }
-//#define TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
-//#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
-//#define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
+/*
+#define TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
+#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
+#define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
+*/
 
 
 #if 0
