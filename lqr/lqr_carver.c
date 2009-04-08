@@ -403,7 +403,6 @@ lqr_carver_build_mmap (LqrCarver * r)
                    * in the last row */
                   m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
 		  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-                  //if (m1 <= m)
                     {
                       m = m1;
                       r->least[data] = data_down;
@@ -421,7 +420,6 @@ lqr_carver_build_mmap (LqrCarver * r)
                    * in the last row */
                   m1 = r->m[data_down];
 		  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-                  //if (m1 <= m)
                     {
                       m = m1;
                       r->least[data] = data_down;
@@ -510,7 +508,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
       if (r->w > 1)
         {
           /* update the energy */
-          //lqr_carver_build_emap (r);
+          /* lqr_carver_build_emap (r); */
           lqr_carver_update_emap (r);
 
           /* recalculate the minpath map */
@@ -521,7 +519,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 	    }
 	  else
 	    {
-	      //lqr_carver_build_mmap (r);
+	      /* lqr_carver_build_mmap (r); */
 	      lqr_carver_update_mmap (r);
 	    }
         }
@@ -725,7 +723,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 
   /* substitute maps */
   g_free (r->rgb);
-  //g_free (r->vs);
+  /* g_free (r->vs); */
   g_free (r->en);
   g_free (r->m);
   g_free (r->least);
@@ -741,7 +739,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
     }
   else
     {
-      //r->vs = NULL;
+      /* r->vs = NULL; */
     }
   if (r->active)
     {
@@ -934,10 +932,10 @@ lqr_carver_update_mmap (LqrCarver * r)
   gint x_stop;
 
   /* span first row */
-  //x_min = MAX (r->vpath_x[0] - r->delta_x, 0);
+  /* x_min = MAX (r->vpath_x[0] - r->delta_x, 0); */
   x_min = MAX (r->vpath_x[0] - 1, 0);
-  //x_max = MIN (r->vpath_x[0] + r->delta_x - 1, r->w - 1);
-  //x_max = MIN (r->vpath_x[0] + r->delta_x, r->w - 1);
+  /* x_max = MIN (r->vpath_x[0] + r->delta_x - 1, r->w - 1); */
+  /* x_max = MIN (r->vpath_x[0] + r->delta_x, r->w - 1); */
   x_max = MIN (r->vpath_x[0], r->w - 1);
 
   for (x = x_min; x <= x_max; x++)
@@ -952,7 +950,7 @@ lqr_carver_update_mmap (LqrCarver * r)
       /* make sure to include the seam */
       x_min = MIN (x_min, MAX(r->vpath_x[y] - 1, 0));
       x_max = MAX (x_max, MIN(r->vpath_x[y], r->w - 1));
-      //x_max = MAX (x_max, r->vpath_x[y] - 1);
+      /* x_max = MAX (x_max, r->vpath_x[y] - 1); */
 
       /* expand the affected region by delta_x */
       x_min = MAX (x_min - r->delta_x, 0);
@@ -984,7 +982,6 @@ lqr_carver_update_mmap (LqrCarver * r)
                   data_down = r->raw[y - 1][x + x1];
                   m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
                   if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-                  //if (m1 <= m)
                     {
                       m = m1;
                       least = data_down;
@@ -999,18 +996,13 @@ lqr_carver_update_mmap (LqrCarver * r)
                   data_down = r->raw[y - 1][x + x1];
                   m1 = r->m[data_down];
                   if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-                  //if (m1 <= m)
                     {
-		      //if (m1 == m) {
-			//printf("m=%g least=%i data_down=%i\n", m, least, data_down); fflush(stdout);
-		      //}
                       m = m1;
                       least = data_down;
                     }
                 }
             }
 
-//#if 0
 	  /* reduce the range if there's no difference
 	   * with the previous map */
           if (r->least[data] == least)
@@ -1037,8 +1029,6 @@ lqr_carver_update_mmap (LqrCarver * r)
             {
               stop = 0;
             }
-//#endif
-
 
           /* set current m */
           r->m[data] = r->en[data] + m;
@@ -1077,7 +1067,6 @@ lqr_carver_build_vpath (LqrCarver * r)
 
       m1 = r->m[r->raw[y][x]];
       if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-      //if (m1 <= m)
         {
           last = r->raw[y][x];
           last_x = x;
@@ -1898,7 +1887,6 @@ void lqr_carver_debug_check_rows(LqrCarver * r)
           data = r->raw[y][x];
           if (data / r->w0 != y)
             {
-              //fprintf(stderr, "y=%i x=%i w0=%i w=%i data=%i data/w0=%i\n", y, x, r->w0, r->w, data, data / r->w0);
               fflush(stderr);
             }
           assert(data / r->w0 == y);
