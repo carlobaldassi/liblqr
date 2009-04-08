@@ -1,3 +1,7 @@
+2009-04-08  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Fixed bug with 16-bit images
+
 2009-01-26  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Added readouts for current visiblity map
