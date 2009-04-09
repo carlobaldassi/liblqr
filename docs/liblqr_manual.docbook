@@ -36,14 +36,14 @@
 			<surname>Baldassi</surname>
 		</author>
 		<productname class='copyright'>LqR library</productname>
-		<productnumber>0.3.0 API (2:0:2)</productnumber>
+		<productnumber>0.4.0 API (3:0:3)</productnumber>
 		<copyright>
 			<year>2007</year>
 			<year>2008</year>
 			<year>2009</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>26 Jan 2009</date>
+		<date>09 Apr 2009</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -480,12 +480,20 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				<para>
 					Floating point type values must range between <literal>0</literal> and <literal>1</literal>.
 				</para>
-				<important>
-					<para>
-						The buffer will become part of the &carv_obj; object and
-						must not be accessed directly any more.
-					</para>
-				</important>
+				<para>
+					By default, the buffer is assumed to be a copy of the original image, and therefore it is owned
+					by the &carv_obj; object and must not be accessed directly any more (and of course it must not be freed,
+					the &carv_obj; destructor does it).
+					If, instead, you want the &lqrl; to keep the buffer intact, you must flag
+					the &carv_obj; after creation, using this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_preserve_input_image</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+					This function must be used only once, before any other operation takes place.
+				</para>
 			</sect2>
 
 			<sect2 id="carver-init">
@@ -2177,7 +2185,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					</para>
 					<para>
 						After calling the function, the buffer will be owned by the &carv_obj; object and
-						must not be accessed any more.
+						must not be accessed any more, unless you subsequently call the
+						<xref linkend="ref-lqr-carver-set-preserve-input-image"></xref> function.
 					</para>
 				</refsect1>
 				<refsect1>
@@ -2195,6 +2204,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-col-depth"></xref></member>
 							<member><xref linkend="ref-lqr-carver-destroy"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3273,6 +3283,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3344,6 +3355,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3398,6 +3410,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3473,6 +3486,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-start"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
@@ -3545,6 +3559,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3596,6 +3611,52 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-preserve-input-image">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_preserve_input_image</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_preserve_input_image</refname>
+					<refpurpose>set a flag to preserve the buffer passed to a &carv_obj; object upon creation</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_preserve_input_image</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_set_preserve_input_image</function> flags
+						the &carv_obj; object pointed to by <parameter>carver</parameter> so that
+						it does not alter in any way the buffer which is passed to it by the
+						constructor.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -5529,6 +5590,15 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 
 	<appendix id="app-new">
 		<title>API changes in new versions of the library</title>
+
+		<sect1 id="app-new-0-4">
+			<title>New symbols in version 0.4</title>
+			<para>
+				<simplelist>
+					<member><link linkend="ref-lqr-carver-set-preserve-input-image"><function>lqr_carver_set_preserve_input_image</function></link></member>
+				</simplelist>
+			</para>
+		</sect1>
 
 		<sect1 id="app-new-0-3">
 			<title>New symbols in version 0.3</title>

@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_new\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 26 Jan 2009
+.\"      Date: 09 Apr 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.3.0 API (2:0:2)
+.\"    Source: LqR library 0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_NEW\FR" "3" "26 Jan 2009" "LqR library 0.3.0 API (2:0:2)" "LqR library API reference"
+.TH "\FBLQR_CARVER_NEW\FR" "3" "09 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -54,7 +54,9 @@ for more information)\&.
 .PP
 After calling the function, the buffer will be owned by the
 LqrCarver
-object and must not be accessed any more\&.
+object and must not be accessed any more, unless you subsequently call the
+\fBlqr_carver_set_preserve_input_image\fR(3)
+function\&.
 .SH "RETURN VALUE"
 .PP
 The return value is the address of the newly created
@@ -65,7 +67,7 @@ in case of failure (insufficient memory)\&.
 .SH "SEE ALSO"
 .PP
 
-\fBLqrColDepth\fR(3), \fBlqr_carver_destroy\fR(3), \fBlqr_carver_init\fR(3)
+\fBLqrColDepth\fR(3), \fBlqr_carver_destroy\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_set_preserve_input_image\fR(3)
 .SH "COPYRIGHT"
 Copyright \(co 2007-2009 Carlo Baldassi
 .br

@@ -55,6 +55,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->resize_order = LQR_RES_ORDER_HOR;
   r->attached_list = NULL;
   r->flushed_vs = NULL;
+  r->preserve_in_buffer = FALSE;
   TRY_N_N (r->progress = lqr_progress_new());
 
   r->en = NULL;
@@ -123,7 +124,10 @@ LQR_PUBLIC
 void
 lqr_carver_destroy (LqrCarver * r)
 {
-  g_free (r->rgb);
+  if (!r->preserve_in_buffer)
+    {
+      g_free (r->rgb);
+    }
   if (r->root == NULL)
     {
       g_free (r->vs);
@@ -293,6 +297,14 @@ lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 {
   g_free(r->progress);
   r->progress = p;
+}
+
+/* flag the input buffer to avoid destruction */
+LQR_PUBLIC
+void
+lqr_carver_set_preserve_input_image(LqrCarver *r)
+{
+  r->preserve_in_buffer = TRUE;
 }
 
 
@@ -722,7 +734,10 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 #endif /* __LQR_DEBUG__ */
 
   /* substitute maps */
-  g_free (r->rgb);
+  if (!r->preserve_in_buffer)
+    {
+      g_free (r->rgb);
+    }
   /* g_free (r->vs); */
   g_free (r->en);
   g_free (r->m);
@@ -731,6 +746,8 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   g_free (r->rigidity_mask);
 
   r->rgb = new_rgb;
+  r->preserve_in_buffer = FALSE;
+
   if (r->root == NULL)
     {
       g_free (r->vs);
@@ -1295,8 +1312,12 @@ lqr_carver_flatten (LqrCarver * r)
     }
 
   /* substitute the old maps */
-  g_free (r->rgb);
+  if (!r->preserve_in_buffer)
+    {
+      g_free (r->rgb);
+    }
   r->rgb = new_rgb;
+  r->preserve_in_buffer = FALSE;
   if (r->active)
     {
       g_free (r->bias);
@@ -1424,8 +1445,13 @@ lqr_carver_transpose (LqrCarver * r)
     }
 
   /* substitute the map */
-  g_free (r->rgb);
+  if (!r->preserve_in_buffer)
+    {
+      g_free (r->rgb);
+    }
   r->rgb = new_rgb;
+  r->preserve_in_buffer = FALSE;
+
   if (r->active)
     {
       g_free (r->bias);

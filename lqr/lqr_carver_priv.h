@@ -190,6 +190,8 @@ struct _LqrCarver
 
   LqrVMapList * flushed_vs;     /* linked list of pointers to flushed visibility maps buffers */
 
+  gboolean preserve_in_buffer;  /* whether to preserve the buffer given to lqr_carver_new */
+
 };
 
 /* LQR_CARVER CLASS PRIVATE FUNCTIONS */

@@ -67,6 +67,7 @@ void lqr_carver_set_side_switch_frequency (LqrCarver *r, guint switch_frequency)
 LqrRetVal lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step);
 LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
+void lqr_carver_set_preserve_input_image(LqrCarver *r);
 
 /* image manipulations */
 LqrRetVal lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */

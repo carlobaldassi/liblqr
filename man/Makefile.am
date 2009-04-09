@@ -39,6 +39,7 @@ dist_man_MANS = \
 	lqr_carver_set_enl_step.3 \
 	lqr_carver_set_gradient_function.3 \
 	lqr_carver_set_no_dump_vmaps.3 \
+	lqr_carver_set_preserve_input_image.3 \
 	lqr_carver_set_progress.3 \
 	lqr_carver_set_resize_order.3 \
 	lqr_carver_set_side_switch_frequency.3 \
