@@ -30,11 +30,14 @@ typedef double (*LqrGradFunc) (double, double);
 enum _LqrGradFuncType
 {
   LQR_GF_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
+  LQR_GF_NORM_BIAS,             /* gradient biased norm : sqrt(x^2 + 0.1 y^2) */
   LQR_GF_SUMABS,                /* sum of absulte values : |x| + |y|          */
   LQR_GF_XABS,                  /* x absolute value : |x|                     */
+  LQR_GF_YABS,                  /* y absolute value : |y|                     */
   LQR_GF_NULL                   /* 0 */
 };
 
 typedef enum _LqrGradFuncType LqrGradFuncType;
+
 
 #endif /* __LQR_GRADIENT_PUB_H__ */

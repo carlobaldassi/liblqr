@@ -47,9 +47,9 @@
 /**** RETURN VALUES (signals) ****/
 enum _LqrRetVal
 {
-  LQR_ERROR,		/* generic error */
-  LQR_OK,		/* ok */ 
-  LQR_NOMEM,		/* not enough memory */
+  LQR_ERROR,            /* generic error */
+  LQR_OK,               /* ok */ 
+  LQR_NOMEM,            /* not enough memory */
   LQR_USRCANCEL         /* action cancelled by user */
 };
 

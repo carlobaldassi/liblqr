@@ -104,7 +104,7 @@ lqr_cursor_next (LqrCursor * c)
       if (c->y == c->o->h - 1)
         {
           /* top-right corner, set eoc flag */
-	  c->eoc = 1;
+          c->eoc = 1;
           return;
         }
       /* end-of-line, carriage return */

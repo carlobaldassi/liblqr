@@ -60,18 +60,18 @@
 #define AS2_64F(x) ((lqr_t_64f**)x)
 
 #define PXL_GET(src, src_ind, col_depth) ( \
-	(col_depth) == LQR_COLDEPTH_8I ? AS_8I(src)[(src_ind)] : \
-	(col_depth) == LQR_COLDEPTH_16I ? AS_16I(src)[(src_ind)] : \
-	(col_depth) == LQR_COLDEPTH_32F ? AS_32F(src)[(src_ind)] : \
-	(col_depth) == LQR_COLDEPTH_64F ? AS_64F(src)[(src_ind)] : \
-	0)
+        (col_depth) == LQR_COLDEPTH_8I ? AS_8I(src)[(src_ind)] : \
+        (col_depth) == LQR_COLDEPTH_16I ? AS_16I(src)[(src_ind)] : \
+        (col_depth) == LQR_COLDEPTH_32F ? AS_32F(src)[(src_ind)] : \
+        (col_depth) == LQR_COLDEPTH_64F ? AS_64F(src)[(src_ind)] : \
+        0)
 
 #define PXL_GET_NORM(src, src_ind, col_depth) ( \
-	(col_depth) == LQR_COLDEPTH_8I ? (gdouble) AS_8I(src)[(src_ind)] / 0xFF : \
-	(col_depth) == LQR_COLDEPTH_16I ? (gdouble) AS_16I(src)[(src_ind)] / 0xFFFF : \
-	(col_depth) == LQR_COLDEPTH_32F ? (gdouble) AS_32F(src)[(src_ind)] : \
-	(col_depth) == LQR_COLDEPTH_64F ? (gdouble) AS_64F(src)[(src_ind)] : \
-	0.0)
+        (col_depth) == LQR_COLDEPTH_8I ? (gdouble) AS_8I(src)[(src_ind)] / 0xFF : \
+        (col_depth) == LQR_COLDEPTH_16I ? (gdouble) AS_16I(src)[(src_ind)] / 0xFFFF : \
+        (col_depth) == LQR_COLDEPTH_32F ? (gdouble) AS_32F(src)[(src_ind)] : \
+        (col_depth) == LQR_COLDEPTH_64F ? (gdouble) AS_64F(src)[(src_ind)] : \
+        0.0)
 
 #define PXL_COPY(dest, dest_ind, src, src_ind, col_depth) \
         do { \

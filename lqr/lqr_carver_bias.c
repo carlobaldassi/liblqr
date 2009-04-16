@@ -133,7 +133,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
           bias = (gfloat) ((gdouble) bias_factor * sum / (2 * 255 * c_channels));
           if (has_alpha)
             {
-	      bias *= (gfloat) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
+              bias *= (gfloat) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
             }
 
           r->bias[(y + y1) * r->w0 + (x + x1)] += bias;

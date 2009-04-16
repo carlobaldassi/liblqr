@@ -32,6 +32,11 @@
 #include <lqr/lqr_carver_list.h>
 #include <lqr/lqr_carver.h>
 
+#ifdef __LQR_DEBUG__
+#include <stdio.h>
+#include <assert.h>
+#endif /* __LQR_DEBUG__ */
+
 /* read average pixel value at x, y 
  * for energy computation */
 inline gdouble
@@ -44,7 +49,7 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
   guint col_channels = r->channels - has_alpha - has_black;
 
   gdouble alpha_fact = 1;
-  gdouble black_fact = 1;
+  gdouble black_fact = 0;
 
   gint now = r->raw[y][x];
 
@@ -61,7 +66,7 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
   for (k = 0; k < r->channels; k++) if ((k != r->alpha_channel) && (k != r->black_channel))
     {
       gdouble col = PXL_GET_NORM(r->rgb, now * r->channels + k, r->col_depth);
-      sum += 1 - (1 - col) * (1 - black_fact);
+      sum += 1. - (1. - col) * (1. - black_fact);
     }
 
   sum /= col_channels;
@@ -72,13 +77,17 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
       case LQR_RGBA_IMAGE:
       case LQR_GREY_IMAGE:
       case LQR_GREYA_IMAGE:
-      case LQR_CUSTOM_IMAGE:
         break;
       case LQR_CMY_IMAGE:
       case LQR_CMYK_IMAGE:
       case LQR_CMYKA_IMAGE:
         sum = 1 - sum;
         break;
+      case LQR_CUSTOM_IMAGE:
+        if (has_black)
+          {
+            sum = 1 - sum;
+          }
 #ifdef __LQR_DEBUG__
       default:
         assert (0);
@@ -194,6 +203,7 @@ lqr_energy_std (LqrCarver * r, gint x, gint y)
     {
       gx = (*(r->nrg->rf)) (r, x, y) - (*(r->nrg->rf)) (r, x - 1, y);
     }
+
   return (*(r->nrg->gf))(gx, gy);
 }
 
