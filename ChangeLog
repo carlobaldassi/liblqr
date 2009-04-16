@@ -1,3 +1,15 @@
+2009-04-16  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Added cancel methods and structures
+	* Fixed recursiveness of some calls to
+	  lqr_carver_list_foreach
+	* Fixed return value of lqr_carver_resize
+
+2009-04-09  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Added lqr_carver_set_preserve_input_image
+	* Version bump 0.4
+
 2009-04-08  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Fixed bug with 16-bit images

@@ -175,6 +175,7 @@ target_alias = @target_alias@
 @INSTMAN_TRUE@	lqr_carver_bias_add_area.3 \
 @INSTMAN_TRUE@	lqr_carver_bias_add_rgb.3 \
 @INSTMAN_TRUE@	lqr_carver_bias_add_rgb_area.3 \
+@INSTMAN_TRUE@	lqr_carver_cancel.3 \
 @INSTMAN_TRUE@	lqr_carver_destroy.3 \
 @INSTMAN_TRUE@	lqr_carver_flatten.3 \
 @INSTMAN_TRUE@	lqr_carver_get_bpp.3 \

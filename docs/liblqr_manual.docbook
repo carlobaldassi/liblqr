@@ -21,6 +21,7 @@
 	<!ENTITY err_ok "<literal><errorcode>LQR_OK</errorcode></literal>">
 	<!ENTITY err_err "<literal><errorcode>LQR_ERROR</errorcode></literal>">
 	<!ENTITY err_nomem "<literal><errorcode>LQR_NOMEM</errorcode></literal>">
+	<!ENTITY err_cancel "<literal><errorcode>LQR_USRCANCEL</errorcode></literal>">
 	<!ENTITY prog_init_w_mess "<computeroutput>&quot;Resizing width...&quot;</computeroutput>">
 	<!ENTITY prog_init_h_mess "<computeroutput>&quot;Resizing height...&quot;</computeroutput>">
 	<!ENTITY prog_end_w_mess "<computeroutput>&quot;done&quot;</computeroutput>">
@@ -43,7 +44,7 @@
 			<year>2009</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>09 Apr 2009</date>
+		<date>16 Apr 2009</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -339,10 +340,18 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 							</para>
 						</listitem>
 					</varlistentry>
+					<varlistentry>
+						<term>&err_cancel;</term>
+						<listitem>
+							<para>
+								action cancelled by the user
+							</para>
+						</listitem>
+					</varlistentry>
 				</variablelist>
 			</para>
 			<para>
-				At top level, the user should handle this values explicitly, because
+				At top level, the user should handle these values explicitly, because
 				the library functions don't do anything else than stopping and returning an
 				error signal in case of errors. An easy way is setting up some macros
 				and wrap each function call with those, as shown in the example files.
@@ -607,6 +616,50 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					</para>
 				</note>
 			</sect2>
+
+			<sect2 id="lqr-cancel">
+				<title>Cancelling an action</title>
+				<para>
+					The resizing and flattening operations can be aborted using this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_cancel</function></funcdef>
+							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+                                        This function can be invoked asynchronously, e.g. from a different thread with
+                                        respect to the one in which the resizing or flattening methods were called, or
+                                        from a signal handler. If successful, this function will return &err_ok;, and any
+                                        ongoing resizing or flattening functions will immidiately abort and return the
+                                        special value &err_cancel;; however, this function will have no effect if no
+                                        operation was in progress when calling it.
+                                </para>
+				<para>
+                                        This function can be called multiple times.
+                                </para>
+                                <important>
+                			<para>
+                                                Whenever a function returns &err_cancel;, it means that the &carv_obj; object
+                                                is in an inconsistent state, and there is currently no way to recover from this
+                                                situation. Therefore, any further operation on it must be avoided, and it must be
+                                                destroyed.
+                                        </para>
+                                </important>
+                                <important>
+                                        <para>
+                                                The functions <function>lqr_carver_resize</function> and
+                                                <function>lqr_carver_flatten</function> are not the only ones which can return
+                                                &err_cancel;; instead, any function in the library whose return type is
+                                                <classname>LqrRetVal</classname> and which operates on &carv_obj; objects can
+                                                return such value: for example, any function will do so if called over a
+                                                &carv_obj; object for which an operation was actually cancelled (but this is
+                                                not the only possibility).
+                                        </para>
+                                </important>
+			</sect2>
+
 
 		</sect1>
 
@@ -1674,7 +1727,8 @@ vis =  buffer[y * width + x];
 				</para>
 				<para>
 					Needless to say, no resizing operation should be done directly
-					on an &carv_obj; once it has been attached to another &carv_obj;.
+                                        on an &carv_obj; once it has been attached to another &carv_obj;,
+                                        and neither should the cancel method be invoked directly on them.
 				</para>
 				<important>
 					<para>
@@ -1739,14 +1793,15 @@ while (list)
 					</example>
 				</para>
 				<para>
-					The carvers will always be accessed in the order in which they were dumped.
+					The carvers will always be accessed in the order in which they were attached.
 				</para>
 				<para>
 					Alternatively, one can apply a function to all the elements of
-					the list, through this function:
+                                        the list (and recursively to all the elements of their attached lists, if there are any),
+                                        through this function:
 					<funcsynopsis>
 						<funcprototype>
-							<funcdef>LqrRetVal <function>lqr_carver_list_foreach</function></funcdef>
+							<funcdef>LqrRetVal <function>lqr_carver_list_foreach_recursive</function></funcdef>
 							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
 							<paramdef>LqrCarverFunc <parameter>func</parameter></paramdef>
 							<paramdef>LqrDataTok <parameter>data</parameter></paramdef>
@@ -1770,7 +1825,7 @@ LqrDataTok data_tok;
 
 list = lqr_carver_list_start (carver);
 data_tok->data = NULL;
-lqr_carver_list_foreach (list, my_func, data_tok);
+lqr_carver_list_foreach_recursive (list, my_func, data_tok);
 						</programlisting>
 					</example>
 				</para>
@@ -1798,11 +1853,11 @@ lqr_carver_list_foreach (list, my_func, data_tok);
 				<note>
 					<para>
 						In actual code, the call to
-						<function>lqr_carver_list_foreach</function> should
+						<function>lqr_carver_list_foreach_recursive</function> should
 						be protected to test its return value, which is
 						&err_ok; if all
-						my_func calls have been successful, or it will hold the first
-						non-successful return value from
+                                                my_func calls have been successful (or if the list is empty),
+                                                or it will hold the first non-successful return value from
 						<function>my_func</function>.
 					</para>
 				</note>
@@ -2026,6 +2081,14 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 									</para>
 								</listitem>
 							</varlistentry>
+                                                        <varlistentry>
+                                                                <term>&err_cancel;</term>
+                                                                <listitem>
+                                                                        <para>
+                                                                                action cancelled by the user
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
 						</variablelist>
 					</para>
 					<para>
@@ -2039,6 +2102,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-carver-cancel"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -2236,8 +2300,14 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						The function <function>lqr_carver_destroy</function> destroys the &carv_obj;
 						object pointed to by <parameter>carver</parameter>, and all of its attched
-						components (visibility maps and attached carvers).
+                                                components (visibility maps and attached carvers). It must never be invoked
+                                                over a carver which is attached to another one.
 					</para>
+                                        <para>
+                                                This function will not release the memory buffer passed to
+                                                <xref linkend="ref-lqr-carver-new"></xref> if it was protected by calling
+                                                <xref linkend="ref-lqr-carver-set-preserve-input-image"></xref>.
+                                        </para>
 				</refsect1>
 
 				<refsect1>
@@ -2245,6 +2315,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-destroy"></xref></member>
 						</simplelist>
 					</para>
@@ -2399,6 +2470,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-cancel"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
 						</simplelist>
 					</para>
@@ -2466,6 +2538,74 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-cancel"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-cancel">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_cancel</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_cancel</refname>
+					<refpurpose>cancel ongoing operations on a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_cancel</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+                                                The function <function>lqr_carver_cancel</function> can be used to cancel
+                                                an ongoing operation which is currently being performed on the 
+                                                the &carv_obj; object pointed to by <parameter>carver</parameter>. It is
+                                                intended to be used asynchronouly, from within an independent thread or a
+                                                signal handler.
+					</para>
+					<para>
+                                                If an operation is in fact cancelled by this function, the function which
+                                                was performing the operation will return the value &err_cancel;, and so will
+                                                do any other operation successively called on the same &carv_obj; object whose
+                                                return type is <classname>LqrRetVal</classname>; otherwise it will have no effect.
+					</para>
+					<para>
+                                                Whenever a function returns &err_cancel;, it means that the &carv_obj; object
+                                                is in an inconsistent state, and there is currently no way to recover from this
+                                                situation. Therefore, any further operation on it must be avoided, and it must be
+                                                destroyed.
+					</para>
+					<para>
+						This function will fail if invoked over attached &carv_obj; objects.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+                                                The return value follows the &lqrl; signalling system. However, it can be called
+                                                multiple times, so it will never return &err_cancel; itself.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-ret-val"></xref></member>
+							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
+							<member><xref linkend="ref-lqr-carver-flatten"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -3896,6 +4036,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<paramdef>LqrCarverFunc <parameter>func</parameter></paramdef>
 							<paramdef>LqrDataTok <parameter>data</parameter></paramdef>
 						</funcprototype>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_list_foreach_recursive</function></funcdef>
+							<paramdef>LqrCarverList* <parameter>list</parameter></paramdef>
+							<paramdef>LqrCarverFunc <parameter>func</parameter></paramdef>
+							<paramdef>LqrDataTok <parameter>data</parameter></paramdef>
+						</funcprototype>
 					</funcsynopsis>
 				</refsynopsisdiv>
 
@@ -3909,7 +4055,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					</para>
 					<para>
 						The <parameter>list</parameter> value should be obtained through the function
-						<xref linkend="ref-lqr-carver-list-start"></xref>.
+                                                <xref linkend="ref-lqr-carver-list-start"></xref>. The order in the list will then
+                                                follow the one in which carver objects were attached.
 					</para>
 					<para>
 						The function <parameter>func</parameter> is of type <classname>LqrCarverFunc</classname>,
@@ -3930,6 +4077,14 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 								<para><type>gpointer</type> <structfield>data</structfield></para> 
 							</listitem>
 						</itemizedlist>
+					</para>
+					<para>
+                                                The function <function>lqr_carver_list_foreach_recursive</function> is equivelant to
+                                                <function>lqr_carver_list_foreach</function>, but it works recursively if the
+                                                &carv_obj; objects in <parameter>list</parameter> have themselves other attached
+                                                &carv_obj; objects attached. In this case, the function <parameter>func</parameter>
+                                                will be applied to each element of the list and to each element of the attached
+                                                list recursively, before moving on to the next element.
 					</para>
 				</refsect1>
 				
@@ -5596,6 +5751,8 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 			<para>
 				<simplelist>
 					<member><link linkend="ref-lqr-carver-set-preserve-input-image"><function>lqr_carver_set_preserve_input_image</function></link></member>
+					<member><link linkend="ref-lqr-carver-cancel"><function>lqr_carver_cancel</function></link></member>
+					<member><link linkend="ref-lqr-carver-list-foreach"><function>lqr_carver_list_foreach_recursive</function></link></member>
 				</simplelist>
 			</para>
 		</sect1>

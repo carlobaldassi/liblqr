@@ -156,6 +156,8 @@ lqr_vmap_internal_dump (LqrCarver * r)
   gint * buffer;
   gint depth; 
 
+  CATCH_CANC (r);
+
   /* save current size */
   w1 = r->w;
 
@@ -216,6 +218,7 @@ lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
   w = vmap->width;
   h = vmap->height;
 
+  CATCH_CANC (r);
   CATCH_F (!r->active);
 
   if (!r->transposed)

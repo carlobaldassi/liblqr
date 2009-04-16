@@ -15,6 +15,8 @@ redir = redir-html
 
 all: html
 
+dist: html onepage dist-man
+
 #sgml : $(dest)
 
 #$(dest): $(source)

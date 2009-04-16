@@ -380,6 +380,10 @@ main (int argc, char **argv)
     }
  
 
+  /**** (VI) DESTROY THE CARVER OBJECT ****/
+
+  lqr_carver_destroy (carver);
+
 
   /*** close files (write the images on disk) ***/
 

@@ -46,6 +46,10 @@
 	cerr << "Not enough memory, aborting." << endl; \
 	exit (1); \
 	break; \
+      case LQR_USRCANCEL: \
+	cerr << "Cancelled by user, aborting." << endl; \
+	exit (1); \
+	break; \
       default: \
 	break; \
     } \

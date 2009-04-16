@@ -50,7 +50,7 @@ enum _LqrRetVal
   LQR_ERROR,		/* generic error */
   LQR_OK,		/* ok */ 
   LQR_NOMEM,		/* not enough memory */
-  LQR_WARNING		/* generic warning */
+  LQR_USRCANCEL         /* action cancelled by user */
 };
 
 typedef enum _LqrRetVal LqrRetVal;

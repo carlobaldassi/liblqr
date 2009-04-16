@@ -131,6 +131,28 @@
             } \
         } while (0)
 
+#define CATCH_CANC(carver) G_STMT_START { \
+  if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \
+    { \
+      return LQR_USRCANCEL; \
+    } \
+} G_STMT_END
+
+/* Carver states */
+
+enum _LqrCarverState {
+  LQR_CARVER_STATE_STD,
+  LQR_CARVER_STATE_RESIZING,
+  LQR_CARVER_STATE_INFLATING,
+  LQR_CARVER_STATE_TRANSPOSING,
+  LQR_CARVER_STATE_FLATTENING,
+  LQR_CARVER_STATE_SETTING_STATE,
+  LQR_CARVER_STATE_CANCELLED
+};
+
+typedef enum _LqrCarverState LqrCarverState;
+
+
 /**** LQR_CARVER CLASS DEFINITION ****/
 
 /* This is the representation of the multisize image */
@@ -192,6 +214,8 @@ struct _LqrCarver
 
   gboolean preserve_in_buffer;  /* whether to preserve the buffer given to lqr_carver_new */
 
+  volatile gint state;          /* current state of the carver (actually a LqrCarverState enum)*/
+
 };
 
 /* LQR_CARVER CLASS PRIVATE FUNCTIONS */
@@ -201,15 +225,15 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels);
 
 /* build maps */
 LqrRetVal lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */
-void lqr_carver_build_emap (LqrCarver * r);     /* energy */
-void lqr_carver_build_mmap (LqrCarver * r);     /* minpath */
+LqrRetVal lqr_carver_build_emap (LqrCarver * r);     /* energy */
+LqrRetVal lqr_carver_build_mmap (LqrCarver * r);     /* minpath */
 LqrRetVal lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility */
 
 /* internal functions for maps computation */
 inline gfloat lqr_carver_read (LqrCarver * r, gint x, gint y); /* read the average value at given point */
 void lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c (fast) */
 void lqr_carver_update_emap (LqrCarver * r);    /* update energy map after seam removal */
-void lqr_carver_update_mmap (LqrCarver * r);    /* minpath */
+LqrRetVal lqr_carver_update_mmap (LqrCarver * r);    /* minpath */
 void lqr_carver_build_vpath (LqrCarver * r);    /* compute seam path */
 void lqr_carver_carve (LqrCarver * r);  /* updates the "raw" buffer */
 void lqr_carver_update_vsmap (LqrCarver * r, gint l);   /* update visibility map after seam removal */
@@ -231,6 +255,8 @@ LqrRetVal lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_flatten_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_transpose_attached (LqrCarver * r, LqrDataTok data);
 LqrRetVal lqr_carver_propagate_vsmap_attached (LqrCarver * r, LqrDataTok data);
+LqrRetVal lqr_carver_set_state (LqrCarver * r, LqrCarverState state, gboolean skip_canceled);
+LqrRetVal lqr_carver_set_state_attached (LqrCarver * r, LqrDataTok data);
 
 #ifdef __LQR_DEBUG__
 /* debug */

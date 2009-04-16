@@ -97,6 +97,9 @@ main (int argc, char **argv)
   TRAP (write_carver_to_image (carver, &png));
 
 
+  /**** (IV) DESTROY THE CARVER OBJECT ****/
+
+  lqr_carver_destroy (carver);
 
   /*** close file (write the image on disk) ***/
 

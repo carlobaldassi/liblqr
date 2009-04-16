@@ -5,6 +5,7 @@ dist_man_MANS = \
 	lqr_carver_bias_add_area.3 \
 	lqr_carver_bias_add_rgb.3 \
 	lqr_carver_bias_add_rgb_area.3 \
+	lqr_carver_cancel.3 \
 	lqr_carver_destroy.3 \
 	lqr_carver_flatten.3 \
 	lqr_carver_get_bpp.3 \

@@ -65,6 +65,7 @@ lqr_carver_list_destroy(LqrCarverList * list)
   if (now != NULL)
     {
       lqr_carver_list_destroy(now->next);
+      lqr_carver_list_destroy(now->current->attached_list);
       lqr_carver_destroy(now->current);
     }
 }
@@ -100,6 +101,20 @@ lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok da
   if (now != NULL)
     {
       CATCH (func(now->current, data));
+      return lqr_carver_list_foreach (now->next, func, data);
+    }
+  return LQR_OK;
+}
+
+LQR_PUBLIC
+LqrRetVal
+lqr_carver_list_foreach_recursive (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data)
+{
+  LqrCarverList * now = list;
+  if (now != NULL)
+    {
+      CATCH (func(now->current, data));
+      CATCH (lqr_carver_list_foreach (now->current->attached_list, func, data));
       return lqr_carver_list_foreach (now->next, func, data);
     }
   return LQR_OK;

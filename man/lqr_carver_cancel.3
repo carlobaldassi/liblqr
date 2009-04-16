@@ -1,0 +1,58 @@
+.\"     Title: \fBlqr_carver_cancel\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 16 Apr 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library 0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_CARVER_CANCEL\FR" "3" "16 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_cancel \- cancel ongoing operations on a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 28
+.BI "LqrRetVal lqr_carver_cancel(LqrCarver*\ " "carver" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_cancel\fR
+can be used to cancel an ongoing operation which is currently being performed on the the
+LqrCarver
+object pointed to by
+\fIcarver\fR\&. It is intended to be used asynchronouly, from within an independent thread or a signal handler\&.
+.PP
+If an operation is in fact cancelled by this function, the function which was performing the operation will return the value
+\fBLQR_USRCANCEL\fR, and so will do any other operation successively called on the same
+LqrCarver
+object whose return type is
+LqrRetVal; otherwise it will have no effect\&.
+.PP
+Whenever a function returns
+\fBLQR_USRCANCEL\fR, it means that the
+LqrCarver
+object is in an inconsistent state, and there is currently no way to recover from this situation\&. Therefore, any further operation on it must be avoided, and it must be destroyed\&.
+.PP
+This function will fail if invoked over attached
+LqrCarver
+objects\&.
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\&. However, it can be called multiple times, so it will never return
+\fBLQR_USRCANCEL\fR
+itself\&.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_carver_resize\fR(3), \fBlqr_carver_flatten\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

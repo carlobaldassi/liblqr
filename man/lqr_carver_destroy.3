@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_destroy\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 09 Apr 2009
+.\"      Date: 16 Apr 2009
 .\"    Manual: LqR library API reference
 .\"    Source: LqR library 0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_DESTROY\FR" "3" "09 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
+.TH "\FBLQR_CARVER_DESTROY\FR" "3" "16 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -28,11 +28,16 @@ The function
 destroys the
 LqrCarver
 object pointed to by
-\fIcarver\fR, and all of its attched components (visibility maps and attached carvers)\&.
+\fIcarver\fR, and all of its attched components (visibility maps and attached carvers)\&. It must never be invoked over a carver which is attached to another one\&.
+.PP
+This function will not release the memory buffer passed to
+\fBlqr_carver_new\fR(3)
+if it was protected by calling
+\fBlqr_carver_set_preserve_input_image\fR(3)\&.
 .SH "SEE ALSO"
 .PP
 
-\fBlqr_carver_new\fR(3), \fBlqr_vmap_destroy\fR(3)
+\fBlqr_carver_new\fR(3), \fBlqr_carver_set_preserve_input_image\fR(3), \fBlqr_vmap_destroy\fR(3)
 .SH "COPYRIGHT"
 Copyright \(co 2007-2009 Carlo Baldassi
 .br

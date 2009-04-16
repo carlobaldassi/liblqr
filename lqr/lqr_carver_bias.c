@@ -41,6 +41,7 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
       return LQR_OK;
     }
 
+  CATCH_CANC (r);
   CATCH_F (r->active);
   if ((r->w != r->w0) || (r->w_start != r->w0) ||
       (r->h != r->h0) || (r->h_start != r->h0))
@@ -96,6 +97,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
       return TRUE;
     }
 
+  CATCH_CANC (r);
   CATCH_F (r->active);
   if ((r->w != r->w0) || (r->w_start != r->w0) ||
       (r->h != r->h0) || (r->h_start != r->h0))

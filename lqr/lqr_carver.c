@@ -44,6 +44,8 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
 
   TRY_N_N (r = g_try_new (LqrCarver, 1));
 
+  g_atomic_int_set(&r->state, LQR_CARVER_STATE_STD);
+
   r->level = 1;
   r->max_level = 1;
   r->transposed = 0;
@@ -162,6 +164,8 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
   gint y, x;
 
+  CATCH_F (r->active == FALSE);
+
   CATCH_MEM (r->en = g_try_new (gfloat, r->w * r->h));
   CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
   CATCH_MEM (r->m = g_try_new (gfloat, r->w * r->h));
@@ -240,11 +244,13 @@ lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
   CATCH_F (r->w0 == aux->w0);
   CATCH_F (r->h0 == aux->h0);
-  /* lqr_carver_copy_vsmap (r, aux); */
+  CATCH_F (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_STD);
+  CATCH_F (g_atomic_int_get(&aux->state) == LQR_CARVER_STATE_STD);
   CATCH_MEM (r->attached_list = lqr_carver_list_append (r->attached_list, aux));
   g_free(aux->vs);
   aux->vs = r->vs;
   aux->root = r;
+  
   return LQR_OK;
 }
 
@@ -286,6 +292,7 @@ LqrRetVal
 lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step)
 {
   CATCH_F ((enl_step > 1) && (enl_step <= 2));
+  CATCH_CANC (r);
   r->enl_step = enl_step;
   return LQR_OK;
 }
@@ -320,6 +327,8 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
   assert (depth >= 1);
 #endif /* __LQR_DEBUG__ */
 
+  CATCH_CANC (r);
+
   /* only go deeper if needed */
   if (depth > r->max_level)
     {
@@ -330,8 +339,8 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
       lqr_carver_set_width (r, r->w_start - r->max_level + 1);
 
       /* compute energy & minpath maps */
-      lqr_carver_build_emap (r);
-      lqr_carver_build_mmap (r);
+      CATCH (lqr_carver_build_emap (r));
+      CATCH (lqr_carver_build_mmap (r));
 
       /* compute visibility map */
       CATCH (lqr_carver_build_vsmap (r, depth));
@@ -340,18 +349,21 @@ lqr_carver_build_maps (LqrCarver * r, gint depth)
 }
 
 /* compute energy map */
-void
+LqrRetVal
 lqr_carver_build_emap (LqrCarver * r)
 {
   gint x, y;
 
   for (y = 0; y < r->h; y++)
     {
+      CATCH_CANC(r);
       for (x = 0; x < r->w; x++)
         {
           lqr_carver_compute_e (r, x, y);
         }
     }
+
+  return LQR_OK;
 }
 
 /* compute auxiliary minpath map
@@ -363,7 +375,7 @@ lqr_carver_build_emap (LqrCarver * r)
  *   dx      is the max seam step delta_x 
  *   rig(x') is the rigidity for step x'
  */
-void
+LqrRetVal
 lqr_carver_build_mmap (LqrCarver * r)
 {
   gint x, y;
@@ -372,6 +384,8 @@ lqr_carver_build_mmap (LqrCarver * r)
   gint x1_min, x1_max, x1;
   gfloat m, m1, r_fact;
 
+
+  CATCH_CANC(r);
 
   /* span first row */
   for (x = 0; x < r->w; x++)
@@ -388,6 +402,8 @@ lqr_carver_build_mmap (LqrCarver * r)
     {
       for (x = 0; x < r->w; x++)
         {
+          CATCH_CANC(r);
+
           data = r->raw[y][x];
 #ifdef __LQR_DEBUG__
           assert (r->vs[data] == 0);
@@ -444,6 +460,7 @@ lqr_carver_build_mmap (LqrCarver * r)
           r->m[data] = r->en[data] + m;
         }
     }
+  return LQR_OK;
 }
 
 /* compute (vertical) visibility map up to given depth
@@ -490,6 +507,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
   /* cycle over levels */
   for (l = r->max_level; l < depth; l++)
     {
+      CATCH_CANC(r);
 
       if ((l - r->max_level) % update_step == 0)
         {
@@ -527,12 +545,12 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 	  if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
 	    {
 	      r->leftright ^= 1;
-	      lqr_carver_build_mmap (r);
+	      CATCH (lqr_carver_build_mmap (r));
 	    }
 	  else
 	    {
 	      /* lqr_carver_build_mmap (r); */
-	      lqr_carver_update_mmap (r);
+	      CATCH (lqr_carver_update_mmap (r));
 	    }
         }
       else
@@ -549,7 +567,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
   lqr_carver_set_width (r, r->w_start);
   /* repeat for auxiliary layers */
   data_tok.integer = r->w_start;
-  CATCH (lqr_carver_list_foreach (r->attached_list, lqr_carver_set_width_attached, data_tok));
+  CATCH (lqr_carver_list_foreach_recursive (r->attached_list, lqr_carver_set_width_attached, data_tok));
 
 #ifdef __LQR_VERBOSE__
   printf ("[ visibility map OK ]\n");
@@ -574,6 +592,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   gfloat *new_bias = NULL;
   gfloat *new_rigmask = NULL;
   LqrDataTok data_tok;
+  LqrCarverState prev_state = LQR_CARVER_STATE_STD;
 
 #ifdef __LQR_VERBOSE__
   printf ("  [ inflating (active=%i) ]\n", r->active);
@@ -583,6 +602,14 @@ lqr_carver_inflate (LqrCarver * r, gint l)
 #ifdef __LQR_DEBUG__
   assert (l + 1 > r->max_level);        /* otherwise is useless */
 #endif /* __LQR_DEBUG__ */
+
+  CATCH_CANC (r);
+
+  if (r->root == NULL)
+    {
+      prev_state = g_atomic_int_get(&r->state);
+      CATCH (lqr_carver_set_state(r, LQR_CARVER_STATE_INFLATING, TRUE));
+    }
 
   /* first iterate on attached carvers */
   data_tok.integer = l;
@@ -618,6 +645,9 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   y = 0;
   for (z0 = 0; z0 < w1 * r->h0; z0++, lqr_cursor_next (r->c))
     {
+
+      CATCH_CANC (r);
+
       /* read visibility */
       vs = r->vs[r->c->now];
       if ((vs != 0) && (vs <= l + r->max_level - 1)
@@ -782,6 +812,11 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
+  if (r->root == NULL)
+    {
+      CATCH (lqr_carver_set_state(r, prev_state, TRUE));
+    }
+
   return LQR_OK;
 }
 
@@ -936,7 +971,7 @@ lqr_carver_update_emap (LqrCarver * r)
  * which start form the beginning of the seam
  * and expand at most by delta_x (in both
  * directions) at each row */
-void
+LqrRetVal
 lqr_carver_update_mmap (LqrCarver * r)
 {
   gint x, y;
@@ -947,6 +982,8 @@ lqr_carver_update_mmap (LqrCarver * r)
   gfloat m, m1, r_fact;
   gint stop;
   gint x_stop;
+
+  CATCH_CANC(r);
 
   /* span first row */
   /* x_min = MAX (r->vpath_x[0] - r->delta_x, 0); */
@@ -964,6 +1001,8 @@ lqr_carver_update_mmap (LqrCarver * r)
   /* other rows */
   for (y = 1; y < r->h; y++)
     {
+      CATCH_CANC(r);
+
       /* make sure to include the seam */
       x_min = MIN (x_min, MAX(r->vpath_x[y] - 1, 0));
       x_max = MAX (x_max, MIN(r->vpath_x[y], r->w - 1));
@@ -1058,6 +1097,7 @@ lqr_carver_update_mmap (LqrCarver * r)
         }
 
     }
+  return LQR_OK;
 }
 
 
@@ -1201,8 +1241,11 @@ LqrRetVal
 lqr_carver_propagate_vsmap (LqrCarver * r)
 {
   LqrDataTok data_tok;
+
+  CATCH_CANC (r);
+
   data_tok.data = NULL;
-  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
+  CATCH (lqr_carver_list_foreach_recursive (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
   return LQR_OK;
 }
 
@@ -1213,7 +1256,7 @@ lqr_carver_propagate_vsmap_attached (LqrCarver * r, LqrDataTok data)
   data_tok.data = NULL;
   r->vs = r->root->vs;
   lqr_carver_scan_reset(r);
-  CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
+  //CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
   return LQR_OK;
 }
 
@@ -1253,11 +1296,20 @@ lqr_carver_flatten (LqrCarver * r)
   gint x, y, k;
   gint z0;
   LqrDataTok data_tok;
+  LqrCarverState prev_state = LQR_CARVER_STATE_STD;
 
 #ifdef __LQR_VERBOSE__
   printf ("    [ flattening (active=%i) ]\n", r->active);
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
+
+  CATCH_CANC(r);
+
+  if (r->root == NULL)
+    {
+      prev_state = g_atomic_int_get(&r->state);
+      CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_FLATTENING, TRUE));
+    }
 
   /* first iterate on attached carvers */
   CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_flatten_attached, data_tok));
@@ -1288,6 +1340,8 @@ lqr_carver_flatten (LqrCarver * r)
   lqr_cursor_reset (r->c);
   for (y = 0; y < r->h; y++)
     {
+      CATCH_CANC (r);
+
       if (r->active)
         {
           r->raw[y] = r->_raw + y * r->w;
@@ -1356,6 +1410,11 @@ lqr_carver_flatten (LqrCarver * r)
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
+  if (r->root == NULL)
+    {
+      CATCH (lqr_carver_set_state (r, prev_state, TRUE));
+    }
+
   return LQR_OK;
 }
 
@@ -1377,12 +1436,20 @@ lqr_carver_transpose (LqrCarver * r)
   gfloat *new_bias = NULL;
   gfloat *new_rigmask = NULL;
   LqrDataTok data_tok;
+  LqrCarverState prev_state = LQR_CARVER_STATE_STD;
 
 #ifdef __LQR_VERBOSE__
   printf ("[ transposing (active=%i) ]\n", r->active);
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
+  CATCH_CANC (r);
+
+  if (r->root == NULL)
+    {
+      prev_state = g_atomic_int_get(&r->state);
+      CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_TRANSPOSING, TRUE));
+    }
 
   if (r->level > 1)
     {
@@ -1517,6 +1584,11 @@ lqr_carver_transpose (LqrCarver * r)
   fflush (stdout);
 #endif /* __LQR_VERBOSE__ */
 
+  if (r->root == NULL)
+    {
+      CATCH (lqr_carver_set_state (r, prev_state, TRUE));
+    }
+
   return LQR_OK;
 }
 
@@ -1560,10 +1632,15 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
       delta_max = delta;
     }
 
+  CATCH_CANC (r);
+  CATCH_F (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_STD);
+  CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_RESIZING, TRUE));
+
   while (gamma)
     {
       gint delta0 = MIN (delta, delta_max);
       gint new_w;
+
       delta -= delta0;
       if (r->transposed)
         {
@@ -1576,7 +1653,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
       lqr_carver_set_width (r, new_w);
 
       data_tok.integer = new_w;
-      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width_attached, data_tok);
+      lqr_carver_list_foreach_recursive (r->attached_list,  lqr_carver_set_width_attached, data_tok);
 
       if (r->dump_vmaps)
         {
@@ -1585,7 +1662,7 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
       lqr_progress_end (r->progress, r->progress->end_width_message);
       if (new_w < w1)
         {
-          lqr_carver_flatten(r);
+          CATCH (lqr_carver_flatten(r));
           delta_max = (gint) ((r->enl_step - 1) * r->w_start) - 1;
           if (delta_max < 1)
             {
@@ -1593,6 +1670,9 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
             }
         }
     }
+
+  CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_STD, TRUE));
+
   return LQR_OK;
 }
 
@@ -1626,6 +1706,10 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
     }
   delta = delta > 0 ? delta : -delta;
 
+  CATCH_CANC (r);
+  CATCH_F (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_STD);
+  CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_RESIZING, TRUE));
+
   while (gamma)
     {
       gint delta0 = MIN (delta, delta_max);
@@ -1642,7 +1726,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       lqr_carver_set_width (r, new_w);
 
       data_tok.integer = new_w;
-      lqr_carver_list_foreach (r->attached_list,  lqr_carver_set_width_attached, data_tok);
+      lqr_carver_list_foreach_recursive (r->attached_list,  lqr_carver_set_width_attached, data_tok);
       
       if (r->dump_vmaps)
         {
@@ -1651,7 +1735,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
       lqr_progress_end (r->progress, r->progress->end_height_message);
       if (new_w < h1)
         {
-          lqr_carver_flatten(r);
+          CATCH (lqr_carver_flatten(r));
           delta_max = (gint) ((r->enl_step - 1) * r->w_start) - 1;
           if (delta_max < 1)
             {
@@ -1659,6 +1743,8 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
             }
         }
     }
+
+  CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_STD, TRUE));
 
   return LQR_OK;
 }
@@ -1673,6 +1759,11 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
   fflush(stdout);
 #endif /* __LQR_VERBOSE__ */
   CATCH_F ((w1 >= 1) && (h1 >= 1));
+  CATCH_F (r->root == NULL);
+
+  CATCH_CANC (r);
+  CATCH_F (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_STD);
+
   switch (r->resize_order)
     {
       case LQR_RES_ORDER_HOR:
@@ -1694,7 +1785,61 @@ lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
   printf("[ Rescale OK ]\n");
   fflush(stdout);
 #endif /* __LQR_VERBOSE__ */
-  return TRUE;
+  return LQR_OK;
+}
+
+LqrRetVal
+lqr_carver_set_state (LqrCarver * r, LqrCarverState state, gboolean skip_canceled)
+{
+  LqrDataTok data_tok;
+
+  CATCH_F(r->root == NULL);
+
+  while (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_SETTING_STATE)
+    {
+      g_usleep(10000);
+    }
+
+  if (skip_canceled && g_atomic_int_get(&r->state) == LQR_CARVER_STATE_CANCELLED) {
+    return LQR_OK;
+  }
+
+  g_atomic_int_set(&r->state, LQR_CARVER_STATE_SETTING_STATE);
+
+  data_tok.integer = state;
+  CATCH (lqr_carver_list_foreach_recursive (r->attached_list, lqr_carver_set_state_attached, data_tok));
+
+  g_atomic_int_set(&r->state, state);
+
+  return LQR_OK;
+}
+
+LqrRetVal
+lqr_carver_set_state_attached (LqrCarver * r, LqrDataTok data)
+{
+  g_atomic_int_set (&r->state, data.integer);
+  return LQR_OK;
+}
+
+/* cancel the current action from a different thread */
+LQR_PUBLIC
+LqrRetVal
+lqr_carver_cancel (LqrCarver * r)
+{
+  LqrCarverState curr_state;
+
+  CATCH_F (r->root == NULL);
+
+  curr_state = g_atomic_int_get (&r->state);
+
+  if ((curr_state == LQR_CARVER_STATE_RESIZING) ||
+      (curr_state == LQR_CARVER_STATE_INFLATING) ||
+      (curr_state == LQR_CARVER_STATE_TRANSPOSING) ||
+      (curr_state == LQR_CARVER_STATE_FLATTENING))
+    {
+      CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_CANCELLED, TRUE));
+    }
+  return LQR_OK;
 }
 
 /* get current size */
@@ -1784,7 +1929,7 @@ lqr_carver_scan_reset (LqrCarver * r)
 }
 
 LqrRetVal
-lqr_carver_scan_reset_attached(LqrCarver * r, LqrDataTok data)
+lqr_carver_scan_reset_attached (LqrCarver * r, LqrDataTok data)
 {
   lqr_carver_scan_reset(r);
   return lqr_carver_list_foreach(r->attached_list, lqr_carver_scan_reset_attached, data);

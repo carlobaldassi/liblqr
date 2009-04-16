@@ -53,6 +53,7 @@ LqrCarverList * lqr_carver_list_start (LqrCarver *r);
 LqrCarver * lqr_carver_list_current (LqrCarverList *list);
 LqrCarverList * lqr_carver_list_next (LqrCarverList * list);
 LqrRetVal lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data);
+LqrRetVal lqr_carver_list_foreach_recursive (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data);
 
 #endif /* __LQR_CARVER_LIST_PUB_H__ */
 

@@ -72,6 +72,7 @@ void lqr_carver_set_preserve_input_image(LqrCarver *r);
 /* image manipulations */
 LqrRetVal lqr_carver_resize (LqrCarver * r, gint w1, gint h1);   /* liquid resize */
 LqrRetVal lqr_carver_flatten (LqrCarver * r);    /* flatten the multisize image */
+LqrRetVal lqr_carver_cancel (LqrCarver * r); /* cancel the current action from a different thread */
 
 /* readout */
 void lqr_carver_scan_reset (LqrCarver * r);
