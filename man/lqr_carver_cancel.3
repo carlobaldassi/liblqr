@@ -28,7 +28,7 @@ The function
 can be used to cancel an ongoing operation which is currently being performed on the the
 LqrCarver
 object pointed to by
-\fIcarver\fR\&. It is intended to be used asynchronouly, from within an independent thread or a signal handler\&.
+\fIcarver\fR\&. It must be used asynchronouly, from within an independent thread\&.
 .PP
 If an operation is in fact cancelled by this function, the function which was performing the operation will return the value
 \fBLQR_USRCANCEL\fR, and so will do any other operation successively called on the same
@@ -39,7 +39,7 @@ LqrRetVal; otherwise it will have no effect\&.
 Whenever a function returns
 \fBLQR_USRCANCEL\fR, it means that the
 LqrCarver
-object is in an inconsistent state, and there is currently no way to recover from this situation\&. Therefore, any further operation on it must be avoided, and it must be destroyed\&.
+object is in an inconsistent state, and, since there is currently no way to recover from this situation, any further operation on that object must be avoided, and it must be destroyed\&.
 .PP
 This function will fail if invoked over attached
 LqrCarver

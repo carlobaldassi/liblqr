@@ -56,7 +56,7 @@
 #define AS2_64F(x) ((lqr_t_64f**)x)
 
 #define PXL_COPY(dest, dest_ind, src, src_ind, col_depth) \
-	do { \
+        do { \
           switch (col_depth) \
             { \
               case LQR_COLDEPTH_8I: \
@@ -72,10 +72,10 @@
                 AS_64F(dest)[dest_ind] = AS_64F(src)[src_ind]; \
                 break; \
             } \
-	} while (0)
+        } while (0)
 
 #define BUF_POINTER_COPY(dest, src, col_depth) \
-	do { \
+        do { \
           switch (col_depth) \
             { \
               case LQR_COLDEPTH_8I: \
@@ -91,10 +91,10 @@
                 *AS2_64F(dest) = AS_64F(src); \
                 break; \
             } \
-	} while (0)
+        } while (0)
 
 #define BUF_TRY_NEW_RET_POINTER(dest, size, col_depth) \
-	do { \
+        do { \
           switch (col_depth) \
             { \
               case LQR_COLDEPTH_8I: \
@@ -113,7 +113,7 @@
         } while (0)
 
 #define BUF_TRY_NEW0_RET_LQR(dest, size, col_depth) \
-	do { \
+        do { \
           switch (col_depth) \
             { \
               case LQR_COLDEPTH_8I: \
@@ -146,7 +146,6 @@ enum _LqrCarverState {
   LQR_CARVER_STATE_INFLATING,
   LQR_CARVER_STATE_TRANSPOSING,
   LQR_CARVER_STATE_FLATTENING,
-  LQR_CARVER_STATE_SETTING_STATE,
   LQR_CARVER_STATE_CANCELLED
 };
 
@@ -158,63 +157,65 @@ typedef enum _LqrCarverState LqrCarverState;
 /* This is the representation of the multisize image */
 struct _LqrCarver
 {
-  gint w_start, h_start;        /* original width & height */
-  gint w, h;                    /* current width & height */
-  gint w0, h0;                  /* map array width & height */
+  gint w_start, h_start;          /* original width & height */
+  gint w, h;                      /* current width & height */
+  gint w0, h0;                    /* map array width & height */
 
-  gint level;                   /* (in)visibility level (1 = full visibility) */
-  gint max_level;               /* max level computed so far
-                                 * it is not: level <= max_level
-                                 * but rather: level <= 2 * max_level - 1
-                                 * since levels are shifted upon inflation
-                                 */
+  gint level;                     /* (in)visibility level (1 = full visibility) */
+  gint max_level;                 /* max level computed so far
+                                   * it is not: level <= max_level
+                                   * but rather: level <= 2 * max_level - 1
+                                   * since levels are shifted upon inflation
+                                   */
 
-  gint channels;                /* number of colour channels of the image */
-  LqrColDepth col_depth;	/* image colour depth */
+  gint channels;                  /* number of colour channels of the image */
+  LqrColDepth col_depth;          /* image colour depth */
 
-  gint transposed;              /* flag to set transposed state */
-  gboolean active;              /* flag to set if carver is active */
-  LqrCarver* root;              /* pointer to the root carver */
+  gint transposed;                /* flag to set transposed state */
+  gboolean active;                /* flag to set if carver is active */
+  LqrCarver* root;                /* pointer to the root carver */
 
-  gboolean resize_aux_layers;   /* flag to determine whether the auxiliary layers are resized */
-  gboolean dump_vmaps;          /* flag to determine whether to output the seam map */
-  LqrResizeOrder resize_order;  /* resize order */
+  gboolean resize_aux_layers;     /* flag to determine whether the auxiliary layers are resized */
+  gboolean dump_vmaps;            /* flag to determine whether to output the seam map */
+  LqrResizeOrder resize_order;    /* resize order */
 
-  LqrCarverList *attached_list; /* list of attached carvers */
+  LqrCarverList *attached_list;   /* list of attached carvers */
 
-  gfloat rigidity;              /* rigidity value (can straighten seams) */
-  gfloat *rigidity_map;         /* the rigidity function */
-  gfloat *rigidity_mask;	/* the rigidity mask */
-  gint delta_x;                 /* max displacement of seams (currently is only meaningful if 0 or 1 */
+  gfloat rigidity;                /* rigidity value (can straighten seams) */
+  gfloat *rigidity_map;           /* the rigidity function */
+  gfloat *rigidity_mask;          /* the rigidity mask */
+  gint delta_x;                   /* max displacement of seams (currently is only meaningful if 0 or 1 */
 
-  void *rgb;                    /* array of rgb points */
-  gint *vs;                     /* array of visibility levels */
-  gfloat *en;                   /* array of energy levels */
-  gfloat *bias;                 /* bias mask */
-  gfloat *m;                    /* array of auxiliary energy values */
-  gint *least;                  /* array of pointers */
-  gint *_raw;                   /* array of array-coordinates, for seam computation */
-  gint **raw;                   /* array of array-coordinates, for seam computation */
+  void *rgb;                      /* array of rgb points */
+  gint *vs;                       /* array of visibility levels */
+  gfloat *en;                     /* array of energy levels */
+  gfloat *bias;                   /* bias mask */
+  gfloat *m;                      /* array of auxiliary energy values */
+  gint *least;                    /* array of pointers */
+  gint *_raw;                     /* array of array-coordinates, for seam computation */
+  gint **raw;                     /* array of array-coordinates, for seam computation */
 
-  LqrCursor *c;                 /* cursor to be used as image reader */
-  void *rgb_ro_buffer;	        /* readout buffer */
+  LqrCursor *c;                   /* cursor to be used as image reader */
+  void *rgb_ro_buffer;            /* readout buffer */
 
-  gint *vpath;                  /* array of array-coordinates representing a vertical seam */
-  gint *vpath_x;                /* array of abscisses representing a vertical seam */
+  gint *vpath;                    /* array of array-coordinates representing a vertical seam */
+  gint *vpath_x;                  /* array of abscisses representing a vertical seam */
 
-  LqrGradFunc gf;               /* pointer to a gradient function */
+  LqrGradFunc gf;                 /* pointer to a gradient function */
 
-  gint leftright;		/* whether to favor left or right seams */
-  gint lr_switch_frequency;	/* interval between leftright switches */
-  gfloat enl_step;              /* maximum enlargement ratio in a single step */
+  gint leftright;                 /* whether to favor left or right seams */
+  gint lr_switch_frequency;       /* interval between leftright switches */
+  gfloat enl_step;                /* maximum enlargement ratio in a single step */
 
-  LqrProgress * progress;	/* pointer to progress update functions */
+  LqrProgress * progress;         /* pointer to progress update functions */
 
-  LqrVMapList * flushed_vs;     /* linked list of pointers to flushed visibility maps buffers */
+  LqrVMapList * flushed_vs;       /* linked list of pointers to flushed visibility maps buffers */
 
-  gboolean preserve_in_buffer;  /* whether to preserve the buffer given to lqr_carver_new */
+  gboolean preserve_in_buffer;    /* whether to preserve the buffer given to lqr_carver_new */
 
-  volatile gint state;          /* current state of the carver (actually a LqrCarverState enum)*/
+  volatile gint state;            /* current state of the carver (actually a LqrCarverState enum)*/
+  volatile gint state_lock;       /* lock for state changing routines */
+  volatile gint state_lock_queue; /* lock queue for state changing routines */
 
 };
 

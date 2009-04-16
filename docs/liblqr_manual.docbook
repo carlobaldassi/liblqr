@@ -629,9 +629,9 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					</funcsynopsis>
 				</para>
 				<para>
-                                        This function can be invoked asynchronously, e.g. from a different thread with
-                                        respect to the one in which the resizing or flattening methods were called, or
-                                        from a signal handler. If successful, this function will return &err_ok;, and any
+                                        This function can be invoked asynchronously, from a different thread with
+                                        respect to the one in which the resizing or flattening methods were called.
+                                        If successful, this function will return &err_ok;, and any
                                         ongoing resizing or flattening functions will immidiately abort and return the
                                         special value &err_cancel;; however, this function will have no effect if no
                                         operation was in progress when calling it.
@@ -2570,9 +2570,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
                                                 The function <function>lqr_carver_cancel</function> can be used to cancel
                                                 an ongoing operation which is currently being performed on the 
-                                                the &carv_obj; object pointed to by <parameter>carver</parameter>. It is
-                                                intended to be used asynchronouly, from within an independent thread or a
-                                                signal handler.
+                                                the &carv_obj; object pointed to by <parameter>carver</parameter>. It must be
+                                                used asynchronouly, from within an independent thread.
 					</para>
 					<para>
                                                 If an operation is in fact cancelled by this function, the function which
@@ -2582,8 +2581,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					</para>
 					<para>
                                                 Whenever a function returns &err_cancel;, it means that the &carv_obj; object
-                                                is in an inconsistent state, and there is currently no way to recover from this
-                                                situation. Therefore, any further operation on it must be avoided, and it must be
+                                                is in an inconsistent state, and, since there is currently no way to recover from this
+                                                situation, any further operation on that object must be avoided, and it must be
                                                 destroyed.
 					</para>
 					<para>

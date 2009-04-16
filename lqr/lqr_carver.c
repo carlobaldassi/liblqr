@@ -45,6 +45,8 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   TRY_N_N (r = g_try_new (LqrCarver, 1));
 
   g_atomic_int_set(&r->state, LQR_CARVER_STATE_STD);
+  g_atomic_int_set(&r->state_lock, 0);
+  g_atomic_int_set(&r->state_lock_queue, 0);
 
   r->level = 1;
   r->max_level = 1;
@@ -1256,7 +1258,7 @@ lqr_carver_propagate_vsmap_attached (LqrCarver * r, LqrDataTok data)
   data_tok.data = NULL;
   r->vs = r->root->vs;
   lqr_carver_scan_reset(r);
-  //CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok));
+  /* CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok)); */
   return LQR_OK;
 }
 
@@ -1792,24 +1794,28 @@ LqrRetVal
 lqr_carver_set_state (LqrCarver * r, LqrCarverState state, gboolean skip_canceled)
 {
   LqrDataTok data_tok;
+  gint lock_pos;
 
   CATCH_F(r->root == NULL);
 
-  while (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_SETTING_STATE)
+  lock_pos = g_atomic_int_exchange_and_add(&r->state_lock_queue, 1);
+
+  while (g_atomic_int_get(&r->state_lock) != lock_pos)
     {
       g_usleep(10000);
     }
 
   if (skip_canceled && g_atomic_int_get(&r->state) == LQR_CARVER_STATE_CANCELLED) {
+    g_atomic_int_inc(&r->state_lock);
     return LQR_OK;
   }
 
-  g_atomic_int_set(&r->state, LQR_CARVER_STATE_SETTING_STATE);
+  g_atomic_int_set(&r->state, state);
 
   data_tok.integer = state;
   CATCH (lqr_carver_list_foreach_recursive (r->attached_list, lqr_carver_set_state_attached, data_tok));
 
-  g_atomic_int_set(&r->state, state);
+  g_atomic_int_inc(&r->state_lock);
 
   return LQR_OK;
 }
