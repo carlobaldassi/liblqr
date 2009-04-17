@@ -59,95 +59,77 @@
 #define AS2_32F(x) ((lqr_t_32f**)x)
 #define AS2_64F(x) ((lqr_t_64f**)x)
 
-#define PXL_GET(src, src_ind, col_depth) ( \
-        (col_depth) == LQR_COLDEPTH_8I ? AS_8I(src)[(src_ind)] : \
-        (col_depth) == LQR_COLDEPTH_16I ? AS_16I(src)[(src_ind)] : \
-        (col_depth) == LQR_COLDEPTH_32F ? AS_32F(src)[(src_ind)] : \
-        (col_depth) == LQR_COLDEPTH_64F ? AS_64F(src)[(src_ind)] : \
-        0)
+#define PXL_COPY(dest, dest_ind, src, src_ind, col_depth) G_STMT_START { \
+  switch (col_depth) \
+    { \
+      case LQR_COLDEPTH_8I: \
+        AS_8I(dest)[dest_ind] = AS_8I(src)[src_ind]; \
+        break; \
+      case LQR_COLDEPTH_16I: \
+        AS_16I(dest)[dest_ind] = AS_16I(src)[src_ind]; \
+        break; \
+      case LQR_COLDEPTH_32F: \
+        AS_32F(dest)[dest_ind] = AS_32F(src)[src_ind]; \
+        break; \
+      case LQR_COLDEPTH_64F: \
+        AS_64F(dest)[dest_ind] = AS_64F(src)[src_ind]; \
+        break; \
+    } \
+} G_STMT_END
 
-#define PXL_GET_NORM(src, src_ind, col_depth) ( \
-        (col_depth) == LQR_COLDEPTH_8I ? (gdouble) AS_8I(src)[(src_ind)] / 0xFF : \
-        (col_depth) == LQR_COLDEPTH_16I ? (gdouble) AS_16I(src)[(src_ind)] / 0xFFFF : \
-        (col_depth) == LQR_COLDEPTH_32F ? (gdouble) AS_32F(src)[(src_ind)] : \
-        (col_depth) == LQR_COLDEPTH_64F ? (gdouble) AS_64F(src)[(src_ind)] : \
-        0.0)
+#define BUF_POINTER_COPY(dest, src, col_depth) G_STMT_START { \
+  switch (col_depth) \
+    { \
+      case LQR_COLDEPTH_8I: \
+        *AS2_8I(dest) = AS_8I(src); \
+        break; \
+      case LQR_COLDEPTH_16I: \
+        *AS2_16I(dest) = AS_16I(src); \
+        break; \
+      case LQR_COLDEPTH_32F: \
+        *AS2_32F(dest) = AS_32F(src); \
+        break; \
+      case LQR_COLDEPTH_64F: \
+        *AS2_64F(dest) = AS_64F(src); \
+        break; \
+    } \
+} G_STMT_END
 
-#define PXL_COPY(dest, dest_ind, src, src_ind, col_depth) \
-        do { \
-          switch (col_depth) \
-            { \
-              case LQR_COLDEPTH_8I: \
-                AS_8I(dest)[dest_ind] = AS_8I(src)[src_ind]; \
-                break; \
-              case LQR_COLDEPTH_16I: \
-                AS_16I(dest)[dest_ind] = AS_16I(src)[src_ind]; \
-                break; \
-              case LQR_COLDEPTH_32F: \
-                AS_32F(dest)[dest_ind] = AS_32F(src)[src_ind]; \
-                break; \
-              case LQR_COLDEPTH_64F: \
-                AS_64F(dest)[dest_ind] = AS_64F(src)[src_ind]; \
-                break; \
-            } \
-        } while (0)
+#define BUF_TRY_NEW_RET_POINTER(dest, size, col_depth) G_STMT_START { \
+  switch (col_depth) \
+    { \
+      case LQR_COLDEPTH_8I: \
+        TRY_N_N (dest = g_try_new (lqr_t_8i, size)); \
+        break; \
+      case LQR_COLDEPTH_16I: \
+        TRY_N_N (dest = g_try_new (lqr_t_16i, size)); \
+        break; \
+      case LQR_COLDEPTH_32F: \
+        TRY_N_N (dest = g_try_new (lqr_t_32f, size)); \
+        break; \
+      case LQR_COLDEPTH_64F: \
+        TRY_N_N (dest = g_try_new (lqr_t_64f, size)); \
+        break; \
+    } \
+} G_STMT_END
 
-#define BUF_POINTER_COPY(dest, src, col_depth) \
-        do { \
-          switch (col_depth) \
-            { \
-              case LQR_COLDEPTH_8I: \
-                *AS2_8I(dest) = AS_8I(src); \
-                break; \
-              case LQR_COLDEPTH_16I: \
-                *AS2_16I(dest) = AS_16I(src); \
-                break; \
-              case LQR_COLDEPTH_32F: \
-                *AS2_32F(dest) = AS_32F(src); \
-                break; \
-              case LQR_COLDEPTH_64F: \
-                *AS2_64F(dest) = AS_64F(src); \
-                break; \
-            } \
-        } while (0)
-
-#define BUF_TRY_NEW_RET_POINTER(dest, size, col_depth) \
-        do { \
-          switch (col_depth) \
-            { \
-              case LQR_COLDEPTH_8I: \
-                TRY_N_N (dest = g_try_new (lqr_t_8i, size)); \
-                break; \
-              case LQR_COLDEPTH_16I: \
-                TRY_N_N (dest = g_try_new (lqr_t_16i, size)); \
-                break; \
-              case LQR_COLDEPTH_32F: \
-                TRY_N_N (dest = g_try_new (lqr_t_32f, size)); \
-                break; \
-              case LQR_COLDEPTH_64F: \
-                TRY_N_N (dest = g_try_new (lqr_t_64f, size)); \
-                break; \
-            } \
-        } while (0)
-
-#define BUF_TRY_NEW0_RET_LQR(dest, size, col_depth) \
-        do { \
-          switch (col_depth) \
-            { \
-              case LQR_COLDEPTH_8I: \
-                CATCH_MEM (dest = g_try_new0 (lqr_t_8i, size)); \
-                break; \
-              case LQR_COLDEPTH_16I: \
-                CATCH_MEM (dest = g_try_new0 (lqr_t_16i, size)); \
-                break; \
-              case LQR_COLDEPTH_32F: \
-                CATCH_MEM (dest = g_try_new0 (lqr_t_32f, size)); \
-                break; \
-              case LQR_COLDEPTH_64F: \
-                CATCH_MEM (dest = g_try_new0 (lqr_t_64f, size)); \
-                break; \
-            } \
-        } while (0)
+#define BUF_TRY_NEW0_RET_LQR(dest, size, col_depth) G_STMT_START { \
+  switch (col_depth) \
+    { \
+      case LQR_COLDEPTH_8I: \
+        CATCH_MEM (dest = g_try_new0 (lqr_t_8i, size)); \
+        break; \
+      case LQR_COLDEPTH_16I: \
+        CATCH_MEM (dest = g_try_new0 (lqr_t_16i, size)); \
+        break; \
+      case LQR_COLDEPTH_32F: \
+        CATCH_MEM (dest = g_try_new0 (lqr_t_32f, size)); \
+        break; \
+      case LQR_COLDEPTH_64F: \
+        CATCH_MEM (dest = g_try_new0 (lqr_t_64f, size)); \
+        break; \
+    } \
+} G_STMT_END
 
 #define CATCH_CANC(carver) G_STMT_START { \
   if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \

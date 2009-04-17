@@ -37,6 +37,9 @@ enum _LqrEnergyFuncType
   LQR_EF_GRAD_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
   LQR_EF_GRAD_SUMABS,                /* sum of absulte values : |x| + |y|          */
   LQR_EF_GRAD_XABS,                  /* x absolute value : |x|                     */
+  LQR_EF_LUMA_GRAD_NORM,             /* gradient norm : sqrt(x^2 + y^2)            */
+  LQR_EF_LUMA_GRAD_SUMABS,           /* sum of absulte values : |x| + |y|          */
+  LQR_EF_LUMA_GRAD_XABS,             /* x absolute value : |x|                     */
   LQR_EF_NULL  	                     /* 0 */
 };
 

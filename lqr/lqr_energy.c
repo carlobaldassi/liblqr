@@ -37,6 +37,199 @@
 #include <assert.h>
 #endif /* __LQR_DEBUG__ */
 
+
+/* read normalised pixel value from
+ * rgb buffer at the given index */
+gdouble
+lqr_pixel_get_norm (void * rgb, gint rgb_ind, LqrColDepth col_depth) 
+{
+  switch (col_depth)
+    {
+      case LQR_COLDEPTH_8I:
+        return (gdouble) AS_8I(rgb)[rgb_ind] / 0xFF;
+      case LQR_COLDEPTH_16I:
+        return (gdouble) AS_16I(rgb)[rgb_ind] / 0xFFFF;
+      case LQR_COLDEPTH_32F:
+        return (gdouble) AS_32F(rgb)[rgb_ind];
+      case LQR_COLDEPTH_64F:
+        return (gdouble) AS_64F(rgb)[rgb_ind];
+      default:
+#ifdef __LQR_DEBUG__
+        assert(0);
+#endif /* __LQR_DEBUG__ */
+        return 0;
+    }
+}
+
+inline gdouble
+lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel)
+{
+  gdouble black_fact = 0;
+
+  switch (image_type)
+    {
+      case LQR_RGB_IMAGE: 
+      case LQR_RGBA_IMAGE: 
+        return lqr_pixel_get_norm (rgb, rgb_ind + channel, col_depth);
+      case LQR_CMY_IMAGE: 
+        return 1. - lqr_pixel_get_norm (rgb, rgb_ind + channel, col_depth);
+      case LQR_CMYK_IMAGE: 
+      case LQR_CMYKA_IMAGE: 
+        black_fact = 1 - lqr_pixel_get_norm(rgb, rgb_ind + 3, col_depth);
+        return black_fact * (1. - (lqr_pixel_get_norm (rgb, rgb_ind + channel, col_depth)));
+      default:
+#ifdef __LQR_DEBUG__
+        assert(0);
+#endif /* __LQR_DEBUG__ */
+        return 0;
+    }
+}
+
+inline gdouble
+lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y)
+{
+  gint now = r->raw[y][x];
+  gint rgb_ind = now * r->channels;
+  return lqr_pixel_get_norm (r->rgb, rgb_ind, r->col_depth);
+}
+
+inline gdouble
+lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y)
+{
+  gdouble red, green, blue;
+  gint now = r->raw[y][x];
+  gint rgb_ind = now * r->channels;
+
+  red = lqr_pixel_get_rgbcol (r->rgb, rgb_ind, r->col_depth, r->image_type, 0);
+  green = lqr_pixel_get_rgbcol (r->rgb, rgb_ind, r->col_depth, r->image_type, 1);
+  blue = lqr_pixel_get_rgbcol (r->rgb, rgb_ind, r->col_depth, r->image_type, 2);
+  return (red + green + blue) / 3;
+}
+
+gdouble
+lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y)
+{
+  gdouble sum = 0;
+  gint k;
+  gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+  gchar has_black = (r->black_channel >= 0 ? 1 : 0);
+  guint col_channels = r->channels - has_alpha - has_black;
+
+  gdouble black_fact = 0;
+
+  gint now = r->raw[y][x];
+
+  if (has_black)
+    {
+      black_fact = lqr_pixel_get_norm(r->rgb, now * r->channels + r->black_channel, r->col_depth);
+    }
+
+  for (k = 0; k < r->channels; k++) if ((k != r->alpha_channel) && (k != r->black_channel))
+    {
+      gdouble col = lqr_pixel_get_norm(r->rgb, now * r->channels + k, r->col_depth);
+      sum += 1. - (1. - col) * (1. - black_fact);
+    }
+
+  sum /= col_channels;
+
+  if (has_black)
+    {
+      sum = 1 - sum;
+    }
+
+  return sum;
+}
+
+/* read average pixel value at x, y 
+ * for energy computation */
+gdouble
+lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
+{
+  gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+  gdouble alpha_fact = 1;
+
+  gint now = r->raw[y][x];
+
+  gdouble bright = 0;
+
+  switch (r->image_type)
+    {
+      case LQR_GREY_IMAGE:
+      case LQR_GREYA_IMAGE:
+        bright = lqr_carver_read_brightness_grey (r, x, y);
+        break;
+      case LQR_RGB_IMAGE: 
+      case LQR_RGBA_IMAGE: 
+      case LQR_CMY_IMAGE: 
+      case LQR_CMYK_IMAGE: 
+      case LQR_CMYKA_IMAGE: 
+        bright = lqr_carver_read_brightness_std (r, x, y);
+        break;
+      case LQR_CUSTOM_IMAGE:
+        bright = lqr_carver_read_brightness_custom (r, x, y);
+        break;
+    }
+
+  if (has_alpha)
+    {
+      alpha_fact = lqr_pixel_get_norm(r->rgb, now * r->channels + r->alpha_channel, r->col_depth);
+    }
+
+  return bright * alpha_fact;
+}
+
+inline gdouble
+lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y)
+{
+  gdouble red, green, blue;
+  gint now = r->raw[y][x];
+  gint rgb_ind = now * r->channels;
+
+  red = lqr_pixel_get_rgbcol (r->rgb, rgb_ind, r->col_depth, r->image_type, 0);
+  green = lqr_pixel_get_rgbcol (r->rgb, rgb_ind, r->col_depth, r->image_type, 1);
+  blue = lqr_pixel_get_rgbcol (r->rgb, rgb_ind, r->col_depth, r->image_type, 2);
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+gdouble
+lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
+{
+  gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+  gdouble alpha_fact = 1;
+
+  gint now = r->raw[y][x];
+
+  gdouble bright = 0;
+
+  switch (r->image_type)
+    {
+      case LQR_GREY_IMAGE:
+      case LQR_GREYA_IMAGE:
+        bright = lqr_carver_read_brightness_grey (r, x, y);
+        break;
+      case LQR_RGB_IMAGE: 
+      case LQR_RGBA_IMAGE: 
+      case LQR_CMY_IMAGE: 
+      case LQR_CMYK_IMAGE: 
+      case LQR_CMYKA_IMAGE: 
+        bright = lqr_carver_read_luma_std (r, x, y);
+        break;
+      case LQR_CUSTOM_IMAGE:
+        bright = lqr_carver_read_brightness_custom (r, x, y);
+        break;
+    }
+
+  if (has_alpha)
+    {
+      alpha_fact = lqr_pixel_get_norm(r->rgb, now * r->channels + r->alpha_channel, r->col_depth);
+    }
+
+  return bright * alpha_fact;
+}
+
+
+
+#if 0
 /* read average pixel value at x, y 
  * for energy computation */
 inline gdouble
@@ -55,17 +248,17 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 
   if (has_alpha)
     {
-      alpha_fact = PXL_GET_NORM(r->rgb, now * r->channels + r->alpha_channel, r->col_depth);
+      alpha_fact = lqr_pixel_get_norm(r->rgb, now * r->channels + r->alpha_channel, r->col_depth);
     }
 
   if (has_black)
     {
-      black_fact = PXL_GET_NORM(r->rgb, now * r->channels + r->black_channel, r->col_depth);
+      black_fact = lqr_pixel_get_norm(r->rgb, now * r->channels + r->black_channel, r->col_depth);
     }
 
   for (k = 0; k < r->channels; k++) if ((k != r->alpha_channel) && (k != r->black_channel))
     {
-      gdouble col = PXL_GET_NORM(r->rgb, now * r->channels + k, r->col_depth);
+      gdouble col = lqr_pixel_get_norm(r->rgb, now * r->channels + k, r->col_depth);
       sum += 1. - (1. - col) * (1. - black_fact);
     }
 
@@ -101,25 +294,9 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 
   return sum;
 }
+#endif
 
 #if 0
-inline gdouble
-lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
-{
-  gdouble sum = 0;
-  gint now = r->raw[y][x];
-  sum = 0.2126 * R_RGB(r->rgb, now * r->channels + 0) +
-        0.7152 * R_RGB(r->rgb, now * r->channels + 1) +
-        0.0722 * R_RGB(r->rgb, now * r->channels + 2);
-
-  if (r->image_type == LQR_RGBA_IMAGE)
-    {
-      sum *= R_RGB(r->rgb, now * r->channels + 3) / R_RGB_MAX;
-    }
-
-  return sum / (R_RGB_MAX);
-}
-
 inline gdouble
 lqr_carver_read_brightness_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 {
@@ -269,6 +446,21 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFuncType ef_ind)
       case LQR_EF_GRAD_XABS:
         r->nrg->ef = &lqr_energy_std;
         r->nrg->rf = &lqr_carver_read_brightness;
+        r->nrg->gf = &lqr_grad_xabs;
+        break;
+      case LQR_EF_LUMA_GRAD_NORM:
+        r->nrg->ef = &lqr_energy_std;
+        r->nrg->rf = &lqr_carver_read_luma;
+        r->nrg->gf = &lqr_grad_norm;
+        break;
+      case LQR_EF_LUMA_GRAD_SUMABS:
+        r->nrg->ef = &lqr_energy_std;
+        r->nrg->rf = &lqr_carver_read_luma;
+        r->nrg->gf = &lqr_grad_sumabs;
+        break;
+      case LQR_EF_LUMA_GRAD_XABS:
+        r->nrg->ef = &lqr_energy_std;
+        r->nrg->rf = &lqr_carver_read_luma;
         r->nrg->gf = &lqr_grad_xabs;
         break;
       case LQR_EF_NULL:

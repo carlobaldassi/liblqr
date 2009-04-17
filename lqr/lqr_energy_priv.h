@@ -45,10 +45,15 @@ struct _LqrEnergy
   //LqrReadFuncAbs rfabs;
 };
 
+inline gdouble lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
+inline gdouble lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel);
+inline gdouble lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y);
+gdouble lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y);
 inline gdouble lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y);
 inline gdouble lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
 double lqr_energy_std (LqrCarver * r, gint x, gint y);
-double lqr_energy_luma_and_chroma (LqrCarver * r, gint x, gint y);
 double lqr_energy_null (LqrCarver * r, gint x, gint y);
 
 #endif /* __LQR_ENERGY_PRIV_H__ */
