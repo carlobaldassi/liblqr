@@ -1,5 +1,5 @@
 
-LiquidRescale library 0.2.0
+LiquidRescale library 0.4.0
 ===========================
 
 Table of contents
@@ -89,7 +89,7 @@ the proper flags.
 
 In the `examples' directory you can find a basic example program,
 `liquidrescale-basic', and a full-featured demo program,
-`liquidrescale', toghether with a simple Makefile. Both
+`liquidrescale', together with a simple Makefile. Both
 programs are fully commented.
 
 The "basic" version demonstrates how to use the strictly-needed 
@@ -122,5 +122,5 @@ http://www.faculty.idc.ac.il/arik/imret.pdf
 + Copyright
 -----------
 
-Copyright (C) 2007-2008 Carlo Baldassi <carlobaldassi@gmail.com>
+Copyright (C) 2007-2009 Carlo Baldassi <carlobaldassi@gmail.com>
 
