@@ -28,11 +28,7 @@
 #error "lqr_base.h must be included prior to lqr_energy_pub.h"
 #endif /* __LQR_BASE_H__ */
 
-struct _LqrEnergy;
-
-typedef struct _LqrEnergy LqrEnergy;
-
-enum _LqrEnergyFuncType
+enum _LqrEnergyFuncBuiltinType
 {
   LQR_EF_GRAD_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
   LQR_EF_GRAD_SUMABS,                /* sum of absulte values : |x| + |y|          */
@@ -43,9 +39,21 @@ enum _LqrEnergyFuncType
   LQR_EF_NULL  	                     /* 0 */
 };
 
-typedef enum _LqrEnergyFuncType LqrEnergyFuncType;
+typedef enum _LqrEnergyFuncBuiltinType LqrEnergyFuncBuiltinType;
 
+enum _LqrEnergyReaderType
+{
+  LQR_ER_BRIGHT,                /* read brightness */
+  LQR_ER_LUMA,                  /* read luma */
+  LQR_ER_RGBA,                  /* read RGBA */
+  LQR_ER_CUSTOM                 /* reader the buffer as-is*/
+};
 
-LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFuncType ef_ind);
+typedef enum _LqrEnergyReaderType LqrEnergyReaderType;
+
+typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data);
+
+LqrRetVal lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType ef_ind);
+LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data);
 
 #endif /* __LQR_ENERGY_PUB_H__ */

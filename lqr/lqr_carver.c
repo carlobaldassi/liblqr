@@ -83,8 +83,8 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->w_start = r->w;
   r->h_start = r->h;
 
-  TRY_N_N (r->nrg = g_try_new (LqrEnergy, 1));
-  lqr_carver_set_energy_function(r, LQR_EF_GRAD_XABS);
+  TRY_N_N (r->nrg_builtin = g_try_new (LqrEnergyBuiltin, 1));
+  lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
 
   r->leftright = 0;
   r->lr_switch_frequency = 0;
@@ -163,7 +163,7 @@ lqr_carver_destroy (LqrCarver * r)
   g_free (r->bias);
   g_free (r->m);
   g_free (r->least);
-  g_free (r->nrg);
+  g_free (r->nrg_builtin);
 
   lqr_cursor_destroy (r->c);
   g_free (r->vpath);
@@ -328,7 +328,7 @@ lqr_carver_set_black_channel (LqrCarver * r, gint channel_index)
 
 /* set gradient function */
 /* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
-/* lqr_carver_set_energy_function() should be used in newly written code instead */
+/* lqr_carver_set_energy_function_builtin() should be used in newly written code instead */
 LQR_PUBLIC
 void
 lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
@@ -336,20 +336,20 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
   switch (gf_ind)
     {
     case LQR_GF_NORM:
-      lqr_carver_set_energy_function(r, LQR_EF_GRAD_NORM);
+      lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_NORM);
       break;
     case LQR_GF_SUMABS:
-      lqr_carver_set_energy_function(r, LQR_EF_GRAD_SUMABS);
+      lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_SUMABS);
       break;
     case LQR_GF_XABS:
-      lqr_carver_set_energy_function(r, LQR_EF_GRAD_XABS);
+      lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
       break;
     case LQR_GF_NULL:
-      lqr_carver_set_energy_function(r, LQR_EF_NULL);
+      lqr_carver_set_energy_function_builtin(r, LQR_EF_NULL);
       break;
     case LQR_GF_NORM_BIAS:
     case LQR_GF_YABS:
-      lqr_carver_set_energy_function(r, LQR_EF_NULL);
+      lqr_carver_set_energy_function_builtin(r, LQR_EF_NULL);
       break;
 #ifdef __LQR_DEBUG__
     default:
@@ -491,9 +491,20 @@ void
 lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
 {
   gint data;
+  void ** buffer;
 
   data = r->raw[y][x];
-  r->en[data] = r->nrg->ef(r, x, y) + r->bias[data] / r->w_start;
+
+  if (r->nrg_builtin_flag)
+    {
+      r->en[data] = r->nrg_builtin->ef(r, x, y) + r->bias[data] / r->w_start;
+    }
+  else
+    {
+      buffer = lqr_energy_buffer_new (r, x, y, r->nrg_radius, r->nrg_read_t);
+      r->en[data] = r->nrg(x, y, r->w, r->h, buffer, r->nrg_extra_data) + r->bias[data] / r->w_start;
+      lqr_energy_buffer_destroy (buffer, r->nrg_radius, r->nrg_read_t);
+    }
 }
 
 /* compute auxiliary minpath map
@@ -667,20 +678,26 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 
       if (r->w > 1)
         {
-          /* update the energy */
-          /* lqr_carver_build_emap (r); */
-          lqr_carver_update_emap (r);
+          if (r->nrg_builtin_flag)
+            {
+              /* update the energy */
+              /* lqr_carver_build_emap (r); */
+              lqr_carver_update_emap (r);
 
-          /* recalculate the minpath map */
-          if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
-            {
-              r->leftright ^= 1;
+              /* recalculate the minpath map */
+              if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
+                {
+                  r->leftright ^= 1;
+                  CATCH (lqr_carver_build_mmap (r));
+                }
+              else
+                {
+                  /* lqr_carver_build_mmap (r); */
+                  CATCH (lqr_carver_update_mmap (r));
+                }
+            } else {
+              lqr_carver_build_emap (r); 
               CATCH (lqr_carver_build_mmap (r));
-            }
-          else
-            {
-              /* lqr_carver_build_mmap (r); */
-              CATCH (lqr_carver_update_mmap (r));
             }
         }
       else

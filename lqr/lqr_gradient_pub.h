@@ -24,9 +24,6 @@
 #ifndef __LQR_GRADIENT_PUB_H__
 #define __LQR_GRADIENT_PUB_H__
 
-/**** gradient functions for energy evluation ****/
-typedef double (*LqrGradFunc) (double, double);
-
 enum _LqrGradFuncType
 {
   LQR_GF_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */

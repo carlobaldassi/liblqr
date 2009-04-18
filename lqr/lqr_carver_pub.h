@@ -82,7 +82,7 @@ LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 void lqr_carver_set_preserve_input_image(LqrCarver *r);
 /* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
-/* lqr_carver_set_energy_function() should be used instead */
+/* lqr_carver_set_energy_function_builtin() should be used instead */
 void lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind);
 
 /* image manipulations */

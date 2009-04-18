@@ -21,31 +21,33 @@
  */
 
 
+#include <glib.h>
 #include <math.h>
 #include <lqr/lqr_gradient.h>
 
+
 /**** GRADIENT FUNCTIONS ****/
 
-double
-lqr_grad_norm (double x, double y)
+gfloat
+lqr_grad_norm (gfloat x, gfloat y)
 {
   return sqrt (x * x + y * y);
 }
 
-double
-lqr_grad_sumabs (double x, double y)
+gfloat
+lqr_grad_sumabs (gfloat x, gfloat y)
 {
   return (fabs (x) + fabs (y)) / 2;
 }
 
-double
-lqr_grad_xabs (double x, double y)
+gfloat
+lqr_grad_xabs (gfloat x, gfloat y)
 {
   return fabs (x);
 }
 
-double
-lqr_grad_null (double x, double y)
+gfloat
+lqr_grad_null (gfloat x, gfloat y)
 {
   return 0;
 }

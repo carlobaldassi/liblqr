@@ -113,6 +113,24 @@
     } \
 } G_STMT_END
 
+#define BUF_TRY_NEW0_RET_POINTER(dest, size, col_depth) G_STMT_START { \
+  switch (col_depth) \
+    { \
+      case LQR_COLDEPTH_8I: \
+        TRY_N_N (dest = g_try_new0 (lqr_t_8i, size)); \
+        break; \
+      case LQR_COLDEPTH_16I: \
+        TRY_N_N (dest = g_try_new0 (lqr_t_16i, size)); \
+        break; \
+      case LQR_COLDEPTH_32F: \
+        TRY_N_N (dest = g_try_new0 (lqr_t_32f, size)); \
+        break; \
+      case LQR_COLDEPTH_64F: \
+        TRY_N_N (dest = g_try_new0 (lqr_t_64f, size)); \
+        break; \
+    } \
+} G_STMT_END
+
 #define BUF_TRY_NEW0_RET_LQR(dest, size, col_depth) G_STMT_START { \
   switch (col_depth) \
     { \
@@ -204,15 +222,18 @@ struct _LqrCarver
   gint *vpath;                    /* array of array-coordinates representing a vertical seam */
   gint *vpath_x;                  /* array of abscisses representing a vertical seam */
 
-  LqrGradFunc gf;                 /* pointer to a gradient function */
-
   gint leftright;                 /* whether to favor left or right seams */
   gint lr_switch_frequency;       /* interval between leftright switches */
   gfloat enl_step;                /* maximum enlargement ratio in a single step */
 
   LqrProgress * progress;         /* pointer to progress update functions */
 
-  LqrEnergy *nrg;                 /* pointer to an energy function */
+  gboolean nrg_builtin_flag;      /* flag to determine if the energy function used is builtin */
+  LqrEnergyBuiltin *nrg_builtin;  /* pointer to a builtin energy function class */
+  LqrEnergyFunc nrg;              /* pointer to a general energy function */
+  gint nrg_radius;                /* energy function radius */
+  LqrEnergyReaderType nrg_read_t; /* energy function reader type */
+  gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
 
   LqrVMapList * flushed_vs;       /* linked list of pointers to flushed visibility maps buffers */
 
