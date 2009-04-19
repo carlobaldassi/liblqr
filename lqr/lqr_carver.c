@@ -711,6 +711,10 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
                 }
             } else {
               CATCH (lqr_carver_build_emap (r)); 
+              if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
+                {
+                  r->leftright ^= 1;
+                }
               CATCH (lqr_carver_build_mmap (r));
             }
         }

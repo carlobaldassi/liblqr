@@ -31,19 +31,19 @@
 gfloat
 lqr_grad_norm (gfloat x, gfloat y)
 {
-  return sqrt (x * x + y * y);
+  return sqrtf (x * x + y * y);
 }
 
 gfloat
 lqr_grad_sumabs (gfloat x, gfloat y)
 {
-  return (fabs (x) + fabs (y)) / 2;
+  return (fabsf (x) + fabsf (y)) / 2;
 }
 
 gfloat
 lqr_grad_xabs (gfloat x, gfloat y)
 {
-  return fabs (x);
+  return fabsf (x);
 }
 
 gfloat
