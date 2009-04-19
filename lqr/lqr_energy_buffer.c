@@ -305,4 +305,18 @@ lqr_energy_buffer_read_custom (LqrEnergyBuffer * ebuffer, gint x, gint y, gint c
   return NULL;
 }
 
+LQR_PUBLIC
+LqrEnergyReaderType
+lqr_energy_buffer_get_read_t (LqrEnergyBuffer * ebuffer)
+{
+  return ebuffer->read_t;
+}
+
+LQR_PUBLIC
+gint
+lqr_energy_buffer_get_radius (LqrEnergyBuffer * ebuffer)
+{
+  return ebuffer->radius;
+}
+
 

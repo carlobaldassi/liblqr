@@ -233,7 +233,6 @@ struct _LqrCarver
   LqrProgress * progress;         /* pointer to progress update functions */
 
   gboolean nrg_builtin_flag;      /* flag to determine if the energy function used is builtin */
-  LqrEnergyBuiltin *nrg_builtin;  /* pointer to a builtin energy function class */
   LqrEnergyFunc nrg;              /* pointer to a general energy function */
   gint nrg_radius;                /* energy function radius */
   LqrEnergyBuffer * nrg_buffer;   /* energy buffer */

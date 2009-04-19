@@ -83,7 +83,6 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->w_start = r->w;
   r->h_start = r->h;
 
-  TRY_N_N (r->nrg_builtin = g_try_new (LqrEnergyBuiltin, 1));
   r->nrg_buffer = NULL;
   lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
 
@@ -164,8 +163,6 @@ lqr_carver_destroy (LqrCarver * r)
   g_free (r->bias);
   g_free (r->m);
   g_free (r->least);
-  g_free (r->nrg_builtin);
-
   lqr_cursor_destroy (r->c);
   g_free (r->vpath);
   g_free (r->vpath_x);
@@ -494,26 +491,10 @@ lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
 {
   gint data;
 
-  /* gfloat ena, enb;  */
-
   data = r->raw[y][x];
 
-  if (r->nrg_builtin_flag)
-    {
-      r->en[data] = r->nrg_builtin->ef(r, x, y) + r->bias[data] / r->w_start;
-    }
-  else
-    {
-      CATCH (lqr_energy_buffer_fill (r->nrg_buffer, r, x, y));
-      r->en[data] = r->nrg(x, y, r->w, r->h, r->nrg_buffer, r->nrg_extra_data) + r->bias[data] / r->w_start;
-      /*
-      ena = r->nrg(x, y, r->w, r->h, r->nrg_buffer, r->nrg_extra_data);
-      enb = r->nrg_builtin->ef(r, x, y);
-      if (fabs(ena - enb) > 1e-10) {
-        printf("x,y=%i,%i ena=%g enb=%g diff=%g\n", x, y, ena, enb, ena - enb); fflush(stdout);
-      }
-      */
-    }
+  CATCH (lqr_energy_buffer_fill (r->nrg_buffer, r, x, y));
+  r->en[data] = r->nrg(x, y, r->w, r->h, r->nrg_buffer, r->nrg_extra_data) + r->bias[data] / r->w_start;
 
   return LQR_OK;
 }
@@ -707,7 +688,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
                   CATCH (lqr_carver_update_mmap (r));
                 }
             } else {
-              lqr_carver_build_emap (r); 
+              CATCH (lqr_carver_build_emap (r)); 
               CATCH (lqr_carver_build_mmap (r));
             }
         }

@@ -47,5 +47,8 @@ gfloat lqr_energy_buffer_read_luma (LqrEnergyBuffer * ebuffer, gint x, gint y);
 gfloat lqr_energy_buffer_read_rgba (LqrEnergyBuffer * ebuffer, gint x, gint y, gint channel);
 void * lqr_energy_buffer_read_custom (LqrEnergyBuffer * ebuffer, gint x, gint y, gint channel);
 
+LqrEnergyReaderType lqr_energy_buffer_get_read_t (LqrEnergyBuffer * ebuffer);
+gint lqr_energy_buffer_get_radius (LqrEnergyBuffer * ebuffer);
+
 #endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
 

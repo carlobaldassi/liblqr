@@ -37,49 +37,22 @@
 #endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
 
 
-typedef gfloat (*LqrEnergyFuncBuiltin) (LqrCarver*, gint, gint);
 typedef gfloat (*LqrReadFunc) (LqrCarver*, gint, gint);
 /* typedef glfoat (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint); */
 
-struct _LqrEnergyBuiltin
-{
-  LqrEnergyFuncBuiltin ef;
-  LqrReadFunc rf;
-  LqrGradFunc gf;
-  //LqrReadFuncAbs rfabs;
-};
-
-typedef struct _LqrEnergyBuiltin LqrEnergyBuiltin;
-
 inline gfloat lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
 inline gfloat lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel);
-inline gfloat lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y);
+inline gfloat lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y);
 gfloat lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
-gfloat lqr_energy_builtin (LqrCarver * r, gint x, gint y);
-gfloat lqr_energy_null (LqrCarver * r, gint x, gint y);
-
-LqrRetVal lqr_energy_buffer_fill_std (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-LqrRetVal lqr_energy_buffer_fill_rgba (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-LqrRetVal lqr_energy_buffer_fill_custom (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-LqrRetVal lqr_energy_buffer_fill (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-
-LqrEnergyBuffer * lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type);
-LqrEnergyBuffer * lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type);
-LqrEnergyBuffer * lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type);
-LqrEnergyBuffer * lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type);
-void lqr_energy_buffer_destroy (LqrEnergyBuffer * ebuffer);
 
 gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf);
 gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
 gfloat lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
 gfloat lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
 gfloat lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
-
-LqrRetVal lqr_carver_set_energy_function_priv (LqrCarver * r, LqrEnergyFunc en_func, gint radius,
-                LqrEnergyReaderType reader_type, gpointer extra_data, gboolean builtin);
 
 #endif /* __LQR_ENERGY_PRIV_H__ */

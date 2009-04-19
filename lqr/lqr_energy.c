@@ -348,81 +348,52 @@ lqr_carver_read_luma_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 }
 #endif
 
-
-/* compute energy at x, y */
-gfloat
-lqr_energy_builtin (LqrCarver * r, gint x, gint y)
-{
-  gfloat gx, gy;
-
-  if (y == 0)
-    {
-      gy = r->nrg_builtin->rf(r, x, y + 1) - r->nrg_builtin->rf(r, x, y);
-    }
-  else if (y < r->h - 1)
-    {
-      gy = (r->nrg_builtin->rf(r, x, y + 1) - r->nrg_builtin->rf(r, x, y - 1)) / 2;
-    }
-  else
-    {
-      gy = r->nrg_builtin->rf(r, x, y) - r->nrg_builtin->rf(r, x, y - 1);
-    }
-
-  if (x == 0)
-    {
-      gx = r->nrg_builtin->rf (r, x + 1, y) - r->nrg_builtin->rf (r, x, y);
-    }
-  else if (x < r->w - 1)
-    {
-      gx = (r->nrg_builtin->rf(r, x + 1, y) - r->nrg_builtin->rf(r, x - 1, y)) / 2;
-    }
-  else
-    {
-      gx = r->nrg_builtin->rf(r, x, y) - r->nrg_builtin->rf(r, x - 1, y);
-    }
-
-  return r->nrg_builtin->gf(gx, gy);
-}
-
-gfloat
-lqr_energy_null (LqrCarver * r, gint x, gint y)
-{
-  return 0;
-}
-
 gfloat
 lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf)
 {
-  gfloat ** buffer_float;
-
   gfloat gx, gy;
 
-  buffer_float = (gfloat**) (ebuffer->buffer);
+  gfloat (*bread_func) (LqrEnergyBuffer *, gint, gint);
+
+  switch (lqr_energy_buffer_get_read_t(ebuffer))
+    {
+      case LQR_ER_BRIGHT:
+        bread_func = lqr_energy_buffer_read_bright;
+        break;
+      case LQR_ER_LUMA:
+        bread_func = lqr_energy_buffer_read_luma;
+        break;
+      default:
+#ifdef __LQR_DEBUG__
+        assert(0);
+#endif /* __LQR_DEBUG__ */
+        return 0;
+    }
 
   if (y == 0)
     {
-      gy = buffer_float[0][1] - buffer_float[0][0];
+      gy = bread_func(ebuffer, 0, 1) - bread_func(ebuffer, 0, 0);
     }
   else if (y < img_height - 1)
     {
-      gy = (buffer_float[0][1] - buffer_float[0][-1]) / 2;
+      gy = (bread_func(ebuffer, 0, 1) - bread_func(ebuffer, 0, -1)) / 2;
     }
   else
     {
-      gy = buffer_float[0][0] - buffer_float[0][-1];
+      gy = bread_func(ebuffer, 0, 0) - bread_func(ebuffer, 0, -1);
     }
 
   if (x == 0)
     {
-      gx = buffer_float[1][0] - buffer_float[0][0];
+      gx = bread_func(ebuffer, 1, 0) - bread_func(ebuffer, 0, 0);
     }
   else if (x < img_width - 1)
     {
-      gx = (buffer_float[1][0] - buffer_float[-1][0]) / 2;
+      gx = (bread_func(ebuffer, 1, 0) - bread_func(ebuffer, -1, 0)) / 2;
     }
   else
     {
-      gx = buffer_float[0][0] - buffer_float[-1][0];
+      gx = bread_func(ebuffer, 0, 0) - bread_func(ebuffer, -1, 0);
     }
 
   return gf(gx, gy);
@@ -497,88 +468,52 @@ lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType 
   switch (ef_ind)
     {
       case LQR_EF_GRAD_NORM:
-        r->nrg_builtin->ef = lqr_energy_builtin;
-        r->nrg_builtin->rf = lqr_carver_read_brightness;
-        r->nrg_builtin->gf = lqr_grad_norm;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHT, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHT, NULL));
         break;
       case LQR_EF_GRAD_SUMABS:
-        r->nrg_builtin->ef = lqr_energy_builtin;
-        r->nrg_builtin->rf = lqr_carver_read_brightness;
-        r->nrg_builtin->gf = lqr_grad_sumabs;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHT, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHT, NULL));
         break;
       case LQR_EF_GRAD_XABS:
-        r->nrg_builtin->ef = lqr_energy_builtin;
-        r->nrg_builtin->rf = lqr_carver_read_brightness;
-        r->nrg_builtin->gf = lqr_grad_xabs;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHT, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHT, NULL));
         break;
       case LQR_EF_LUMA_GRAD_NORM:
-        r->nrg_builtin->ef = lqr_energy_builtin;
-        r->nrg_builtin->rf = lqr_carver_read_luma;
-        r->nrg_builtin->gf = lqr_grad_norm;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_LUMA, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_LUMA, NULL));
         break;
       case LQR_EF_LUMA_GRAD_SUMABS:
-        r->nrg_builtin->ef = lqr_energy_builtin;
-        r->nrg_builtin->rf = lqr_carver_read_luma;
-        r->nrg_builtin->gf = lqr_grad_sumabs;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_LUMA, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_LUMA, NULL));
         break;
       case LQR_EF_LUMA_GRAD_XABS:
-        r->nrg_builtin->ef = lqr_energy_builtin;
-        r->nrg_builtin->rf = lqr_carver_read_luma;
-        r->nrg_builtin->gf = lqr_grad_xabs;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_LUMA, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_LUMA, NULL));
         break;
       case LQR_EF_NULL:
-        r->nrg_builtin->ef = lqr_energy_null;
-        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_null, 0, LQR_ER_BRIGHT, NULL, TRUE));
+        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_null, 0, LQR_ER_BRIGHT, NULL));
         break;
       default:
         return LQR_ERROR;
     }
 
-  r->nrg_builtin_flag = TRUE;  
-
-  return LQR_OK;
-}
-
-LqrRetVal
-lqr_carver_set_energy_function_priv (LqrCarver * r, LqrEnergyFunc en_func, gint radius,
-                LqrEnergyReaderType reader_type, gpointer extra_data, gboolean builtin)
-{
-  r->nrg = en_func;
-  r->nrg_radius = radius;
-  r->nrg_read_t = reader_type;
-  r->nrg_extra_data = extra_data;
-
-  /* builtin = FALSE;   */
-
-  r->nrg_builtin_flag = builtin;
-
-  lqr_energy_buffer_destroy (r->nrg_buffer);
-
-  if (builtin)
-    {
-      r->nrg_buffer = NULL;
-    }
-  else
-    {
-      r->nrg_buffer = lqr_energy_buffer_new (radius, reader_type);
-    }
+  r->nrg_builtin_flag = TRUE;
 
   return LQR_OK;
 }
 
 LQR_PUBLIC
 LqrRetVal
-lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data)
+lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius,
+                LqrEnergyReaderType reader_type, gpointer extra_data)
 {
   CATCH_F (r->root == NULL);
 
-  CATCH (lqr_carver_set_energy_function_priv (r, en_func, radius, reader_type, extra_data, FALSE));
+  r->nrg = en_func;
+  r->nrg_radius = radius;
+  r->nrg_read_t = reader_type;
+  r->nrg_extra_data = extra_data;
+
+  r->nrg_builtin_flag = FALSE;
+
+  lqr_energy_buffer_destroy (r->nrg_buffer);
+
+  r->nrg_buffer = lqr_energy_buffer_new (radius, reader_type);
 
   return LQR_OK;
 }
