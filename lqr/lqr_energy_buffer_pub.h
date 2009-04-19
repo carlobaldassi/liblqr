@@ -21,10 +21,31 @@
  */
 
 
-#ifndef __LQR_ENERGY_H__
-#define __LQR_ENERGY_H__
+#ifndef __LQR_ENERGY_BUFFER_PUB_H__
+#define __LQR_ENERGY_BUFFER_PUB_H__
 
-#include <lqr/lqr_energy_pub.h>
-#include <lqr/lqr_energy_priv.h>
+#ifndef __LQR_BASE_H__
+#error "lqr_base.h must be included prior to lqr_energy_buffer_pub.h"
+#endif /* __LQR_BASE_H__ */
 
-#endif /* __LQR_ENERGY_H__ */
+enum _LqrEnergyReaderType
+{
+  LQR_ER_BRIGHT,                /* read brightness */
+  LQR_ER_LUMA,                  /* read luma */
+  LQR_ER_RGBA,                  /* read RGBA */
+  LQR_ER_CUSTOM                 /* reader the buffer as-is*/
+};
+
+typedef enum _LqrEnergyReaderType LqrEnergyReaderType;
+
+struct _LqrEnergyBuffer;
+
+typedef struct _LqrEnergyBuffer LqrEnergyBuffer;
+
+gfloat lqr_energy_buffer_read_bright (LqrEnergyBuffer * ebuffer, gint x, gint y);
+gfloat lqr_energy_buffer_read_luma (LqrEnergyBuffer * ebuffer, gint x, gint y);
+gfloat lqr_energy_buffer_read_rgba (LqrEnergyBuffer * ebuffer, gint x, gint y, gint channel);
+void * lqr_energy_buffer_read_custom (LqrEnergyBuffer * ebuffer, gint x, gint y, gint channel);
+
+#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+

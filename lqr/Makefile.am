@@ -12,6 +12,10 @@ liblqr_1_la_SOURCES = \
 	lqr_gradient.h  \
 	lqr_gradient_pub.h  \
 	lqr_gradient_priv.h  \
+	lqr_energy_buffer.c  \
+	lqr_energy_buffer.h  \
+	lqr_energy_buffer_pub.h  \
+	lqr_energy_buffer_priv.h  \
 	lqr_energy.c  \
 	lqr_energy.h  \
 	lqr_energy_pub.h  \
@@ -65,6 +69,7 @@ lqr_include0dir = $(includedir)/@LIBRARY_SNAME@
 
 lqr_include_HEADERS = lqr_base.h \
 		      lqr_gradient_pub.h \
+		      lqr_energy_buffer_pub.h \
 		      lqr_energy_pub.h \
 		      lqr_cursor_pub.h \
 		      lqr_carver_pub.h \

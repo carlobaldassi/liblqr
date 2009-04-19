@@ -31,6 +31,10 @@
 #error "lqr_gradient.h must be included prior to lqr_carver_priv.h"
 #endif /* __LQR_GRADIENT_H__ */
 
+#ifndef __LQR_ENERGY_BUFFER_PUB_H__
+#error "lqr_energy_buffer_pub.h must be included prior to lqr_carver_priv.h"
+#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+
 #ifndef __LQR_ENERGY_H__
 #error "lqr_energy.h must be included prior to lqr_carver_priv.h"
 #endif /* __LQR_ENERGY_H__ */
@@ -232,6 +236,7 @@ struct _LqrCarver
   LqrEnergyBuiltin *nrg_builtin;  /* pointer to a builtin energy function class */
   LqrEnergyFunc nrg;              /* pointer to a general energy function */
   gint nrg_radius;                /* energy function radius */
+  LqrEnergyBuffer * nrg_buffer;   /* energy buffer */
   LqrEnergyReaderType nrg_read_t; /* energy function reader type */
   gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
 
@@ -258,8 +263,8 @@ LqrRetVal lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility *
 
 /* internal functions for maps computation */
 //inline gfloat lqr_carver_read (LqrCarver * r, gint x, gint y); /* read the average value at given point */
-void lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c (fast) */
-void lqr_carver_update_emap (LqrCarver * r);    /* update energy map after seam removal */
+LqrRetVal lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c (fast) */
+LqrRetVal lqr_carver_update_emap (LqrCarver * r);    /* update energy map after seam removal */
 LqrRetVal lqr_carver_update_mmap (LqrCarver * r);    /* minpath */
 void lqr_carver_build_vpath (LqrCarver * r);    /* compute seam path */
 void lqr_carver_carve (LqrCarver * r);  /* updates the "raw" buffer */

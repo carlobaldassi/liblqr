@@ -24,7 +24,9 @@
 #include <math.h>
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_gradient.h>
+#include <lqr/lqr_energy_buffer_pub.h>
 #include <lqr/lqr_energy.h>
+#include <lqr/lqr_energy_buffer_priv.h>
 #include <lqr/lqr_progress_pub.h>
 #include <lqr/lqr_cursor_pub.h>
 #include <lqr/lqr_vmap.h>
@@ -355,33 +357,31 @@ lqr_energy_builtin (LqrCarver * r, gint x, gint y)
 
   if (y == 0)
     {
-      gy = (*(r->nrg_builtin->rf)) (r, x, y + 1) - (*(r->nrg_builtin->rf)) (r, x, y);
+      gy = r->nrg_builtin->rf(r, x, y + 1) - r->nrg_builtin->rf(r, x, y);
     }
   else if (y < r->h - 1)
     {
-      gy =
-        ((*(r->nrg_builtin->rf)) (r, x, y + 1) - (*(r->nrg_builtin->rf)) (r, x, y - 1)) / 2;
+      gy = (r->nrg_builtin->rf(r, x, y + 1) - r->nrg_builtin->rf(r, x, y - 1)) / 2;
     }
   else
     {
-      gy = (*(r->nrg_builtin->rf)) (r, x, y) - (*(r->nrg_builtin->rf)) (r, x, y - 1);
+      gy = r->nrg_builtin->rf(r, x, y) - r->nrg_builtin->rf(r, x, y - 1);
     }
 
   if (x == 0)
     {
-      gx = (*(r->nrg_builtin->rf)) (r, x + 1, y) - (*(r->nrg_builtin->rf)) (r, x, y);
+      gx = r->nrg_builtin->rf (r, x + 1, y) - r->nrg_builtin->rf (r, x, y);
     }
   else if (x < r->w - 1)
     {
-      gx =
-        ((*(r->nrg_builtin->rf)) (r, x + 1, y) - (*(r->nrg_builtin->rf)) (r, x - 1, y)) / 2;
+      gx = (r->nrg_builtin->rf(r, x + 1, y) - r->nrg_builtin->rf(r, x - 1, y)) / 2;
     }
   else
     {
-      gx = (*(r->nrg_builtin->rf)) (r, x, y) - (*(r->nrg_builtin->rf)) (r, x - 1, y);
+      gx = r->nrg_builtin->rf(r, x, y) - r->nrg_builtin->rf(r, x - 1, y);
     }
 
-  return (*(r->nrg_builtin->gf))(gx, gy);
+  return r->nrg_builtin->gf(gx, gy);
 }
 
 gfloat
@@ -390,145 +390,14 @@ lqr_energy_null (LqrCarver * r, gint x, gint y)
   return 0;
 }
 
-void **
-lqr_energy_buffer_new_std (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type)
-{
-  void ** out_buffer;
-  gfloat ** out_buffer_float;
-  gfloat * out_buffer_float_aux;
-
-  LqrReadFunc read_float;
-
-  gint buf_size1, buf_size2;
-  gint i, j;
-
-  buf_size1 = (2 * radius + 1);
-  buf_size2 = buf_size1 * buf_size1;
-
-  switch (read_func_type)
-    {
-      case LQR_ER_BRIGHT:
-        read_float = lqr_carver_read_brightness;
-        break;
-      case LQR_ER_LUMA:
-        read_float = lqr_carver_read_luma;
-        break;
-      default:
-#ifdef __LQR_DEBUG__
-        assert(0);
-#endif /* __LQR_DEBUG__ */
-        return NULL;
-    }
-
-  TRY_N_N (out_buffer_float_aux = g_try_new0 (gfloat, buf_size2));
-  TRY_N_N (out_buffer_float = g_try_new0 (gfloat *, buf_size1));
-  for (i = 0; i < buf_size1; i++)
-    {
-      out_buffer_float[i] = out_buffer_float_aux + radius;
-      out_buffer_float_aux += buf_size1;
-    }
-  out_buffer_float += radius;
-
-  for (i = -radius; i <= radius; i++)
-    {
-      if (x + i < 0 || x + i >= r->w)
-        {
-          continue;
-        }
-      for (j = -radius; j <= radius; j++)
-        {
-          if (y + j < 0 || y + j >= r->h)
-            {
-              continue;
-            }
-          out_buffer_float[i][j] = read_float (r, x + i, y + j);
-        }
-    }
-  out_buffer = (void**) out_buffer_float;
-  
-  return out_buffer;
-}
-
-void **
-lqr_energy_buffer_new_rgba (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type)
-{
-  /* TODO */
-  return NULL;
-}
-
-void **
-lqr_energy_buffer_new_custom (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type)
-{
-  /* TODO */
-  return NULL;
-}
-
-void **
-lqr_energy_buffer_new (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type)
-{
-  switch (read_func_type)
-    {
-      case LQR_ER_BRIGHT:
-      case LQR_ER_LUMA:
-        return lqr_energy_buffer_new_std(r, x, y, radius, read_func_type);
-      case LQR_ER_RGBA:
-        return lqr_energy_buffer_new_rgba(r, x, y, radius, read_func_type);
-      case LQR_ER_CUSTOM:
-        return lqr_energy_buffer_new_custom(r, x, y, radius, read_func_type);
-      default:
-#ifdef __LQR_DEBUG__
-        assert(0);
-#endif /* __LQR_DEBUG__ */
-        return NULL;
-    }
-}
-
-void
-lqr_energy_buffer_destroy (void ** buffer, gint radius, LqrEnergyReaderType read_func_type)
-{
-  gfloat ** buffer_float;
-
-  if (buffer == NULL)
-    {
-      return;
-    }
-
-  switch (read_func_type)
-    {
-      case LQR_ER_BRIGHT:
-      case LQR_ER_LUMA:
-        buffer_float = (gfloat **) buffer;
-        buffer_float -= radius;
-        buffer_float[0] -= radius;
-        g_free(buffer_float[0]);
-        g_free(buffer_float);
-        break;
-      case LQR_ER_RGBA:
-        buffer_float = (gfloat **) buffer;
-        buffer_float -= radius * 4;
-        buffer_float[0] -= radius * 4;
-        g_free(buffer_float[0]);
-        g_free(buffer_float);
-        break;
-      case LQR_ER_CUSTOM:
-        /* TODO */
-        return;
-      default:
-#ifdef __LQR_DEBUG__
-        assert(0);
-#endif /* __LQR_DEBUG__ */
-        return;
-    }
-}
-
 gfloat
-lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, void ** buffer, LqrGradFunc gf)
+lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf)
 {
   gfloat ** buffer_float;
 
   gfloat gx, gy;
 
-  buffer_float = (gfloat**) buffer;
+  buffer_float = (gfloat**) (ebuffer->buffer);
 
   if (y == 0)
     {
@@ -560,25 +429,25 @@ lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, vo
 }
 
 gfloat
-lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data)
+lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
 {
-  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, buffer, lqr_grad_norm);
+  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, ebuffer, lqr_grad_norm);
 }
 
 gfloat
-lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data)
+lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
 {
-  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, buffer, lqr_grad_sumabs);
+  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, ebuffer, lqr_grad_sumabs);
 }
 
 gfloat
-lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data)
+lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
 {
-  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, buffer, lqr_grad_xabs);
+  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, ebuffer, lqr_grad_xabs);
 }
 
 gfloat
-lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data)
+lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
 {
   return 0;
 }
@@ -631,47 +500,74 @@ lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType 
         r->nrg_builtin->ef = lqr_energy_builtin;
         r->nrg_builtin->rf = lqr_carver_read_brightness;
         r->nrg_builtin->gf = lqr_grad_norm;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHT, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHT, NULL, TRUE));
         break;
       case LQR_EF_GRAD_SUMABS:
         r->nrg_builtin->ef = lqr_energy_builtin;
         r->nrg_builtin->rf = lqr_carver_read_brightness;
         r->nrg_builtin->gf = lqr_grad_sumabs;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHT, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHT, NULL, TRUE));
         break;
       case LQR_EF_GRAD_XABS:
         r->nrg_builtin->ef = lqr_energy_builtin;
         r->nrg_builtin->rf = lqr_carver_read_brightness;
         r->nrg_builtin->gf = lqr_grad_xabs;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHT, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHT, NULL, TRUE));
         break;
       case LQR_EF_LUMA_GRAD_NORM:
         r->nrg_builtin->ef = lqr_energy_builtin;
         r->nrg_builtin->rf = lqr_carver_read_luma;
         r->nrg_builtin->gf = lqr_grad_norm;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_LUMA, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_norm, 1, LQR_ER_LUMA, NULL, TRUE));
         break;
       case LQR_EF_LUMA_GRAD_SUMABS:
         r->nrg_builtin->ef = lqr_energy_builtin;
         r->nrg_builtin->rf = lqr_carver_read_luma;
         r->nrg_builtin->gf = lqr_grad_sumabs;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_LUMA, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_LUMA, NULL, TRUE));
         break;
       case LQR_EF_LUMA_GRAD_XABS:
         r->nrg_builtin->ef = lqr_energy_builtin;
         r->nrg_builtin->rf = lqr_carver_read_luma;
         r->nrg_builtin->gf = lqr_grad_xabs;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_LUMA, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_LUMA, NULL, TRUE));
         break;
       case LQR_EF_NULL:
         r->nrg_builtin->ef = lqr_energy_null;
-        CATCH (lqr_carver_set_energy_function (r, lqr_energy_builtin_null, 0, LQR_ER_BRIGHT, NULL));
+        CATCH (lqr_carver_set_energy_function_priv (r, lqr_energy_builtin_null, 0, LQR_ER_BRIGHT, NULL, TRUE));
         break;
       default:
         return LQR_ERROR;
     }
 
-  r->nrg_builtin_flag = TRUE; 
+  r->nrg_builtin_flag = TRUE;  
+
+  return LQR_OK;
+}
+
+LqrRetVal
+lqr_carver_set_energy_function_priv (LqrCarver * r, LqrEnergyFunc en_func, gint radius,
+                LqrEnergyReaderType reader_type, gpointer extra_data, gboolean builtin)
+{
+  r->nrg = en_func;
+  r->nrg_radius = radius;
+  r->nrg_read_t = reader_type;
+  r->nrg_extra_data = extra_data;
+
+  /* builtin = FALSE;   */
+
+  r->nrg_builtin_flag = builtin;
+
+  lqr_energy_buffer_destroy (r->nrg_buffer);
+
+  if (builtin)
+    {
+      r->nrg_buffer = NULL;
+    }
+  else
+    {
+      r->nrg_buffer = lqr_energy_buffer_new (radius, reader_type);
+    }
 
   return LQR_OK;
 }
@@ -682,12 +578,7 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
 {
   CATCH_F (r->root == NULL);
 
-  r->nrg = en_func;
-  r->nrg_radius = radius;
-  r->nrg_read_t = reader_type;
-  r->nrg_extra_data = extra_data;
-
-  r->nrg_builtin_flag = FALSE;
+  CATCH (lqr_carver_set_energy_function_priv (r, en_func, radius, reader_type, extra_data, FALSE));
 
   return LQR_OK;
 }

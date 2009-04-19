@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -21,10 +21,11 @@
  */
 
 
-#ifndef __LQR_ENERGY_H__
-#define __LQR_ENERGY_H__
+#ifndef __LQR_ENERGY_BUFFER_H__
+#define __LQR_ENERGY_BUFFER_H__
 
-#include <lqr/lqr_energy_pub.h>
-#include <lqr/lqr_energy_priv.h>
+#include <lqr/lqr_energy_buffer_pub.h>
+#include <lqr/lqr_energy_buffer_priv.h>
 
-#endif /* __LQR_ENERGY_H__ */
+#endif /* __LQR_ENERGY_BUFFER_H__ */
+

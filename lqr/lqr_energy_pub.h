@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -28,6 +28,11 @@
 #error "lqr_base.h must be included prior to lqr_energy_pub.h"
 #endif /* __LQR_BASE_H__ */
 
+#ifndef __LQR_ENERGY_BUFFER_PUB_H__
+#error "lqr_energy_buffer_pub.h must be included prior to lqr_energy_pub.h"
+#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+
+
 enum _LqrEnergyFuncBuiltinType
 {
   LQR_EF_GRAD_NORM,                  /* gradient norm : sqrt(x^2 + y^2)            */
@@ -41,17 +46,7 @@ enum _LqrEnergyFuncBuiltinType
 
 typedef enum _LqrEnergyFuncBuiltinType LqrEnergyFuncBuiltinType;
 
-enum _LqrEnergyReaderType
-{
-  LQR_ER_BRIGHT,                /* read brightness */
-  LQR_ER_LUMA,                  /* read luma */
-  LQR_ER_RGBA,                  /* read RGBA */
-  LQR_ER_CUSTOM                 /* reader the buffer as-is*/
-};
-
-typedef enum _LqrEnergyReaderType LqrEnergyReaderType;
-
-typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data);
+typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
 
 LqrRetVal lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType ef_ind);
 LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data);

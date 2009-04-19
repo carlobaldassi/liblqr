@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -30,7 +30,12 @@
 
 #ifndef __LQR_GRADIENT_H__
 #error "lqr_gradient.h must be included prior to lqr_energy_priv.h"
-#endif /* __LQR_GRADIENT_PUB_H__ */
+#endif /* __LQR_GRADIENT_H__ */
+
+#ifndef __LQR_ENERGY_BUFFER_PUB_H__
+#error "lqr_energy_buffer_pub.h must be included prior to lqr_energy_priv.h"
+#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+
 
 typedef gfloat (*LqrEnergyFuncBuiltin) (LqrCarver*, gint, gint);
 typedef gfloat (*LqrReadFunc) (LqrCarver*, gint, gint);
@@ -46,7 +51,6 @@ struct _LqrEnergyBuiltin
 
 typedef struct _LqrEnergyBuiltin LqrEnergyBuiltin;
 
-
 inline gfloat lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
 inline gfloat lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel);
 inline gfloat lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y);
@@ -58,16 +62,24 @@ inline gfloat lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
 gfloat lqr_energy_builtin (LqrCarver * r, gint x, gint y);
 gfloat lqr_energy_null (LqrCarver * r, gint x, gint y);
 
-void ** lqr_energy_buffer_new_std (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type);
-void ** lqr_energy_buffer_new_rgba (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type);
-void ** lqr_energy_buffer_new_custom (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type);
-void ** lqr_energy_buffer_new (LqrCarver * r, gint x, gint y, gint radius, LqrEnergyReaderType read_func_type);
-void lqr_energy_buffer_destroy (void ** buffer, gint radius, LqrEnergyReaderType read_func_type);
+LqrRetVal lqr_energy_buffer_fill_std (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_energy_buffer_fill_rgba (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_energy_buffer_fill_custom (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_energy_buffer_fill (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
 
-gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, void ** buffer, LqrGradFunc gf);
-gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data);
-gfloat lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data);
-gfloat lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data);
-gfloat lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, void ** buffer, gpointer extra_data);
+LqrEnergyBuffer * lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type);
+LqrEnergyBuffer * lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type);
+LqrEnergyBuffer * lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type);
+LqrEnergyBuffer * lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type);
+void lqr_energy_buffer_destroy (LqrEnergyBuffer * ebuffer);
+
+gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf);
+gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
+gfloat lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
+gfloat lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
+gfloat lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
+
+LqrRetVal lqr_carver_set_energy_function_priv (LqrCarver * r, LqrEnergyFunc en_func, gint radius,
+                LqrEnergyReaderType reader_type, gpointer extra_data, gboolean builtin);
 
 #endif /* __LQR_ENERGY_PRIV_H__ */
