@@ -22,7 +22,7 @@
 
 #include <glib.h>
 
-#include <lqr_all.h>
+#include <lqr/lqr_all.h>
 
 #ifdef __LQR_DEBUG__
 #include <assert.h>
