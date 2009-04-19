@@ -24,9 +24,8 @@
 #include <math.h>
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_gradient.h>
-#include <lqr/lqr_energy_buffer_pub.h>
+#include <lqr/lqr_energy_buffer.h>
 #include <lqr/lqr_energy.h>
-#include <lqr/lqr_energy_buffer_priv.h>
 #include <lqr/lqr_progress_pub.h>
 #include <lqr/lqr_cursor_pub.h>
 #include <lqr/lqr_vmap.h>
@@ -349,6 +348,23 @@ lqr_carver_read_luma_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 #endif
 
 gfloat
+lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y)
+{
+  gfloat * cache_float = (float *) r->rcache;
+  gint z0 = r->raw[y][x];
+
+  return cache_float[z0];
+}
+
+gfloat
+lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y)
+{
+  /* TODO */
+  return 0;
+}
+
+
+gfloat
 lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf)
 {
   gfloat gx, gy;
@@ -517,3 +533,84 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
 
   return LQR_OK;
 }
+
+gfloat *
+lqr_carver_cache_read_bright (LqrCarver * r)
+{
+  gfloat * buffer;
+  int x, y;
+  int z0 = 0;
+
+  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start));
+
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+        {
+          buffer[z0++] = lqr_carver_read_brightness (r, x, y);
+        }
+    }
+
+  return buffer;
+}
+
+gfloat *
+lqr_carver_cache_read_luma (LqrCarver * r)
+{
+  gfloat * buffer;
+  int x, y;
+  int z0 = 0;
+
+  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start));
+
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+        {
+          buffer[z0++] = lqr_carver_read_luma (r, x, y);
+        }
+    }
+
+  return buffer;
+}
+
+gfloat *
+lqr_carver_cache_read_rgba (LqrCarver * r)
+{
+  /* TODO */
+  return NULL;
+}
+
+void *
+lqr_carver_cache_read_custom (LqrCarver * r)
+{
+  /* TODO */
+  return NULL;
+}
+
+void *
+lqr_carver_cache_read (LqrCarver * r)
+{
+#ifdef __LQR_DEBUG__
+  assert (r->w == r->w_start);
+  assert (r->h == r->h_start);
+#endif /* __LQR_DEBUG__ */
+
+  switch (r->nrg_read_t)
+    {
+      case LQR_ER_BRIGHT:
+        return (void *) lqr_carver_cache_read_bright(r);
+      case LQR_ER_LUMA:
+        return (void *) lqr_carver_cache_read_luma(r);
+      case LQR_ER_RGBA:
+        return (void *) lqr_carver_cache_read_rgba(r);
+      case LQR_ER_CUSTOM:
+        return (void *) lqr_carver_cache_read_custom(r);
+      default:
+#ifdef __LQR_DEBUG__
+        assert(0);
+#endif /* __LQR_DEBUG__ */
+        return NULL;
+    }
+}
+

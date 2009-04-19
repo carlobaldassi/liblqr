@@ -83,6 +83,9 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->w_start = r->w;
   r->h_start = r->h;
 
+  r->rcache = NULL;
+  r->cache_read = TRUE;
+
   r->nrg_buffer = NULL;
   lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
 
@@ -162,6 +165,7 @@ lqr_carver_destroy (LqrCarver * r)
   g_free (r->en);
   g_free (r->bias);
   g_free (r->m);
+  g_free (r->rcache);
   g_free (r->least);
   lqr_cursor_destroy (r->c);
   g_free (r->vpath);
@@ -188,6 +192,8 @@ LqrRetVal
 lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
   gint y, x;
+
+  CATCH_CANC (r);
 
   CATCH_F (r->active == FALSE);
 
@@ -234,6 +240,8 @@ LQR_PUBLIC
 LqrRetVal
 lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
 {
+  CATCH_CANC (r);
+
   switch (image_type) {
     case LQR_GREY_IMAGE:
       if (r->channels != 1) {
@@ -299,6 +307,8 @@ LQR_PUBLIC
 LqrRetVal
 lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
 {
+  CATCH_CANC (r);
+
   if (channel_index < 0) {
     r->alpha_channel = -1;
   } else if (channel_index < r->channels) {
@@ -314,6 +324,8 @@ LQR_PUBLIC
 LqrRetVal
 lqr_carver_set_black_channel (LqrCarver * r, gint channel_index)
 {
+  CATCH_CANC (r);
+
   if (channel_index < 0) {
     r->black_channel = -1;
   } else if (channel_index < r->channels) {
@@ -474,6 +486,13 @@ lqr_carver_build_emap (LqrCarver * r)
 {
   gint x, y;
 
+  CATCH_CANC(r);
+
+  if (r->cache_read && r->rcache == NULL)
+    {
+      CATCH_MEM (r->rcache = lqr_carver_cache_read (r));
+    }
+
   for (y = 0; y < r->h; y++)
     {
       CATCH_CANC(r);
@@ -490,6 +509,9 @@ LqrRetVal
 lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
 {
   gint data;
+
+  /* removed CANC check for performance reasons */
+  /* CATCH_CANC (r); */
 
   data = r->raw[y][x];
 
@@ -910,9 +932,12 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   /* g_free (r->vs); */
   g_free (r->en);
   g_free (r->m);
+  g_free (r->rcache);
   g_free (r->least);
   g_free (r->bias);
   g_free (r->rigidity_mask);
+
+  r->rcache = NULL;
 
   r->rgb = new_rgb;
   r->preserve_in_buffer = FALSE;
@@ -945,7 +970,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   /* reset readout buffer */
   g_free (r->rgb_ro_buffer);
   BUF_TRY_NEW0_RET_LQR(r->rgb_ro_buffer, r->w0 * r->channels, r->col_depth);
-  
+
 #ifdef __LQR_VERBOSE__
   printf ("  [ inflating OK ]\n");
   fflush (stdout);
@@ -1093,6 +1118,11 @@ lqr_carver_update_emap (LqrCarver * r)
 {
   gint x, y;
   gint x1, x_min, x_max;
+
+  if (r->cache_read)
+    {
+      CATCH_F (r->rcache != NULL);
+    }
 
   for (y = 0; y < r->h; y++)
     {
@@ -1461,7 +1491,10 @@ lqr_carver_flatten (LqrCarver * r)
   /* free non needed maps first */
   g_free (r->en);
   g_free (r->m);
+  g_free (r->rcache);
   g_free (r->least);
+
+  r->rcache = NULL;
 
   /* allocate room for new map */
   BUF_TRY_NEW0_RET_LQR(new_rgb, r->w * r->h * r->channels, r->col_depth);
@@ -1548,7 +1581,6 @@ lqr_carver_flatten (LqrCarver * r)
   r->level = 1;
   r->max_level = 1;
 
-
 #ifdef __LQR_VERBOSE__
   printf ("    [ flattening OK ]\n");
   fflush (stdout);
@@ -1610,8 +1642,11 @@ lqr_carver_transpose (LqrCarver * r)
     }
   g_free (r->en);
   g_free (r->m);
+  g_free (r->rcache);
   g_free (r->least);
   g_free (r->rgb_ro_buffer);
+
+  r->rcache = NULL;
 
   /* allocate room for the new maps */
   BUF_TRY_NEW0_RET_LQR(new_rgb, r->w0 * r->h0 * r->channels, r->col_depth);

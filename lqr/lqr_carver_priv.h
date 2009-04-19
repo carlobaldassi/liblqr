@@ -239,6 +239,9 @@ struct _LqrCarver
   LqrEnergyReaderType nrg_read_t; /* energy function reader type */
   gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
 
+  void * rcache;                  /* array of brightness (or luma or else) levels for energy computation */
+  gboolean cache_read;            /* wheter to cache breightness, luma etc. */
+
   LqrVMapList * flushed_vs;       /* linked list of pointers to flushed visibility maps buffers */
 
   gboolean preserve_in_buffer;    /* whether to preserve the buffer given to lqr_carver_new */

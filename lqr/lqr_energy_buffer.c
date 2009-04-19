@@ -33,19 +33,26 @@ lqr_energy_buffer_fill_std (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gi
 
   LqrReadFunc read_float;
 
-  switch (ebuffer->read_t)
+  if (r->rcache != NULL)
     {
-      case LQR_ER_BRIGHT:
-        read_float = lqr_carver_read_brightness;
-        break;
-      case LQR_ER_LUMA:
-        read_float = lqr_carver_read_luma;
-        break;
-      default:
+      read_float = lqr_carver_read_cached_std;
+    }
+  else
+    {
+      switch (ebuffer->read_t)
+        {
+          case LQR_ER_BRIGHT:
+            read_float = lqr_carver_read_brightness;
+            break;
+          case LQR_ER_LUMA:
+            read_float = lqr_carver_read_luma;
+            break;
+          default:
 #ifdef __LQR_DEBUG__
-        assert(0);
+            assert(0);
 #endif /* __LQR_DEBUG__ */
-        return LQR_ERROR;
+            return LQR_ERROR;
+        }
     }
 
   for (i = -ebuffer->radius; i <= ebuffer->radius; i++)
@@ -282,6 +289,7 @@ lqr_energy_buffer_read_rgba (LqrEnergyBuffer * ebuffer, gint x, gint y, gint cha
 
   buffer_float = (gfloat **) (ebuffer->buffer);
 
+  /* TODO : check !!! */
   return buffer_float[x][y] + channel;
 }
 

@@ -49,6 +49,15 @@ inline gfloat lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
 
+gfloat lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y);
+gfloat lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y);
+
+gfloat * lqr_carver_cache_read_bright();
+gfloat * lqr_carver_cache_read_luma();
+gfloat * lqr_carver_cache_read_rgba();
+void * lqr_carver_cache_read_custom();
+void * lqr_carver_cache_read(); /* cache brightness (or luma or else) to speedup energy computation */
+
 gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf);
 gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
 gfloat lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
