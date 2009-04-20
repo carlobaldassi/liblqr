@@ -393,19 +393,17 @@ lqr_carver_read_luma_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 gfloat
 lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y)
 {
-  gfloat * cache_float = (float *) r->rcache;
   gint z0 = r->raw[y][x];
 
-  return cache_float[z0];
+  return r->rcache[z0];
 }
 
 gfloat
 lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel)
 {
-  gfloat * cache_float = (float *) r->rcache;
   gint z0 = r->raw[y][x];
 
-  return cache_float[z0 * 4 + channel];
+  return r->rcache[z0 * 4 + channel];
 }
 
 
@@ -580,7 +578,7 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
 }
 
 gfloat *
-lqr_carver_cache_read_bright (LqrCarver * r)
+lqr_carver_generate_rcache_bright (LqrCarver * r)
 {
   gfloat * buffer;
   int x, y;
@@ -600,7 +598,7 @@ lqr_carver_cache_read_bright (LqrCarver * r)
 }
 
 gfloat *
-lqr_carver_cache_read_luma (LqrCarver * r)
+lqr_carver_generate_rcache_luma (LqrCarver * r)
 {
   gfloat * buffer;
   int x, y;
@@ -620,7 +618,7 @@ lqr_carver_cache_read_luma (LqrCarver * r)
 }
 
 gfloat *
-lqr_carver_cache_read_rgba (LqrCarver * r)
+lqr_carver_generate_rcache_rgba (LqrCarver * r)
 {
   gfloat * buffer;
   int x, y, k;
@@ -642,15 +640,15 @@ lqr_carver_cache_read_rgba (LqrCarver * r)
   return buffer;
 }
 
-void *
-lqr_carver_cache_read_custom (LqrCarver * r)
+gfloat *
+lqr_carver_generate_rcache_custom (LqrCarver * r)
 {
   /* TODO */
   return NULL;
 }
 
-void *
-lqr_carver_cache_read (LqrCarver * r)
+gfloat *
+lqr_carver_generate_rcache (LqrCarver * r)
 {
 #ifdef __LQR_DEBUG__
   assert (r->w == r->w_start);
@@ -660,13 +658,13 @@ lqr_carver_cache_read (LqrCarver * r)
   switch (r->nrg_read_t)
     {
       case LQR_ER_BRIGHT:
-        return (void *) lqr_carver_cache_read_bright(r);
+        return lqr_carver_generate_rcache_bright(r);
       case LQR_ER_LUMA:
-        return (void *) lqr_carver_cache_read_luma(r);
+        return lqr_carver_generate_rcache_luma(r);
       case LQR_ER_RGBA:
-        return (void *) lqr_carver_cache_read_rgba(r);
+        return lqr_carver_generate_rcache_rgba(r);
       case LQR_ER_CUSTOM:
-        return (void *) lqr_carver_cache_read_custom(r);
+        return lqr_carver_generate_rcache_custom(r);
       default:
 #ifdef __LQR_DEBUG__
         assert(0);

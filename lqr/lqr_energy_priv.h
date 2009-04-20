@@ -37,9 +37,6 @@
 #endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
 
 
-typedef gfloat (*LqrReadFunc) (LqrCarver*, gint, gint);
-/* typedef glfoat (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint); */
-
 inline gfloat lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
 inline gfloat lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel);
 inline gfloat lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y);
@@ -53,11 +50,11 @@ inline gfloat lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
 gfloat lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y);
 gfloat lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel);
 
-gfloat * lqr_carver_cache_read_bright();
-gfloat * lqr_carver_cache_read_luma();
-gfloat * lqr_carver_cache_read_rgba();
-void * lqr_carver_cache_read_custom();
-void * lqr_carver_cache_read(); /* cache brightness (or luma or else) to speedup energy computation */
+gfloat * lqr_carver_generate_rcache_bright();
+gfloat * lqr_carver_generate_rcache_luma();
+gfloat * lqr_carver_generate_rcache_rgba();
+gfloat * lqr_carver_generate_rcache_custom();
+gfloat * lqr_carver_generate_rcache(); /* cache brightness (or luma or else) to speedup energy computation */
 
 gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf);
 gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);

@@ -84,7 +84,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->h_start = r->h;
 
   r->rcache = NULL;
-  r->cache_read = TRUE;
+  r->use_rcache = TRUE;
 
   r->nrg_buffer = NULL;
   lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
@@ -488,9 +488,9 @@ lqr_carver_build_emap (LqrCarver * r)
 
   CATCH_CANC(r);
 
-  if (r->cache_read && r->rcache == NULL)
+  if (r->use_rcache && r->rcache == NULL)
     {
-      CATCH_MEM (r->rcache = lqr_carver_cache_read (r));
+      CATCH_MEM (r->rcache = lqr_carver_generate_rcache (r));
     }
 
   for (y = 0; y < r->h; y++)
@@ -1123,7 +1123,7 @@ lqr_carver_update_emap (LqrCarver * r)
   gint x, y;
   gint x1, x_min, x_max;
 
-  if (r->cache_read)
+  if (r->use_rcache)
     {
       CATCH_F (r->rcache != NULL);
     }

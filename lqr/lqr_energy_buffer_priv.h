@@ -30,10 +30,15 @@
 
 struct _LqrEnergyBuffer
 {
-  void ** buffer;
+  gfloat ** buffer;
   gint radius;
   LqrEnergyReaderType read_t;
 };
+
+typedef gfloat (*LqrReadFunc) (LqrCarver*, gint, gint);
+typedef gfloat (*LqrReadFuncWithCh) (LqrCarver*, gint, gint, gint);
+/* typedef glfoat (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint); */
+
 
 LqrRetVal lqr_energy_buffer_fill_std (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
 LqrRetVal lqr_energy_buffer_fill_rgba (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
