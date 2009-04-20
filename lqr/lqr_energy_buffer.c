@@ -29,9 +29,9 @@ lqr_energy_buffer_fill_std (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gi
   gfloat ** buffer;
   gint i, j;
 
-  buffer = (float **) (ebuffer->buffer);
-
   LqrReadFunc read_float;
+
+  buffer = (float **) (ebuffer->buffer);
 
   if (r->rcache != NULL)
     {
@@ -79,11 +79,11 @@ lqr_energy_buffer_fill_rgba (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, g
   gfloat ** buffer;
   gint i, j, k;
 
-  CATCH_F (lqr_energy_buffer_get_read_t (ebuffer) == LQR_ER_RGBA);
+  LqrReadFuncWithCh read_float;
 
   buffer = (float **) (ebuffer->buffer);
 
-  LqrReadFuncWithCh read_float;
+  CATCH_F (lqr_energy_buffer_get_read_t (ebuffer) == LQR_ER_RGBA);
 
   if (r->rcache != NULL)
     {
@@ -131,6 +131,14 @@ lqr_energy_buffer_fill (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y
 {
   CATCH_CANC (r);
 
+  if (ebuffer->use_rcache)
+    {
+      ebuffer->carver = r;
+      ebuffer->x = x;
+      ebuffer->y = y;
+      return LQR_OK;
+    }
+
   switch (ebuffer->read_t)
     {
       case LQR_ER_BRIGHT:
@@ -151,7 +159,7 @@ lqr_energy_buffer_fill (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y
 
 
 LqrEnergyBuffer *
-lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type)
+lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
 {
   LqrEnergyBuffer * out_ebuffer;
   gfloat ** out_buffer;
@@ -177,12 +185,16 @@ lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type)
   out_ebuffer->buffer = out_buffer;
   out_ebuffer->radius = radius;
   out_ebuffer->read_t = read_func_type;
+  out_ebuffer->use_rcache = use_rcache;
+  out_ebuffer->carver = NULL;
+  out_ebuffer->x = 0;
+  out_ebuffer->y = 0;
   
   return out_ebuffer;
 }
 
 LqrEnergyBuffer *
-lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type)
+lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
 {
   LqrEnergyBuffer * out_ebuffer;
   gfloat ** out_buffer;
@@ -208,12 +220,16 @@ lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type)
   out_ebuffer->buffer = out_buffer;
   out_ebuffer->radius = radius;
   out_ebuffer->read_t = read_func_type;
+  out_ebuffer->use_rcache = use_rcache;
+  out_ebuffer->carver = NULL;
+  out_ebuffer->x = 0;
+  out_ebuffer->y = 0;
   
   return out_ebuffer;
 }
 
 LqrEnergyBuffer *
-lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type)
+lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
 {
   LqrEnergyBuffer * out_ebuffer;
 
@@ -222,23 +238,27 @@ lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type)
   out_ebuffer->buffer = NULL;
   out_ebuffer->radius = radius;
   out_ebuffer->read_t = read_func_type;
+  out_ebuffer->use_rcache = use_rcache;
+  out_ebuffer->carver = NULL;
+  out_ebuffer->x = 0;
+  out_ebuffer->y = 0;
   
   /* TODO */
   return NULL;
 }
 
 LqrEnergyBuffer *
-lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type)
+lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
 {
   switch (read_func_type)
     {
       case LQR_ER_BRIGHT:
       case LQR_ER_LUMA:
-        return lqr_energy_buffer_new_std(radius, read_func_type);
+        return lqr_energy_buffer_new_std(radius, read_func_type, use_rcache);
       case LQR_ER_RGBA:
-        return lqr_energy_buffer_new_rgba(radius, read_func_type);
+        return lqr_energy_buffer_new_rgba(radius, read_func_type, use_rcache);
       case LQR_ER_CUSTOM:
-        return lqr_energy_buffer_new_custom(radius, read_func_type);
+        return lqr_energy_buffer_new_custom(radius, read_func_type, use_rcache);
       default:
 #ifdef __LQR_DEBUG__
         assert(0);
@@ -294,8 +314,6 @@ LQR_PUBLIC
 gfloat
 lqr_energy_buffer_read_bright (LqrEnergyBuffer * ebuffer, gint x, gint y)
 {
-  gfloat ** buffer;
-
   if (ebuffer == NULL || ebuffer->read_t != LQR_ER_BRIGHT ||
       x < -ebuffer->radius || x > ebuffer->radius ||
       y < -ebuffer->radius || y > ebuffer->radius)
@@ -303,9 +321,12 @@ lqr_energy_buffer_read_bright (LqrEnergyBuffer * ebuffer, gint x, gint y)
       return 0;
     }
 
-  buffer = ebuffer->buffer;
+  if (ebuffer->use_rcache)
+    {
+      return lqr_carver_read_cached_std (ebuffer->carver, ebuffer->x + x, ebuffer->y + y);
+    }
 
-  return buffer[x][y];
+  return ebuffer->buffer[x][y];
 }
 
 LQR_PUBLIC
@@ -317,6 +338,11 @@ lqr_energy_buffer_read_luma (LqrEnergyBuffer * ebuffer, gint x, gint y)
       y < -ebuffer->radius || y > ebuffer->radius)
     {
       return 0;
+    }
+
+  if (ebuffer->use_rcache)
+    {
+      return lqr_carver_read_cached_std (ebuffer->carver, ebuffer->x + x, ebuffer->y + y);
     }
 
   return ebuffer->buffer[x][y];
@@ -334,6 +360,10 @@ lqr_energy_buffer_read_rgba (LqrEnergyBuffer * ebuffer, gint x, gint y, gint cha
       return 0;
     }
 
+  if (ebuffer->use_rcache)
+    {
+      return lqr_carver_read_cached_rgba (ebuffer->carver, ebuffer->x + x, ebuffer->y + y, channel);
+    }
 
   return ebuffer->buffer[x][4 * y + channel];
 }
@@ -351,7 +381,10 @@ lqr_energy_buffer_read_custom (LqrEnergyBuffer * ebuffer, gint x, gint y, gint c
       return 0;
     }
 
-  /* buffer = (gfloat **) (ebuffer->buffer); */
+  if (ebuffer->use_rcache)
+    {
+      return lqr_carver_read_cached_custom (ebuffer->carver, ebuffer->x + x, ebuffer->y + y, channel);
+    }
 
   /* return ebuffer->buffer[x][y] + channel; */
 

@@ -33,6 +33,10 @@ struct _LqrEnergyBuffer
   gfloat ** buffer;
   gint radius;
   LqrEnergyReaderType read_t;
+  gboolean use_rcache;
+  LqrCarver * carver;
+  gint x;
+  gint y;
 };
 
 typedef gfloat (*LqrReadFunc) (LqrCarver*, gint, gint);
@@ -45,10 +49,10 @@ LqrRetVal lqr_energy_buffer_fill_rgba (LqrEnergyBuffer * ebuffer, LqrCarver * r,
 LqrRetVal lqr_energy_buffer_fill_custom (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
 LqrRetVal lqr_energy_buffer_fill (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
 
-LqrEnergyBuffer * lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type);
-LqrEnergyBuffer * lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type);
-LqrEnergyBuffer * lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type);
-LqrEnergyBuffer * lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type);
+LqrEnergyBuffer * lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrEnergyBuffer * lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrEnergyBuffer * lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrEnergyBuffer * lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
 void lqr_energy_buffer_destroy (LqrEnergyBuffer * ebuffer);
 
 #endif /* __LQR_ENERGY_BUFFER_PRIV_H__ */

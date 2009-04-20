@@ -406,6 +406,14 @@ lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel)
   return r->rcache[z0 * 4 + channel];
 }
 
+gfloat
+lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel)
+{
+  /* gint z0 = r->raw[y][x]; */
+
+  /* TODO */
+  return 0;
+}
 
 gfloat
 lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf)
@@ -572,7 +580,7 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
 
   lqr_energy_buffer_destroy (r->nrg_buffer);
 
-  r->nrg_buffer = lqr_energy_buffer_new (radius, reader_type);
+  r->nrg_buffer = lqr_energy_buffer_new (radius, reader_type, r->use_rcache);
 
   return LQR_OK;
 }

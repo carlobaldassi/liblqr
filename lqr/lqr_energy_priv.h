@@ -49,6 +49,7 @@ inline gfloat lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
 
 gfloat lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y);
 gfloat lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel);
+gfloat lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel);
 
 gfloat * lqr_carver_generate_rcache_bright();
 gfloat * lqr_carver_generate_rcache_luma();
