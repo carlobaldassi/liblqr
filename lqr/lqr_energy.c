@@ -228,6 +228,49 @@ lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
   return bright * alpha_fact;
 }
 
+gfloat
+lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
+{
+  gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+
+  gint now = r->raw[y][x];
+
+#ifdef __LQR_DEBUG__
+  assert(channel >= 0 && channel < 4);
+#endif /* __LQR_DEBUG__ */
+
+  if (channel < 3)
+    {
+      switch (r->image_type)
+        {
+          case LQR_GREY_IMAGE:
+          case LQR_GREYA_IMAGE:
+            return lqr_carver_read_brightness_grey (r, x, y);
+          case LQR_RGB_IMAGE: 
+          case LQR_RGBA_IMAGE: 
+          case LQR_CMY_IMAGE: 
+          case LQR_CMYK_IMAGE: 
+          case LQR_CMYKA_IMAGE: 
+            return lqr_pixel_get_rgbcol (r->rgb, now * r->channels, r->col_depth, r->image_type, channel);
+          case LQR_CUSTOM_IMAGE:
+          default:
+#ifdef __LQR_DEBUG__
+            assert(0);
+#endif /* __LQR_DEBUG__ */
+            return 0;
+        }
+    }
+  else if (has_alpha)
+    {
+      return lqr_pixel_get_norm(r->rgb, now * r->channels + r->alpha_channel, r->col_depth);
+    }
+  else
+    {
+      return 1;
+    }
+}
+
+
 
 
 #if 0
@@ -357,10 +400,12 @@ lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y)
 }
 
 gfloat
-lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y)
+lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel)
 {
-  /* TODO */
-  return 0;
+  gfloat * cache_float = (float *) r->rcache;
+  gint z0 = r->raw[y][x];
+
+  return cache_float[z0 * 4 + channel];
 }
 
 
@@ -577,8 +622,24 @@ lqr_carver_cache_read_luma (LqrCarver * r)
 gfloat *
 lqr_carver_cache_read_rgba (LqrCarver * r)
 {
-  /* TODO */
-  return NULL;
+  gfloat * buffer;
+  int x, y, k;
+  int z0 = 0;
+
+  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start * 4));
+
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+        {
+          for (k = 0; x < 4; k++)
+            {
+              buffer[z0++] = lqr_carver_read_rgba (r, x, y, k);
+            }
+        }
+    }
+
+  return buffer;
 }
 
 void *
