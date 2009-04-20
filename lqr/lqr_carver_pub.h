@@ -78,6 +78,7 @@ void lqr_carver_set_no_dump_vmaps (LqrCarver *r);
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order);
 void lqr_carver_set_side_switch_frequency (LqrCarver *r, guint switch_frequency);
 LqrRetVal lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step);
+void lqr_carver_set_use_cache (LqrCarver *r, gboolean use_cache);
 LqrRetVal lqr_carver_attach (LqrCarver * r, LqrCarver * aux);
 void lqr_carver_set_progress (LqrCarver *r, LqrProgress *p);
 void lqr_carver_set_preserve_input_image(LqrCarver *r);

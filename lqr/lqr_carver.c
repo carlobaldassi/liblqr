@@ -429,6 +429,19 @@ lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step)
   return LQR_OK;
 }
 
+LQR_PUBLIC
+void
+lqr_carver_set_use_cache (LqrCarver *r, gboolean use_cache)
+{
+  if (!use_cache)
+    {
+      g_free(r->rcache);
+      r->rcache = NULL;
+    }
+  r->use_rcache = use_cache;
+  r->nrg_buffer->use_rcache = use_cache;
+}
+
 /* set progress reprot */
 LQR_PUBLIC
 void
