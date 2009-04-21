@@ -270,6 +270,14 @@ lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
     }
 }
 
+gfloat
+lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel)
+{
+  gint now = r->raw[y][x];
+
+  return lqr_pixel_get_norm(r->rgb, now * r->channels + channel, r->col_depth);
+}
+
 
 
 
@@ -409,10 +417,9 @@ lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel)
 gfloat
 lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel)
 {
-  /* gint z0 = r->raw[y][x]; */
+  gint z0 = r->raw[y][x];
 
-  /* TODO */
-  return 0;
+  return r->rcache[z0 * r->channels + channel];
 }
 
 gfloat
@@ -580,7 +587,14 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
 
   lqr_rwindow_destroy (r->rwindow);
 
-  r->rwindow = lqr_rwindow_new (radius, reader_type, r->use_rcache);
+  if (reader_type == LQR_ER_CUSTOM)
+    {
+      CATCH_MEM (r->rwindow = lqr_rwindow_new_custom (radius, r->use_rcache, r->channels));
+    }
+  else
+    {
+      CATCH_MEM (r->rwindow = lqr_rwindow_new (radius, reader_type, r->use_rcache));
+    }
 
   return LQR_OK;
 }
@@ -638,7 +652,7 @@ lqr_carver_generate_rcache_rgba (LqrCarver * r)
     {
       for (x = 0; x < r->w; x++)
         {
-          for (k = 0; x < 4; k++)
+          for (k = 0; k < 4; k++)
             {
               buffer[z0++] = lqr_carver_read_rgba (r, x, y, k);
             }
@@ -651,8 +665,24 @@ lqr_carver_generate_rcache_rgba (LqrCarver * r)
 gfloat *
 lqr_carver_generate_rcache_custom (LqrCarver * r)
 {
-  /* TODO */
-  return NULL;
+  gfloat * buffer;
+  int x, y, k;
+  int z0 = 0;
+
+  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start * r->channels));
+
+  for (y = 0; y < r->h; y++)
+    {
+      for (x = 0; x < r->w; x++)
+        {
+          for (k = 0; k < r->channels; k++)
+            {
+              buffer[z0++] = lqr_carver_read_custom (r, x, y, k);
+            }
+        }
+    }
+
+  return buffer;
 }
 
 gfloat *

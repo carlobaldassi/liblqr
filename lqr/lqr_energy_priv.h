@@ -46,6 +46,7 @@ inline gfloat lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
 inline gfloat lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel);
+inline gfloat lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel);
 
 gfloat lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y);
 gfloat lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel);

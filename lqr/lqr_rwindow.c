@@ -31,7 +31,7 @@ lqr_rwindow_fill_std (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 
   LqrReadFunc read_float;
 
-  buffer = (float **) (rwindow->buffer);
+  buffer = rwindow->buffer;
 
   switch (rwindow->read_t)
     {
@@ -72,7 +72,7 @@ lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
   gfloat ** buffer;
   gint i, j, k;
 
-  buffer = (float **) (rwindow->buffer);
+  buffer = rwindow->buffer;
 
   CATCH_F (lqr_rwindow_get_read_t (rwindow) == LQR_ER_RGBA);
 
@@ -103,7 +103,34 @@ lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 LqrRetVal
 lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
-  /* TODO */
+  gfloat ** buffer;
+  gint i, j, k;
+
+  buffer = rwindow->buffer;
+
+  CATCH_F (lqr_rwindow_get_read_t (rwindow) == LQR_ER_CUSTOM);
+
+  for (i = -rwindow->radius; i <= rwindow->radius; i++)
+    {
+      for (j = -rwindow->radius; j <= rwindow->radius; j++)
+        {
+          if (x + i < 0 || x + i >= r->w || y + j < 0 || y + j >= r->h)
+            {
+              for (k = 0; k < r->channels; k++)
+                {
+                  buffer[i][r->channels * j + k] = 0;
+                }
+            }
+          else
+            {
+              for (k = 0; k < r->channels; k++)
+                {
+                  buffer[i][r->channels * j + k] = lqr_carver_read_custom (r, x + i, y + j, k);
+                }
+            }
+        }
+    }
+  
   return LQR_OK;
 }
 
@@ -167,6 +194,7 @@ lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean u
   out_rwindow->buffer = out_buffer;
   out_rwindow->radius = radius;
   out_rwindow->read_t = read_func_type;
+  out_rwindow->channels = 1;
   out_rwindow->use_rcache = use_rcache;
   out_rwindow->carver = NULL;
   out_rwindow->x = 0;
@@ -176,7 +204,7 @@ lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean u
 }
 
 LqrReaderWindow *
-lqr_rwindow_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
+lqr_rwindow_new_rgba (gint radius, gboolean use_rcache)
 {
   LqrReaderWindow * out_rwindow;
   gfloat ** out_buffer;
@@ -201,7 +229,8 @@ lqr_rwindow_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean 
 
   out_rwindow->buffer = out_buffer;
   out_rwindow->radius = radius;
-  out_rwindow->read_t = read_func_type;
+  out_rwindow->read_t = LQR_ER_RGBA;
+  out_rwindow->channels = 4;
   out_rwindow->use_rcache = use_rcache;
   out_rwindow->carver = NULL;
   out_rwindow->x = 0;
@@ -211,22 +240,39 @@ lqr_rwindow_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean 
 }
 
 LqrReaderWindow *
-lqr_rwindow_new_custom (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
+lqr_rwindow_new_custom (gint radius, gboolean use_rcache, gint channels)
 {
   LqrReaderWindow * out_rwindow;
+  gfloat ** out_buffer;
+  gfloat * out_buffer_aux;
+
+  gint buf_size1, buf_size2;
+  gint i;
 
   TRY_N_N (out_rwindow = g_try_new0 (LqrReaderWindow, 1));
 
+  buf_size1 = (2 * radius + 1);
+  buf_size2 = buf_size1 * buf_size1 * channels;
+
+  TRY_N_N (out_buffer_aux = g_try_new0 (gfloat, buf_size2));
+  TRY_N_N (out_buffer = g_try_new0 (gfloat *, buf_size1));
+  for (i = 0; i < buf_size1; i++)
+    {
+      out_buffer[i] = out_buffer_aux + radius * channels;
+      out_buffer_aux += buf_size1 * channels;
+    }
+  out_buffer += radius;
+
   out_rwindow->buffer = NULL;
   out_rwindow->radius = radius;
-  out_rwindow->read_t = read_func_type;
+  out_rwindow->read_t = LQR_ER_CUSTOM;
+  out_rwindow->channels = channels;
   out_rwindow->use_rcache = use_rcache;
   out_rwindow->carver = NULL;
   out_rwindow->x = 0;
   out_rwindow->y = 0;
   
-  /* TODO */
-  return NULL;
+  return out_rwindow;
 }
 
 LqrReaderWindow *
@@ -238,9 +284,8 @@ lqr_rwindow_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_r
       case LQR_ER_LUMA:
         return lqr_rwindow_new_std(radius, read_func_type, use_rcache);
       case LQR_ER_RGBA:
-        return lqr_rwindow_new_rgba(radius, read_func_type, use_rcache);
+        return lqr_rwindow_new_rgba(radius, use_rcache);
       case LQR_ER_CUSTOM:
-        return lqr_rwindow_new_custom(radius, read_func_type, use_rcache);
       default:
 #ifdef __LQR_DEBUG__
         assert(0);
@@ -264,32 +309,11 @@ lqr_rwindow_destroy (LqrReaderWindow * rwindow)
       return;
     }
 
-  switch (rwindow->read_t)
-    {
-      case LQR_ER_BRIGHT:
-      case LQR_ER_LUMA:
-        buffer = rwindow->buffer;
-        buffer -= rwindow->radius;
-        buffer[0] -= rwindow->radius;
-        g_free(buffer[0]);
-        g_free(buffer);
-        break;
-      case LQR_ER_RGBA:
-        buffer = (gfloat **) (rwindow->buffer);
-        buffer -= rwindow->radius * 4;
-        buffer[0] -= rwindow->radius * 4;
-        g_free(buffer[0]);
-        g_free(buffer);
-        break;
-      case LQR_ER_CUSTOM:
-        /* TODO */
-        return;
-      default:
-#ifdef __LQR_DEBUG__
-        assert(0);
-#endif /* __LQR_DEBUG__ */
-        return;
-    }
+  buffer = (gfloat **) (rwindow->buffer);
+  buffer -= rwindow->radius;
+  buffer[0] -= rwindow->radius * rwindow->channels;
+  g_free(buffer[0]);
+  g_free(buffer);
 }
 
 LQR_PUBLIC
@@ -354,8 +378,6 @@ LQR_PUBLIC
 gfloat
 lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 {
-  /* gfloat ** buffer; */
-
   if (rwindow == NULL || rwindow->read_t != LQR_ER_CUSTOM ||
       x < -rwindow->radius || x > rwindow->radius ||
       y < -rwindow->radius || y > rwindow->radius)
@@ -368,10 +390,7 @@ lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel
       return lqr_carver_read_cached_custom (rwindow->carver, rwindow->x + x, rwindow->y + y, channel);
     }
 
-  /* return rwindow->buffer[x][y] + channel; */
-
-  /* TODO */
-  return 0;
+  return rwindow->buffer[x][rwindow->channels * y + channel];
 }
 
 LQR_PUBLIC

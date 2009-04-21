@@ -33,6 +33,7 @@ struct _LqrReaderWindow
   gfloat ** buffer;
   gint radius;
   LqrEnergyReaderType read_t;
+  gint channels;
   gboolean use_rcache;
   LqrCarver * carver;
   gint x;
@@ -50,8 +51,8 @@ LqrRetVal lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gin
 LqrRetVal lqr_rwindow_fill (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
 
 LqrReaderWindow * lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
-LqrReaderWindow * lqr_rwindow_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
-LqrReaderWindow * lqr_rwindow_new_custom (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrReaderWindow * lqr_rwindow_new_rgba (gint radius, gboolean use_rcache);
+LqrReaderWindow * lqr_rwindow_new_custom (gint radius, gboolean use_rcache, gint channels);
 LqrReaderWindow * lqr_rwindow_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
 void lqr_rwindow_destroy (LqrReaderWindow * rwindow);
 
