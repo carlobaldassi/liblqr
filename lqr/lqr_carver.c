@@ -86,7 +86,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->rcache = NULL;
   r->use_rcache = TRUE;
 
-  r->nrg_buffer = NULL;
+  r->rwindow = NULL;
   lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
 
   r->leftright = 0;
@@ -176,7 +176,7 @@ lqr_carver_destroy (LqrCarver * r)
       g_free (r->rigidity_map);
     }
   g_free (r->rigidity_mask);
-  lqr_energy_buffer_destroy (r->nrg_buffer);
+  lqr_rwindow_destroy (r->rwindow);
   lqr_vmap_list_destroy(r->flushed_vs);
   lqr_carver_list_destroy(r->attached_list);
   g_free (r->progress);
@@ -439,7 +439,7 @@ lqr_carver_set_use_cache (LqrCarver *r, gboolean use_cache)
       r->rcache = NULL;
     }
   r->use_rcache = use_cache;
-  r->nrg_buffer->use_rcache = use_cache;
+  r->rwindow->use_rcache = use_cache;
 }
 
 /* set progress reprot */
@@ -528,8 +528,8 @@ lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
 
   data = r->raw[y][x];
 
-  CATCH (lqr_energy_buffer_fill (r->nrg_buffer, r, x, y));
-  r->en[data] = r->nrg(x, y, r->w, r->h, r->nrg_buffer, r->nrg_extra_data) + r->bias[data] / r->w_start;
+  CATCH (lqr_rwindow_fill (r->rwindow, r, x, y));
+  r->en[data] = r->nrg(x, y, r->w, r->h, r->rwindow, r->nrg_extra_data) + r->bias[data] / r->w_start;
 
   return LQR_OK;
 }

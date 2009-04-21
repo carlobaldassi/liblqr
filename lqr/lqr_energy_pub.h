@@ -28,9 +28,9 @@
 #error "lqr_base.h must be included prior to lqr_energy_pub.h"
 #endif /* __LQR_BASE_H__ */
 
-#ifndef __LQR_ENERGY_BUFFER_PUB_H__
-#error "lqr_energy_buffer_pub.h must be included prior to lqr_energy_pub.h"
-#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+#ifndef __LQR_READER_WINDOW_PUB_H__
+#error "lqr_rwindow_pub.h must be included prior to lqr_energy_pub.h"
+#endif /* __LQR_READER_WINDOW_PUB_H__ */
 
 
 enum _LqrEnergyFuncBuiltinType
@@ -46,7 +46,7 @@ enum _LqrEnergyFuncBuiltinType
 
 typedef enum _LqrEnergyFuncBuiltinType LqrEnergyFuncBuiltinType;
 
-typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
+typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);
 
 LqrRetVal lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType ef_ind);
 LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data);

@@ -32,9 +32,9 @@
 #error "lqr_gradient.h must be included prior to lqr_energy_priv.h"
 #endif /* __LQR_GRADIENT_H__ */
 
-#ifndef __LQR_ENERGY_BUFFER_PUB_H__
-#error "lqr_energy_buffer_pub.h must be included prior to lqr_energy_priv.h"
-#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+#ifndef __LQR_READER_WINDOW_PUB_H__
+#error "lqr_rwindow_pub.h must be included prior to lqr_energy_priv.h"
+#endif /* __LQR_READER_WINDOW_PUB_H__ */
 
 
 inline gfloat lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
@@ -57,10 +57,10 @@ gfloat * lqr_carver_generate_rcache_rgba();
 gfloat * lqr_carver_generate_rcache_custom();
 gfloat * lqr_carver_generate_rcache(); /* cache brightness (or luma or else) to speedup energy computation */
 
-gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf);
-gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
-gfloat lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
-gfloat lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
-gfloat lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data);
+gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, LqrGradFunc gf);
+gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);
+gfloat lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);
+gfloat lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);
+gfloat lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);
 
 #endif /* __LQR_ENERGY_PRIV_H__ */

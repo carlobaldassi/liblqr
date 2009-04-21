@@ -21,11 +21,11 @@
  */
 
 
-#ifndef __LQR_ENERGY_BUFFER_PUB_H__
-#define __LQR_ENERGY_BUFFER_PUB_H__
+#ifndef __LQR_READER_WINDOW_PUB_H__
+#define __LQR_READER_WINDOW_PUB_H__
 
 #ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_energy_buffer_pub.h"
+#error "lqr_base.h must be included prior to lqr_rwindow_pub.h"
 #endif /* __LQR_BASE_H__ */
 
 enum _LqrEnergyReaderType
@@ -38,17 +38,17 @@ enum _LqrEnergyReaderType
 
 typedef enum _LqrEnergyReaderType LqrEnergyReaderType;
 
-struct _LqrEnergyBuffer;
+struct _LqrReaderWindow;
 
-typedef struct _LqrEnergyBuffer LqrEnergyBuffer;
+typedef struct _LqrReaderWindow LqrReaderWindow;
 
-gfloat lqr_energy_buffer_read_bright (LqrEnergyBuffer * ebuffer, gint x, gint y);
-gfloat lqr_energy_buffer_read_luma (LqrEnergyBuffer * ebuffer, gint x, gint y);
-gfloat lqr_energy_buffer_read_rgba (LqrEnergyBuffer * ebuffer, gint x, gint y, gint channel);
-gfloat lqr_energy_buffer_read_custom (LqrEnergyBuffer * ebuffer, gint x, gint y, gint channel);
+gfloat lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y);
+gfloat lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y);
+gfloat lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
+gfloat lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
 
-LqrEnergyReaderType lqr_energy_buffer_get_read_t (LqrEnergyBuffer * ebuffer);
-gint lqr_energy_buffer_get_radius (LqrEnergyBuffer * ebuffer);
+LqrEnergyReaderType lqr_rwindow_get_read_t (LqrReaderWindow * rwindow);
+gint lqr_rwindow_get_radius (LqrReaderWindow * rwindow);
 
-#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+#endif /* __LQR_READER_WINDOW_PUB_H__ */
 

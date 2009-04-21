@@ -24,7 +24,7 @@
 #include <math.h>
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_gradient.h>
-#include <lqr/lqr_energy_buffer.h>
+#include <lqr/lqr_rwindow.h>
 #include <lqr/lqr_energy.h>
 #include <lqr/lqr_progress_pub.h>
 #include <lqr/lqr_cursor_pub.h>
@@ -416,19 +416,19 @@ lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel)
 }
 
 gfloat
-lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, LqrGradFunc gf)
+lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, LqrGradFunc gf)
 {
   gfloat gx, gy;
 
-  gfloat (*bread_func) (LqrEnergyBuffer *, gint, gint);
+  gfloat (*bread_func) (LqrReaderWindow *, gint, gint);
 
-  switch (lqr_energy_buffer_get_read_t(ebuffer))
+  switch (lqr_rwindow_get_read_t(rwindow))
     {
       case LQR_ER_BRIGHT:
-        bread_func = lqr_energy_buffer_read_bright;
+        bread_func = lqr_rwindow_read_bright;
         break;
       case LQR_ER_LUMA:
-        bread_func = lqr_energy_buffer_read_luma;
+        bread_func = lqr_rwindow_read_luma;
         break;
       default:
 #ifdef __LQR_DEBUG__
@@ -439,53 +439,53 @@ lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, Lq
 
   if (y == 0)
     {
-      gy = bread_func(ebuffer, 0, 1) - bread_func(ebuffer, 0, 0);
+      gy = bread_func(rwindow, 0, 1) - bread_func(rwindow, 0, 0);
     }
   else if (y < img_height - 1)
     {
-      gy = (bread_func(ebuffer, 0, 1) - bread_func(ebuffer, 0, -1)) / 2;
+      gy = (bread_func(rwindow, 0, 1) - bread_func(rwindow, 0, -1)) / 2;
     }
   else
     {
-      gy = bread_func(ebuffer, 0, 0) - bread_func(ebuffer, 0, -1);
+      gy = bread_func(rwindow, 0, 0) - bread_func(rwindow, 0, -1);
     }
 
   if (x == 0)
     {
-      gx = bread_func(ebuffer, 1, 0) - bread_func(ebuffer, 0, 0);
+      gx = bread_func(rwindow, 1, 0) - bread_func(rwindow, 0, 0);
     }
   else if (x < img_width - 1)
     {
-      gx = (bread_func(ebuffer, 1, 0) - bread_func(ebuffer, -1, 0)) / 2;
+      gx = (bread_func(rwindow, 1, 0) - bread_func(rwindow, -1, 0)) / 2;
     }
   else
     {
-      gx = bread_func(ebuffer, 0, 0) - bread_func(ebuffer, -1, 0);
+      gx = bread_func(rwindow, 0, 0) - bread_func(rwindow, -1, 0);
     }
 
   return gf(gx, gy);
 }
 
 gfloat
-lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
+lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
 {
-  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, ebuffer, lqr_grad_norm);
+  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, rwindow, lqr_grad_norm);
 }
 
 gfloat
-lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
+lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
 {
-  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, ebuffer, lqr_grad_sumabs);
+  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, rwindow, lqr_grad_sumabs);
 }
 
 gfloat
-lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
+lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
 {
-  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, ebuffer, lqr_grad_xabs);
+  return lqr_energy_builtin_grad_all(x, y, img_width, img_height, rwindow, lqr_grad_xabs);
 }
 
 gfloat
-lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrEnergyBuffer * ebuffer, gpointer extra_data)
+lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
 {
   return 0;
 }
@@ -578,9 +578,9 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
 
   r->nrg_builtin_flag = FALSE;
 
-  lqr_energy_buffer_destroy (r->nrg_buffer);
+  lqr_rwindow_destroy (r->rwindow);
 
-  r->nrg_buffer = lqr_energy_buffer_new (radius, reader_type, r->use_rcache);
+  r->rwindow = lqr_rwindow_new (radius, reader_type, r->use_rcache);
 
   return LQR_OK;
 }

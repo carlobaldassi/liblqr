@@ -21,11 +21,11 @@
  */
 
 
-#ifndef __LQR_ENERGY_BUFFER_H__
-#define __LQR_ENERGY_BUFFER_H__
+#ifndef __LQR_READER_WINDOW_H__
+#define __LQR_READER_WINDOW_H__
 
-#include <lqr/lqr_energy_buffer_pub.h>
-#include <lqr/lqr_energy_buffer_priv.h>
+#include <lqr/lqr_rwindow_pub.h>
+#include <lqr/lqr_rwindow_priv.h>
 
-#endif /* __LQR_ENERGY_BUFFER_H__ */
+#endif /* __LQR_READER_WINDOW_H__ */
 

@@ -21,14 +21,14 @@
  */
 
 
-#ifndef __LQR_ENERGY_BUFEFR_PRIV_H__
-#define __LQR_ENERGY_BUFFER_PRIV_H__
+#ifndef __LQR_READER_WINDOW_PRIV_H__
+#define __LQR_READER_WINDOW_PRIV_H__
 
 #ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_energy_buffer_priv.h"
+#error "lqr_base.h must be included prior to lqr_rwindow_priv.h"
 #endif /* __LQR_BASE_H__ */
 
-struct _LqrEnergyBuffer
+struct _LqrReaderWindow
 {
   gfloat ** buffer;
   gint radius;
@@ -44,15 +44,15 @@ typedef gfloat (*LqrReadFuncWithCh) (LqrCarver*, gint, gint, gint);
 /* typedef glfoat (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint); */
 
 
-LqrRetVal lqr_energy_buffer_fill_std (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-LqrRetVal lqr_energy_buffer_fill_rgba (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-LqrRetVal lqr_energy_buffer_fill_custom (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
-LqrRetVal lqr_energy_buffer_fill (LqrEnergyBuffer * ebuffer, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_rwindow_fill_std (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
+LqrRetVal lqr_rwindow_fill (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
 
-LqrEnergyBuffer * lqr_energy_buffer_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
-LqrEnergyBuffer * lqr_energy_buffer_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
-LqrEnergyBuffer * lqr_energy_buffer_new_custom (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
-LqrEnergyBuffer * lqr_energy_buffer_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
-void lqr_energy_buffer_destroy (LqrEnergyBuffer * ebuffer);
+LqrReaderWindow * lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrReaderWindow * lqr_rwindow_new_rgba (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrReaderWindow * lqr_rwindow_new_custom (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+LqrReaderWindow * lqr_rwindow_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
+void lqr_rwindow_destroy (LqrReaderWindow * rwindow);
 
-#endif /* __LQR_ENERGY_BUFFER_PRIV_H__ */
+#endif /* __LQR_READER_WINDOW_PRIV_H__ */

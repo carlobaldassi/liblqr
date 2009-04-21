@@ -30,7 +30,7 @@ G_BEGIN_DECLS
 
 #include <lqr/lqr_base.h>
 #include <lqr/lqr_gradient.h>
-#include <lqr/lqr_energy_buffer.h>
+#include <lqr/lqr_rwindow.h>
 #include <lqr/lqr_energy.h>
 #include <lqr/lqr_cursor.h>
 #include <lqr/lqr_progress.h>

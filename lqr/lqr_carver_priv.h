@@ -31,9 +31,9 @@
 #error "lqr_gradient.h must be included prior to lqr_carver_priv.h"
 #endif /* __LQR_GRADIENT_H__ */
 
-#ifndef __LQR_ENERGY_BUFFER_PUB_H__
-#error "lqr_energy_buffer_pub.h must be included prior to lqr_carver_priv.h"
-#endif /* __LQR_ENERGY_BUFFER_PUB_H__ */
+#ifndef __LQR_READER_WINDOW_PUB_H__
+#error "lqr_rwindow_pub.h must be included prior to lqr_carver_priv.h"
+#endif /* __LQR_READER_WINDOW_PUB_H__ */
 
 #ifndef __LQR_ENERGY_H__
 #error "lqr_energy.h must be included prior to lqr_carver_priv.h"
@@ -235,9 +235,9 @@ struct _LqrCarver
   gboolean nrg_builtin_flag;      /* flag to determine if the energy function used is builtin */
   LqrEnergyFunc nrg;              /* pointer to a general energy function */
   gint nrg_radius;                /* energy function radius */
-  LqrEnergyBuffer * nrg_buffer;   /* energy buffer */
   LqrEnergyReaderType nrg_read_t; /* energy function reader type */
   gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
+  LqrReaderWindow * rwindow;      /* reader window for energy computation */
 
   gfloat * rcache;                /* array of brightness (or luma or else) levels for energy computation */
   gboolean use_rcache;            /* wheter to cache brightness, luma etc. */
