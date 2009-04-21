@@ -25,12 +25,10 @@
 #define __LQR_GRADIENT_PRIV_H__
 
 /**** gradient functions for energy evluation ****/
-typedef gfloat (*LqrGradFunc) (gfloat, gfloat);
+typedef gfloat (*LqrGradFunc) (gdouble, gdouble);
 
-gfloat lqr_grad_norm (gfloat x, gfloat y);
-gfloat lqr_grad_sumabs (gfloat x, gfloat y);
-gfloat lqr_grad_xabs (gfloat x, gfloat y);
-/* the null function is only kept for back compatibility */
-gfloat lqr_grad_null (gfloat x, gfloat y);
+gfloat lqr_grad_norm (gdouble x, gdouble y);
+gfloat lqr_grad_sumabs (gdouble x, gdouble y);
+gfloat lqr_grad_xabs (gdouble x, gdouble y);
 
 #endif /* __LQR_GRADIENT_PRIV_H__ */

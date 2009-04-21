@@ -239,7 +239,7 @@ struct _LqrCarver
   gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
   LqrReaderWindow * rwindow;      /* reader window for energy computation */
 
-  gfloat * rcache;                /* array of brightness (or luma or else) levels for energy computation */
+  gdouble * rcache;               /* array of brightness (or luma or else) levels for energy computation */
   gboolean use_rcache;            /* wheter to cache brightness, luma etc. */
 
   LqrVMapList * flushed_vs;       /* linked list of pointers to flushed visibility maps buffers */

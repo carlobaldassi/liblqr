@@ -37,26 +37,26 @@
 #endif /* __LQR_READER_WINDOW_PUB_H__ */
 
 
-inline gfloat lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
-inline gfloat lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel);
-inline gfloat lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y);
-inline gfloat lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y);
-gfloat lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y);
-inline gfloat lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
-inline gfloat lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y);
-inline gfloat lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
-inline gfloat lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel);
-inline gfloat lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel);
+inline gdouble lqr_pixel_get_norm (void * src, gint src_ind, LqrColDepth col_depth);
+inline gdouble lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel);
+inline gdouble lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y);
+gdouble lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_brightness (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_luma (LqrCarver * r, gint x, gint y);
+inline gdouble lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel);
+inline gdouble lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel);
 
-gfloat lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y);
-gfloat lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel);
-gfloat lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel);
+gdouble lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y);
+gdouble lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel);
+gdouble lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel);
 
-gfloat * lqr_carver_generate_rcache_bright();
-gfloat * lqr_carver_generate_rcache_luma();
-gfloat * lqr_carver_generate_rcache_rgba();
-gfloat * lqr_carver_generate_rcache_custom();
-gfloat * lqr_carver_generate_rcache(); /* cache brightness (or luma or else) to speedup energy computation */
+gdouble * lqr_carver_generate_rcache_bright();
+gdouble * lqr_carver_generate_rcache_luma();
+gdouble * lqr_carver_generate_rcache_rgba();
+gdouble * lqr_carver_generate_rcache_custom();
+gdouble * lqr_carver_generate_rcache(); /* cache brightness (or luma or else) to speedup energy computation */
 
 gfloat lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, LqrGradFunc gf);
 gfloat lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);

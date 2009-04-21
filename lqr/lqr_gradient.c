@@ -29,27 +29,21 @@
 /**** GRADIENT FUNCTIONS ****/
 
 gfloat
-lqr_grad_norm (gfloat x, gfloat y)
+lqr_grad_norm (gdouble x, gdouble y)
 {
-  return sqrtf (x * x + y * y);
+  return (gfloat) sqrt (x * x + y * y);
 }
 
 gfloat
-lqr_grad_sumabs (gfloat x, gfloat y)
+lqr_grad_sumabs (gdouble x, gdouble y)
 {
-  return (fabsf (x) + fabsf (y)) / 2;
+  return (gfloat) ((fabs (x) + fabs (y)) / 2);
 }
 
 gfloat
-lqr_grad_xabs (gfloat x, gfloat y)
+lqr_grad_xabs (gdouble x, gdouble y)
 {
-  return fabsf (x);
-}
-
-gfloat
-lqr_grad_null (gfloat x, gfloat y)
-{
-  return 0;
+  return (gfloat) fabs (x);
 }
 
 /**** END OF GRADIENT FUNCTIONS ****/

@@ -26,7 +26,7 @@
 LqrRetVal
 lqr_rwindow_fill_std (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
-  gfloat ** buffer;
+  gdouble ** buffer;
   gint i, j;
 
   LqrReadFunc read_float;
@@ -69,7 +69,7 @@ lqr_rwindow_fill_std (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 LqrRetVal
 lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
-  gfloat ** buffer;
+  gdouble ** buffer;
   gint i, j, k;
 
   buffer = rwindow->buffer;
@@ -103,7 +103,7 @@ lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 LqrRetVal
 lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
-  gfloat ** buffer;
+  gdouble ** buffer;
   gint i, j, k;
 
   buffer = rwindow->buffer;
@@ -171,8 +171,8 @@ LqrReaderWindow *
 lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
 {
   LqrReaderWindow * out_rwindow;
-  gfloat ** out_buffer;
-  gfloat * out_buffer_aux;
+  gdouble ** out_buffer;
+  gdouble * out_buffer_aux;
 
   gint buf_size1, buf_size2;
   gint i;
@@ -182,8 +182,8 @@ lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean u
   buf_size1 = (2 * radius + 1);
   buf_size2 = buf_size1 * buf_size1;
 
-  TRY_N_N (out_buffer_aux = g_try_new0 (gfloat, buf_size2));
-  TRY_N_N (out_buffer = g_try_new0 (gfloat *, buf_size1));
+  TRY_N_N (out_buffer_aux = g_try_new0 (gdouble, buf_size2));
+  TRY_N_N (out_buffer = g_try_new0 (gdouble *, buf_size1));
   for (i = 0; i < buf_size1; i++)
     {
       out_buffer[i] = out_buffer_aux + radius;
@@ -207,8 +207,8 @@ LqrReaderWindow *
 lqr_rwindow_new_rgba (gint radius, gboolean use_rcache)
 {
   LqrReaderWindow * out_rwindow;
-  gfloat ** out_buffer;
-  gfloat * out_buffer_aux;
+  gdouble ** out_buffer;
+  gdouble * out_buffer_aux;
 
   gint buf_size1, buf_size2;
   gint i;
@@ -218,8 +218,8 @@ lqr_rwindow_new_rgba (gint radius, gboolean use_rcache)
   buf_size1 = (2 * radius + 1);
   buf_size2 = buf_size1 * buf_size1 * 4;
 
-  TRY_N_N (out_buffer_aux = g_try_new0 (gfloat, buf_size2));
-  TRY_N_N (out_buffer = g_try_new0 (gfloat *, buf_size1));
+  TRY_N_N (out_buffer_aux = g_try_new0 (gdouble, buf_size2));
+  TRY_N_N (out_buffer = g_try_new0 (gdouble *, buf_size1));
   for (i = 0; i < buf_size1; i++)
     {
       out_buffer[i] = out_buffer_aux + radius * 4;
@@ -243,8 +243,8 @@ LqrReaderWindow *
 lqr_rwindow_new_custom (gint radius, gboolean use_rcache, gint channels)
 {
   LqrReaderWindow * out_rwindow;
-  gfloat ** out_buffer;
-  gfloat * out_buffer_aux;
+  gdouble ** out_buffer;
+  gdouble * out_buffer_aux;
 
   gint buf_size1, buf_size2;
   gint i;
@@ -254,8 +254,8 @@ lqr_rwindow_new_custom (gint radius, gboolean use_rcache, gint channels)
   buf_size1 = (2 * radius + 1);
   buf_size2 = buf_size1 * buf_size1 * channels;
 
-  TRY_N_N (out_buffer_aux = g_try_new0 (gfloat, buf_size2));
-  TRY_N_N (out_buffer = g_try_new0 (gfloat *, buf_size1));
+  TRY_N_N (out_buffer_aux = g_try_new0 (gdouble, buf_size2));
+  TRY_N_N (out_buffer = g_try_new0 (gdouble *, buf_size1));
   for (i = 0; i < buf_size1; i++)
     {
       out_buffer[i] = out_buffer_aux + radius * channels;
@@ -297,7 +297,7 @@ lqr_rwindow_new (gint radius, LqrEnergyReaderType read_func_type, gboolean use_r
 void
 lqr_rwindow_destroy (LqrReaderWindow * rwindow)
 {
-  gfloat ** buffer;
+  gdouble ** buffer;
 
   if (rwindow == NULL)
     {
@@ -309,7 +309,7 @@ lqr_rwindow_destroy (LqrReaderWindow * rwindow)
       return;
     }
 
-  buffer = (gfloat **) (rwindow->buffer);
+  buffer = rwindow->buffer;
   buffer -= rwindow->radius;
   buffer[0] -= rwindow->radius * rwindow->channels;
   g_free(buffer[0]);
@@ -317,7 +317,7 @@ lqr_rwindow_destroy (LqrReaderWindow * rwindow)
 }
 
 LQR_PUBLIC
-gfloat
+gdouble
 lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y)
 {
   if (rwindow == NULL || rwindow->read_t != LQR_ER_BRIGHT ||
@@ -336,7 +336,7 @@ lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y)
 }
 
 LQR_PUBLIC
-gfloat
+gdouble
 lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y)
 {
   if (rwindow == NULL || rwindow->read_t != LQR_ER_LUMA ||
@@ -355,7 +355,7 @@ lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y)
 }
 
 LQR_PUBLIC
-gfloat
+gdouble
 lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 {
   if (rwindow == NULL || rwindow->read_t != LQR_ER_RGBA ||
@@ -375,7 +375,7 @@ lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 }
 
 LQR_PUBLIC
-gfloat
+gdouble
 lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 {
   if (rwindow == NULL || rwindow->read_t != LQR_ER_CUSTOM ||

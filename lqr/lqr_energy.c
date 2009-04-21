@@ -41,19 +41,19 @@
 
 /* read normalised pixel value from
  * rgb buffer at the given index */
-inline gfloat
+inline gdouble
 lqr_pixel_get_norm (void * rgb, gint rgb_ind, LqrColDepth col_depth) 
 {
   switch (col_depth)
     {
       case LQR_COLDEPTH_8I:
-        return (gfloat) AS_8I(rgb)[rgb_ind] / 0xFF;
+        return (gdouble) AS_8I(rgb)[rgb_ind] / 0xFF;
       case LQR_COLDEPTH_16I:
-        return (gfloat) AS_16I(rgb)[rgb_ind] / 0xFFFF;
+        return (gdouble) AS_16I(rgb)[rgb_ind] / 0xFFFF;
       case LQR_COLDEPTH_32F:
-        return (gfloat) AS_32F(rgb)[rgb_ind];
+        return (gdouble) AS_32F(rgb)[rgb_ind];
       case LQR_COLDEPTH_64F:
-        return (gfloat) AS_64F(rgb)[rgb_ind];
+        return (gdouble) AS_64F(rgb)[rgb_ind];
       default:
 #ifdef __LQR_DEBUG__
         assert(0);
@@ -62,10 +62,10 @@ lqr_pixel_get_norm (void * rgb, gint rgb_ind, LqrColDepth col_depth)
     }
 }
 
-inline gfloat
+inline gdouble
 lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type, gint channel)
 {
-  gfloat black_fact = 0;
+  gdouble black_fact = 0;
 
   switch (image_type)
     {
@@ -86,7 +86,7 @@ lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageTy
     }
 }
 
-inline gfloat
+inline gdouble
 lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y)
 {
   gint now = r->raw[y][x];
@@ -94,10 +94,10 @@ lqr_carver_read_brightness_grey (LqrCarver * r, gint x, gint y)
   return lqr_pixel_get_norm (r->rgb, rgb_ind, r->col_depth);
 }
 
-inline gfloat
+inline gdouble
 lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y)
 {
-  gfloat red, green, blue;
+  gdouble red, green, blue;
   gint now = r->raw[y][x];
   gint rgb_ind = now * r->channels;
 
@@ -107,16 +107,16 @@ lqr_carver_read_brightness_std (LqrCarver * r, gint x, gint y)
   return (red + green + blue) / 3;
 }
 
-gfloat
+gdouble
 lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y)
 {
-  gfloat sum = 0;
+  gdouble sum = 0;
   gint k;
   gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
   gchar has_black = (r->black_channel >= 0 ? 1 : 0);
   guint col_channels = r->channels - has_alpha - has_black;
 
-  gfloat black_fact = 0;
+  gdouble black_fact = 0;
 
   gint now = r->raw[y][x];
 
@@ -127,7 +127,7 @@ lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y)
 
   for (k = 0; k < r->channels; k++) if ((k != r->alpha_channel) && (k != r->black_channel))
     {
-      gfloat col = lqr_pixel_get_norm(r->rgb, now * r->channels + k, r->col_depth);
+      gdouble col = lqr_pixel_get_norm(r->rgb, now * r->channels + k, r->col_depth);
       sum += 1. - (1. - col) * (1. - black_fact);
     }
 
@@ -143,15 +143,15 @@ lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y)
 
 /* read average pixel value at x, y 
  * for energy computation */
-gfloat
+gdouble
 lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 {
   gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
-  gfloat alpha_fact = 1;
+  gdouble alpha_fact = 1;
 
   gint now = r->raw[y][x];
 
-  gfloat bright = 0;
+  gdouble bright = 0;
 
   switch (r->image_type)
     {
@@ -179,10 +179,10 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
   return bright * alpha_fact;
 }
 
-inline gfloat
+inline gdouble
 lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y)
 {
-  gfloat red, green, blue;
+  gdouble red, green, blue;
   gint now = r->raw[y][x];
   gint rgb_ind = now * r->channels;
 
@@ -192,15 +192,15 @@ lqr_carver_read_luma_std (LqrCarver * r, gint x, gint y)
   return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
 }
 
-gfloat
+gdouble
 lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
 {
   gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
-  gfloat alpha_fact = 1;
+  gdouble alpha_fact = 1;
 
   gint now = r->raw[y][x];
 
-  gfloat bright = 0;
+  gdouble bright = 0;
 
   switch (r->image_type)
     {
@@ -228,7 +228,7 @@ lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
   return bright * alpha_fact;
 }
 
-gfloat
+gdouble
 lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
 {
   gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
@@ -270,7 +270,7 @@ lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
     }
 }
 
-gfloat
+gdouble
 lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel)
 {
   gint now = r->raw[y][x];
@@ -284,17 +284,17 @@ lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel)
 #if 0
 /* read average pixel value at x, y 
  * for energy computation */
-inline gfloat
+inline gdouble
 lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 {
-  gfloat sum = 0;
+  gdouble sum = 0;
   gint k;
   gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
   gchar has_black = (r->black_channel >= 0 ? 1 : 0);
   guint col_channels = r->channels - has_alpha - has_black;
 
-  gfloat alpha_fact = 1;
-  gfloat black_fact = 0;
+  gdouble alpha_fact = 1;
+  gdouble black_fact = 0;
 
   gint now = r->raw[y][x];
 
@@ -310,7 +310,7 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 
   for (k = 0; k < r->channels; k++) if ((k != r->alpha_channel) && (k != r->black_channel))
     {
-      gfloat col = lqr_pixel_get_norm(r->rgb, now * r->channels + k, r->col_depth);
+      gdouble col = lqr_pixel_get_norm(r->rgb, now * r->channels + k, r->col_depth);
       sum += 1. - (1. - col) * (1. - black_fact);
     }
 
@@ -349,14 +349,14 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
 #endif
 
 #if 0
-inline gfloat
+inline gdouble
 lqr_carver_read_brightness_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 {
   gchar has_alpha = (r->alpha_channel > 0 ? 1 : 0);
   gint p1, p2;
-  gfloat a1, a2;
+  gdouble a1, a2;
   gint k;
-  gfloat sum = 0;
+  gdouble sum = 0;
   p1 = r->raw[y1][x1];
   p2 = r->raw[y2][x2];
   if (has_alpha)
@@ -375,11 +375,11 @@ lqr_carver_read_brightness_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y
   return sum / (R_RGB_MAX * (r->channels - has_alpha));
 }
 
-inline gfloat
+inline gdouble
 lqr_carver_read_luma_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 {
   gint p1, p2;
-  gfloat a1, a2;
+  gdouble a1, a2;
   p1 = r->raw[y1][x1];
   p2 = r->raw[y2][x2];
   if (r->image_type == LQR_RGBA_IMAGE)
@@ -398,7 +398,7 @@ lqr_carver_read_luma_abs (LqrCarver * r, gint x1, gint y1, gint x2, gint y2)
 }
 #endif
 
-gfloat
+gdouble
 lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y)
 {
   gint z0 = r->raw[y][x];
@@ -406,7 +406,7 @@ lqr_carver_read_cached_std (LqrCarver * r, gint x, gint y)
   return r->rcache[z0];
 }
 
-gfloat
+gdouble
 lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel)
 {
   gint z0 = r->raw[y][x];
@@ -414,7 +414,7 @@ lqr_carver_read_cached_rgba (LqrCarver * r, gint x, gint y, gint channel)
   return r->rcache[z0 * 4 + channel];
 }
 
-gfloat
+gdouble
 lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel)
 {
   gint z0 = r->raw[y][x];
@@ -425,9 +425,9 @@ lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel)
 gfloat
 lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, LqrGradFunc gf)
 {
-  gfloat gx, gy;
+  gdouble gx, gy;
 
-  gfloat (*bread_func) (LqrReaderWindow *, gint, gint);
+  gdouble (*bread_func) (LqrReaderWindow *, gint, gint);
 
   switch (lqr_rwindow_get_read_t(rwindow))
     {
@@ -503,7 +503,7 @@ lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrRea
 gfloat
 lqr_energy_abs (LqrCarver * r, gint x, gint y)
 {
-  gfloat gx, gy;
+  gdouble gx, gy;
 
   if (y == 0)
     {
@@ -599,14 +599,14 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
   return LQR_OK;
 }
 
-gfloat *
+gdouble *
 lqr_carver_generate_rcache_bright (LqrCarver * r)
 {
-  gfloat * buffer;
+  gdouble * buffer;
   int x, y;
   int z0 = 0;
 
-  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start));
 
   for (y = 0; y < r->h; y++)
     {
@@ -619,14 +619,14 @@ lqr_carver_generate_rcache_bright (LqrCarver * r)
   return buffer;
 }
 
-gfloat *
+gdouble *
 lqr_carver_generate_rcache_luma (LqrCarver * r)
 {
-  gfloat * buffer;
+  gdouble * buffer;
   int x, y;
   int z0 = 0;
 
-  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start));
 
   for (y = 0; y < r->h; y++)
     {
@@ -639,14 +639,14 @@ lqr_carver_generate_rcache_luma (LqrCarver * r)
   return buffer;
 }
 
-gfloat *
+gdouble *
 lqr_carver_generate_rcache_rgba (LqrCarver * r)
 {
-  gfloat * buffer;
+  gdouble * buffer;
   int x, y, k;
   int z0 = 0;
 
-  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start * 4));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start * 4));
 
   for (y = 0; y < r->h; y++)
     {
@@ -662,14 +662,14 @@ lqr_carver_generate_rcache_rgba (LqrCarver * r)
   return buffer;
 }
 
-gfloat *
+gdouble *
 lqr_carver_generate_rcache_custom (LqrCarver * r)
 {
-  gfloat * buffer;
+  gdouble * buffer;
   int x, y, k;
   int z0 = 0;
 
-  TRY_N_N (buffer = g_try_new (gfloat, r->w_start * r->h_start * r->channels));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start * r->channels));
 
   for (y = 0; y < r->h; y++)
     {
@@ -685,7 +685,7 @@ lqr_carver_generate_rcache_custom (LqrCarver * r)
   return buffer;
 }
 
-gfloat *
+gdouble *
 lqr_carver_generate_rcache (LqrCarver * r)
 {
 #ifdef __LQR_DEBUG__

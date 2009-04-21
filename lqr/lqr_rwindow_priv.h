@@ -30,7 +30,7 @@
 
 struct _LqrReaderWindow
 {
-  gfloat ** buffer;
+  gdouble ** buffer;
   gint radius;
   LqrEnergyReaderType read_t;
   gint channels;
@@ -40,8 +40,8 @@ struct _LqrReaderWindow
   gint y;
 };
 
-typedef gfloat (*LqrReadFunc) (LqrCarver*, gint, gint);
-typedef gfloat (*LqrReadFuncWithCh) (LqrCarver*, gint, gint, gint);
+typedef gdouble (*LqrReadFunc) (LqrCarver*, gint, gint);
+typedef gdouble (*LqrReadFuncWithCh) (LqrCarver*, gint, gint, gint);
 /* typedef glfoat (*LqrReadFuncAbs) (LqrCarver*, gint, gint, gint, gint); */
 
 
