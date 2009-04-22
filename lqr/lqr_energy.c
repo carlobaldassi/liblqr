@@ -604,15 +604,16 @@ lqr_carver_generate_rcache_bright (LqrCarver * r)
 {
   gdouble * buffer;
   int x, y;
-  int z0 = 0;
+  int z0;
 
-  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0));
 
   for (y = 0; y < r->h; y++)
     {
       for (x = 0; x < r->w; x++)
         {
-          buffer[z0++] = lqr_carver_read_brightness (r, x, y);
+          z0 = r->raw[y][x];
+          buffer[z0] = lqr_carver_read_brightness (r, x, y);
         }
     }
 
@@ -624,15 +625,16 @@ lqr_carver_generate_rcache_luma (LqrCarver * r)
 {
   gdouble * buffer;
   int x, y;
-  int z0 = 0;
+  int z0;
 
-  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0));
 
   for (y = 0; y < r->h; y++)
     {
       for (x = 0; x < r->w; x++)
         {
-          buffer[z0++] = lqr_carver_read_luma (r, x, y);
+          z0 = r->raw[y][x];
+          buffer[z0] = lqr_carver_read_luma (r, x, y);
         }
     }
 
@@ -644,17 +646,18 @@ lqr_carver_generate_rcache_rgba (LqrCarver * r)
 {
   gdouble * buffer;
   int x, y, k;
-  int z0 = 0;
+  int z0;
 
-  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start * 4));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0 * 4));
 
   for (y = 0; y < r->h; y++)
     {
       for (x = 0; x < r->w; x++)
         {
+          z0 = r->raw[y][x];
           for (k = 0; k < 4; k++)
             {
-              buffer[z0++] = lqr_carver_read_rgba (r, x, y, k);
+              buffer[z0 * 4 + k] = lqr_carver_read_rgba (r, x, y, k);
             }
         }
     }
@@ -667,17 +670,18 @@ lqr_carver_generate_rcache_custom (LqrCarver * r)
 {
   gdouble * buffer;
   int x, y, k;
-  int z0 = 0;
+  int z0;
 
-  TRY_N_N (buffer = g_try_new (gdouble, r->w_start * r->h_start * r->channels));
+  TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0 * r->channels));
 
   for (y = 0; y < r->h; y++)
     {
       for (x = 0; x < r->w; x++)
         {
+          z0 = r->raw[y][x];
           for (k = 0; k < r->channels; k++)
             {
-              buffer[z0++] = lqr_carver_read_custom (r, x, y, k);
+              buffer[z0 * r->channels + k] = lqr_carver_read_custom (r, x, y, k);
             }
         }
     }
@@ -689,8 +693,7 @@ gdouble *
 lqr_carver_generate_rcache (LqrCarver * r)
 {
 #ifdef __LQR_DEBUG__
-  assert (r->w == r->w_start);
-  assert (r->h == r->h_start);
+  assert (r->w == r->w_start - r->max_level + 1);
 #endif /* __LQR_DEBUG__ */
 
   switch (r->nrg_read_t)

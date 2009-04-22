@@ -23,6 +23,12 @@
 #include <glib.h>
 #include <lqr/lqr_all.h>
 
+#ifdef __LQR_DEBUG__
+#include <stdio.h>
+#include <assert.h>
+#endif /* __LQR_DEBUG__ */
+
+
 LqrRetVal
 lqr_rwindow_fill_std (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
