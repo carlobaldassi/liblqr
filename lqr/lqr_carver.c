@@ -88,6 +88,8 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
 
   r->rwindow = NULL;
   lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
+  r->nrg_xmin = NULL;
+  r->nrg_xmax = NULL;
 
   r->leftright = 0;
   r->lr_switch_frequency = 0;
@@ -177,6 +179,8 @@ lqr_carver_destroy (LqrCarver * r)
     }
   g_free (r->rigidity_mask);
   lqr_rwindow_destroy (r->rwindow);
+  g_free (r->nrg_xmin);
+  g_free (r->nrg_xmax);
   lqr_vmap_list_destroy(r->flushed_vs);
   lqr_carver_list_destroy(r->attached_list);
   g_free (r->progress);
@@ -216,6 +220,9 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
   CATCH_MEM (r->vpath = g_try_new (gint, r->h));
   CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
+
+  CATCH_MEM (r->nrg_xmin = g_try_new (gint, r->h));
+  CATCH_MEM (r->nrg_xmax = g_try_new (gint, r->h));
 
   /* set rigidity map */
   r->delta_x = delta_x;
@@ -705,12 +712,12 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 
       if (r->w > 1)
         {
+          /* update the energy */
+          /* CATCH (lqr_carver_build_emap (r));  */
+          CATCH (lqr_carver_update_emap (r)); 
+
           if (r->nrg_builtin_flag)
             {
-              /* update the energy */
-              /* lqr_carver_build_emap (r); */
-              CATCH (lqr_carver_update_emap (r));
-
               /* recalculate the minpath map */
               if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
                 {
@@ -723,7 +730,6 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
                   CATCH (lqr_carver_update_mmap (r));
                 }
             } else {
-              CATCH (lqr_carver_build_emap (r)); 
               if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
                 {
                   r->leftright ^= 1;
@@ -1127,28 +1133,49 @@ lqr_carver_carve (LqrCarver * r)
 }
 
 
-/* update energy map after seam removal
- * (the only affected energies are to the
- * left and right of the removed seam) */
+/* update energy map after seam removal */
 LqrRetVal
 lqr_carver_update_emap (LqrCarver * r)
 {
   gint x, y;
-  gint x1, x_min, x_max;
+  gint x1, y1, y1_min, y1_max;
 
   if (r->use_rcache)
     {
       CATCH_F (r->rcache != NULL);
     }
 
+  CATCH_CANC (r);
+
+  for (y = 0; y < r->h; y++)
+    {
+      /* note: here the vpath has already
+       * been carved */
+      x = r->vpath_x[y];
+      r->nrg_xmin[y] = x;
+      r->nrg_xmax[y] = x - 1;
+    }
+  for (y = 0; y < r->h; y++)
+    {
+      x = r->vpath_x[y];
+      y1_min = MAX (y - r->nrg_radius, 0);
+      y1_max = MIN (y + r->nrg_radius, r->h - 1);
+
+      for (y1 = y1_min; y1 <= y1_max; y1++)
+        {
+          r->nrg_xmin[y1] = MIN (r->nrg_xmin[y1], x - r->nrg_radius);
+          r->nrg_xmin[y1] = MAX (0, r->nrg_xmin[y1]);
+          /* note: the -1 below is because of the previous carving */
+          r->nrg_xmax[y1] = MAX (r->nrg_xmax[y1], x + r->nrg_radius - 1);
+          r->nrg_xmax[y1] = MIN (r->w - 1, r->nrg_xmax[y1]);
+        }
+    }
+
   for (y = 0; y < r->h; y++)
     {
       CATCH_CANC (r);
 
-      x = r->vpath_x[y];
-      x_min = MAX (0, x - r->delta_x);
-      x_max = MIN (r->w - 1, x + r->delta_x - 1);
-      for (x1 = x_min; x1 <= x_max; x1++)
+      for (x1 = r->nrg_xmin[y]; x1 <= r->nrg_xmax[y]; x1++)
         {
           CATCH (lqr_carver_compute_e (r, x1, y));
         }
@@ -1758,6 +1785,10 @@ lqr_carver_transpose (LqrCarver * r)
       CATCH_MEM (r->vpath = g_try_new (gint, r->h));
       g_free (r->vpath_x);
       CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
+      g_free (r->nrg_xmin);
+      CATCH_MEM (r->nrg_xmin = g_try_new (gint, r->h));
+      g_free (r->nrg_xmax);
+      CATCH_MEM (r->nrg_xmax = g_try_new (gint, r->h));
     }
 
   BUF_TRY_NEW0_RET_LQR(r->rgb_ro_buffer, r->w0 * r->channels, r->col_depth);

@@ -239,6 +239,9 @@ struct _LqrCarver
   gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
   LqrReaderWindow * rwindow;      /* reader window for energy computation */
 
+  gint *nrg_xmin;                 /* auxiliary vector for energy update */
+  gint *nrg_xmax;                 /* auxiliary vector for energy update */
+
   gdouble * rcache;               /* array of brightness (or luma or else) levels for energy computation */
   gboolean use_rcache;            /* wheter to cache brightness, luma etc. */
 
