@@ -15,9 +15,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- 
+
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/> 
+ * along with this program; if not, see <http://www.gnu.org/licenses/>
  */
 
 #include <math.h>
@@ -389,7 +389,7 @@ lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
   g_free(aux->vs);
   aux->vs = r->vs;
   aux->root = r;
-  
+
   return LQR_OK;
 }
 
@@ -547,7 +547,7 @@ lqr_carver_compute_e (LqrCarver * r, gint x, gint y)
  *   y > 1 : m(x,y) = min_{x'=-dx,..,dx} ( m(x-x',y-1) + rig(x') ) + e(x,y)
  * where
  *   e(x,y)  is the energy at point (x,y)
- *   dx      is the max seam step delta_x 
+ *   dx      is the max seam step delta_x
  *   rig(x') is the rigidity for step x'
  */
 LqrRetVal
@@ -593,7 +593,7 @@ lqr_carver_build_mmap (LqrCarver * r)
           }
 
           /* we use the data_down pointer to be able to
-           * track the seams later (needed for rigidity) */  
+           * track the seams later (needed for rigidity) */
           data_down = r->raw[y - 1][x + x1_min];
           r->least[data] = data_down;
           if (r->rigidity)
@@ -714,7 +714,7 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
         {
           /* update the energy */
           /* CATCH (lqr_carver_build_emap (r));  */
-          CATCH (lqr_carver_update_emap (r)); 
+          CATCH (lqr_carver_update_emap (r));
 
           if (r->nrg_builtin_flag)
             {
@@ -1017,7 +1017,7 @@ lqr_carver_inflate_attached (LqrCarver * r, LqrDataTok data)
 /*** internal functions for maps computations ***/
 
 #if 0
-/* read average pixel value at x, y 
+/* read average pixel value at x, y
  * for energy computation */
 inline gfloat
 lqr_carver_read (LqrCarver * r, gint x, gint y)
@@ -1605,7 +1605,7 @@ lqr_carver_flatten (LqrCarver * r)
 
   /* init the other maps */
   if (r->root == NULL)
-    { 
+    {
       g_free (r->vs);
       CATCH_MEM (r->vs = g_try_new0 (gint, r->w * r->h));
       CATCH (lqr_carver_propagate_vsmap(r));
@@ -1954,7 +1954,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
 
       data_tok.integer = new_w;
       lqr_carver_list_foreach_recursive (r->attached_list,  lqr_carver_set_width_attached, data_tok);
-      
+
       if (r->dump_vmaps)
         {
           CATCH (lqr_vmap_internal_dump (r));

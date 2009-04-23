@@ -15,9 +15,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- 
+
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/> 
+ * along with this program; if not, see <http://www.gnu.org/licenses/>
  */
 
 #include <glib.h>
@@ -68,7 +68,7 @@ lqr_rwindow_fill_std (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
             }
         }
     }
-  
+
   return LQR_OK;
 }
 
@@ -102,7 +102,7 @@ lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
             }
         }
     }
-  
+
   return LQR_OK;
 }
 
@@ -136,7 +136,7 @@ lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint 
             }
         }
     }
-  
+
   return LQR_OK;
 }
 
@@ -205,7 +205,7 @@ lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean u
   out_rwindow->carver = NULL;
   out_rwindow->x = 0;
   out_rwindow->y = 0;
-  
+
   return out_rwindow;
 }
 
@@ -241,7 +241,7 @@ lqr_rwindow_new_rgba (gint radius, gboolean use_rcache)
   out_rwindow->carver = NULL;
   out_rwindow->x = 0;
   out_rwindow->y = 0;
-  
+
   return out_rwindow;
 }
 
@@ -277,7 +277,7 @@ lqr_rwindow_new_custom (gint radius, gboolean use_rcache, gint channels)
   out_rwindow->carver = NULL;
   out_rwindow->x = 0;
   out_rwindow->y = 0;
-  
+
   return out_rwindow;
 }
 

@@ -15,9 +15,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- 
+
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/> 
+ * along with this program; if not, see <http://www.gnu.org/licenses/>
  */
 
 #include <glib.h>
@@ -42,7 +42,7 @@
 /* read normalised pixel value from
  * rgb buffer at the given index */
 inline gdouble
-lqr_pixel_get_norm (void * rgb, gint rgb_ind, LqrColDepth col_depth) 
+lqr_pixel_get_norm (void * rgb, gint rgb_ind, LqrColDepth col_depth)
 {
   switch (col_depth)
     {
@@ -69,13 +69,13 @@ lqr_pixel_get_rgbcol (void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageTy
 
   switch (image_type)
     {
-      case LQR_RGB_IMAGE: 
-      case LQR_RGBA_IMAGE: 
+      case LQR_RGB_IMAGE:
+      case LQR_RGBA_IMAGE:
         return lqr_pixel_get_norm (rgb, rgb_ind + channel, col_depth);
-      case LQR_CMY_IMAGE: 
+      case LQR_CMY_IMAGE:
         return 1. - lqr_pixel_get_norm (rgb, rgb_ind + channel, col_depth);
-      case LQR_CMYK_IMAGE: 
-      case LQR_CMYKA_IMAGE: 
+      case LQR_CMYK_IMAGE:
+      case LQR_CMYKA_IMAGE:
         black_fact = 1 - lqr_pixel_get_norm(rgb, rgb_ind + 3, col_depth);
         return black_fact * (1. - (lqr_pixel_get_norm (rgb, rgb_ind + channel, col_depth)));
       default:
@@ -141,7 +141,7 @@ lqr_carver_read_brightness_custom (LqrCarver * r, gint x, gint y)
   return sum;
 }
 
-/* read average pixel value at x, y 
+/* read average pixel value at x, y
  * for energy computation */
 gdouble
 lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
@@ -159,11 +159,11 @@ lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)
       case LQR_GREYA_IMAGE:
         bright = lqr_carver_read_brightness_grey (r, x, y);
         break;
-      case LQR_RGB_IMAGE: 
-      case LQR_RGBA_IMAGE: 
-      case LQR_CMY_IMAGE: 
-      case LQR_CMYK_IMAGE: 
-      case LQR_CMYKA_IMAGE: 
+      case LQR_RGB_IMAGE:
+      case LQR_RGBA_IMAGE:
+      case LQR_CMY_IMAGE:
+      case LQR_CMYK_IMAGE:
+      case LQR_CMYKA_IMAGE:
         bright = lqr_carver_read_brightness_std (r, x, y);
         break;
       case LQR_CUSTOM_IMAGE:
@@ -208,11 +208,11 @@ lqr_carver_read_luma (LqrCarver * r, gint x, gint y)
       case LQR_GREYA_IMAGE:
         bright = lqr_carver_read_brightness_grey (r, x, y);
         break;
-      case LQR_RGB_IMAGE: 
-      case LQR_RGBA_IMAGE: 
-      case LQR_CMY_IMAGE: 
-      case LQR_CMYK_IMAGE: 
-      case LQR_CMYKA_IMAGE: 
+      case LQR_RGB_IMAGE:
+      case LQR_RGBA_IMAGE:
+      case LQR_CMY_IMAGE:
+      case LQR_CMYK_IMAGE:
+      case LQR_CMYKA_IMAGE:
         bright = lqr_carver_read_luma_std (r, x, y);
         break;
       case LQR_CUSTOM_IMAGE:
@@ -246,11 +246,11 @@ lqr_carver_read_rgba (LqrCarver * r, gint x, gint y, gint channel)
           case LQR_GREY_IMAGE:
           case LQR_GREYA_IMAGE:
             return lqr_carver_read_brightness_grey (r, x, y);
-          case LQR_RGB_IMAGE: 
-          case LQR_RGBA_IMAGE: 
-          case LQR_CMY_IMAGE: 
-          case LQR_CMYK_IMAGE: 
-          case LQR_CMYKA_IMAGE: 
+          case LQR_RGB_IMAGE:
+          case LQR_RGBA_IMAGE:
+          case LQR_CMY_IMAGE:
+          case LQR_CMYK_IMAGE:
+          case LQR_CMYKA_IMAGE:
             return lqr_pixel_get_rgbcol (r->rgb, now * r->channels, r->col_depth, r->image_type, channel);
           case LQR_CUSTOM_IMAGE:
           default:
@@ -282,7 +282,7 @@ lqr_carver_read_custom (LqrCarver * r, gint x, gint y, gint channel)
 
 
 #if 0
-/* read average pixel value at x, y 
+/* read average pixel value at x, y
  * for energy computation */
 inline gdouble
 lqr_carver_read_brightness (LqrCarver * r, gint x, gint y)

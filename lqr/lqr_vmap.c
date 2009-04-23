@@ -15,9 +15,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- 
+
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/> 
+ * along with this program; if not, see <http://www.gnu.org/licenses/>
  */
 
 #include <lqr/lqr_all.h>
@@ -95,7 +95,7 @@ lqr_vmap_dump (LqrCarver * r)
   LqrVMap * vmap;
   gint w, h, w1, x, y, z0, vs;
   gint * buffer;
-  gint depth; 
+  gint depth;
 
   /* save current size */
   w1 = r->w;
@@ -154,7 +154,7 @@ lqr_vmap_internal_dump (LqrCarver * r)
   LqrVMap * vmap;
   gint w, h, w1, x, y, z0, vs;
   gint * buffer;
-  gint depth; 
+  gint depth;
 
   CATCH_CANC (r);
 
