@@ -322,17 +322,9 @@ lqr_rwindow_destroy (LqrReaderWindow * rwindow)
   g_free(buffer);
 }
 
-LQR_PUBLIC
 gdouble
 lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y)
 {
-  if (rwindow == NULL || rwindow->read_t != LQR_ER_BRIGHT ||
-      x < -rwindow->radius || x > rwindow->radius ||
-      y < -rwindow->radius || y > rwindow->radius)
-    {
-      return 0;
-    }
-
   if (rwindow->use_rcache)
     {
       return lqr_carver_read_cached_std (rwindow->carver, rwindow->x + x, rwindow->y + y);
@@ -341,17 +333,9 @@ lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y)
   return rwindow->buffer[x][y];
 }
 
-LQR_PUBLIC
 gdouble
 lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y)
 {
-  if (rwindow == NULL || rwindow->read_t != LQR_ER_LUMA ||
-      x < -rwindow->radius || x > rwindow->radius ||
-      y < -rwindow->radius || y > rwindow->radius)
-    {
-      return 0;
-    }
-
   if (rwindow->use_rcache)
     {
       return lqr_carver_read_cached_std (rwindow->carver, rwindow->x + x, rwindow->y + y);
@@ -360,18 +344,9 @@ lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y)
   return rwindow->buffer[x][y];
 }
 
-LQR_PUBLIC
 gdouble
 lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 {
-  if (rwindow == NULL || rwindow->read_t != LQR_ER_RGBA ||
-      x < -rwindow->radius || x > rwindow->radius ||
-      y < -rwindow->radius || y > rwindow->radius ||
-      channel < 0 || channel > 3)
-    {
-      return 0;
-    }
-
   if (rwindow->use_rcache)
     {
       return lqr_carver_read_cached_rgba (rwindow->carver, rwindow->x + x, rwindow->y + y, channel);
@@ -380,17 +355,9 @@ lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
   return rwindow->buffer[x][4 * y + channel];
 }
 
-LQR_PUBLIC
 gdouble
 lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 {
-  if (rwindow == NULL || rwindow->read_t != LQR_ER_CUSTOM ||
-      x < -rwindow->radius || x > rwindow->radius ||
-      y < -rwindow->radius || y > rwindow->radius)
-    {
-      return 0;
-    }
-
   if (rwindow->use_rcache)
     {
       return lqr_carver_read_cached_custom (rwindow->carver, rwindow->x + x, rwindow->y + y, channel);
@@ -398,6 +365,36 @@ lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel
 
   return rwindow->buffer[x][rwindow->channels * y + channel];
 }
+
+LQR_PUBLIC
+gdouble
+lqr_rwindow_read (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
+{
+  if (rwindow == NULL ||
+      x < -rwindow->radius || x > rwindow->radius ||
+      y < -rwindow->radius || y > rwindow->radius)
+    {
+      return 0;
+    }
+
+  switch (rwindow->read_t)
+    {
+      case LQR_ER_BRIGHT:
+        return lqr_rwindow_read_bright (rwindow, x, y);
+      case LQR_ER_LUMA:
+        return lqr_rwindow_read_luma (rwindow, x, y);
+      case LQR_ER_RGBA:
+        return lqr_rwindow_read_rgba (rwindow, x, y, channel);
+      case LQR_ER_CUSTOM:
+        return lqr_rwindow_read_custom (rwindow, x, y, channel);
+      default:
+#ifdef __LQR_DEBUG__
+        assert(0);
+#endif /* __LQR_DEBUG__ */
+        return 0;
+    }
+}
+
 
 LQR_PUBLIC
 LqrEnergyReaderType
@@ -411,6 +408,13 @@ gint
 lqr_rwindow_get_radius (LqrReaderWindow * rwindow)
 {
   return rwindow->radius;
+}
+
+LQR_PUBLIC
+gint
+lqr_rwindow_get_channels (LqrReaderWindow * rwindow)
+{
+  return rwindow->channels;
 }
 
 

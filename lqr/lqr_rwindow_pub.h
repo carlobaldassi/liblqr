@@ -33,7 +33,7 @@ enum _LqrEnergyReaderType
   LQR_ER_BRIGHT,                /* read brightness */
   LQR_ER_LUMA,                  /* read luma */
   LQR_ER_RGBA,                  /* read RGBA */
-  LQR_ER_CUSTOM                 /* reader the buffer as-is*/
+  LQR_ER_CUSTOM                 /* read the buffer as-is*/
 };
 
 typedef enum _LqrEnergyReaderType LqrEnergyReaderType;
@@ -42,13 +42,11 @@ struct _LqrReaderWindow;
 
 typedef struct _LqrReaderWindow LqrReaderWindow;
 
-gdouble lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y);
-gdouble lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y);
-gdouble lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
-gdouble lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
+gdouble lqr_rwindow_read (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
 
 LqrEnergyReaderType lqr_rwindow_get_read_t (LqrReaderWindow * rwindow);
 gint lqr_rwindow_get_radius (LqrReaderWindow * rwindow);
+gint lqr_rwindow_get_channels (LqrReaderWindow * rwindow);
 
 #endif /* __LQR_READER_WINDOW_PUB_H__ */
 

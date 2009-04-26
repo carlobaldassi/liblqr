@@ -50,6 +50,11 @@ LqrRetVal lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint 
 LqrRetVal lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
 LqrRetVal lqr_rwindow_fill (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y);
 
+gdouble lqr_rwindow_read_bright (LqrReaderWindow * rwindow, gint x, gint y);
+gdouble lqr_rwindow_read_luma (LqrReaderWindow * rwindow, gint x, gint y);
+gdouble lqr_rwindow_read_rgba (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
+gdouble lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
+
 LqrReaderWindow * lqr_rwindow_new_std (gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache);
 LqrReaderWindow * lqr_rwindow_new_rgba (gint radius, gboolean use_rcache);
 LqrReaderWindow * lqr_rwindow_new_custom (gint radius, gboolean use_rcache, gint channels);

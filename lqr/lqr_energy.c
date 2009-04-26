@@ -603,8 +603,8 @@ gdouble *
 lqr_carver_generate_rcache_bright (LqrCarver * r)
 {
   gdouble * buffer;
-  int x, y;
-  int z0;
+  gint x, y;
+  gint z0;
 
   TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0));
 
@@ -624,8 +624,8 @@ gdouble *
 lqr_carver_generate_rcache_luma (LqrCarver * r)
 {
   gdouble * buffer;
-  int x, y;
-  int z0;
+  gint x, y;
+  gint z0;
 
   TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0));
 
@@ -645,8 +645,8 @@ gdouble *
 lqr_carver_generate_rcache_rgba (LqrCarver * r)
 {
   gdouble * buffer;
-  int x, y, k;
-  int z0;
+  gint x, y, k;
+  gint z0;
 
   TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0 * 4));
 
@@ -669,8 +669,8 @@ gdouble *
 lqr_carver_generate_rcache_custom (LqrCarver * r)
 {
   gdouble * buffer;
-  int x, y, k;
-  int z0;
+  gint x, y, k;
+  gint z0;
 
   TRY_N_N (buffer = g_try_new (gdouble, r->w0 * r->h0 * r->channels));
 
