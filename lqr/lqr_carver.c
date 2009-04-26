@@ -516,6 +516,8 @@ lqr_carver_build_emap (LqrCarver * r)
   for (y = 0; y < r->h; y++)
     {
       CATCH_CANC(r);
+      /* r->nrg_xmin[y] = 0; */
+      /* r->nrg_xmax[y] = r->w - 1; */
       for (x = 0; x < r->w; x++)
         {
           CATCH (lqr_carver_compute_e(r, x, y));
@@ -716,25 +718,16 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
           /* CATCH (lqr_carver_build_emap (r));  */
           CATCH (lqr_carver_update_emap (r));
 
-          if (r->nrg_builtin_flag)
+          /* recalculate the minpath map */
+          if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
             {
-              /* recalculate the minpath map */
-              if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
-                {
-                  r->leftright ^= 1;
-                  CATCH (lqr_carver_build_mmap (r));
-                }
-              else
-                {
-                  /* lqr_carver_build_mmap (r); */
-                  CATCH (lqr_carver_update_mmap (r));
-                }
-            } else {
-              if ((r->lr_switch_frequency) && (((l - r->max_level + lr_switch_interval / 2) % lr_switch_interval) == 0))
-                {
-                  r->leftright ^= 1;
-                }
+              r->leftright ^= 1;
               CATCH (lqr_carver_build_mmap (r));
+            }
+          else
+            {
+              /* lqr_carver_build_mmap (r); */
+              CATCH (lqr_carver_update_mmap (r));
             }
         }
       else
@@ -1138,7 +1131,7 @@ LqrRetVal
 lqr_carver_update_emap (LqrCarver * r)
 {
   gint x, y;
-  gint x1, y1, y1_min, y1_max;
+  gint y1, y1_min, y1_max;
 
   if (r->use_rcache)
     {
@@ -1175,20 +1168,20 @@ lqr_carver_update_emap (LqrCarver * r)
     {
       CATCH_CANC (r);
 
-      for (x1 = r->nrg_xmin[y]; x1 <= r->nrg_xmax[y]; x1++)
+      for (x = r->nrg_xmin[y]; x <= r->nrg_xmax[y]; x++)
         {
-          CATCH (lqr_carver_compute_e (r, x1, y));
+          CATCH (lqr_carver_compute_e (r, x, y));
         }
     }
   return LQR_OK;
 }
 
-
 /* update the auxiliary minpath map
  * this only updates the affected pixels,
- * which start form the beginning of the seam
- * and expand at most by delta_x (in both
- * directions) at each row */
+ * which start form the beginning of the changed
+ * energy region around the seam and expand
+ * at most by delta_x (in both directions)
+ * at each row */
 LqrRetVal
 lqr_carver_update_mmap (LqrCarver * r)
 {
@@ -1205,10 +1198,10 @@ lqr_carver_update_mmap (LqrCarver * r)
 
   /* span first row */
   /* x_min = MAX (r->vpath_x[0] - r->delta_x, 0); */
-  x_min = MAX (r->vpath_x[0] - 1, 0);
+  x_min = MAX (r->nrg_xmin[0], 0);
   /* x_max = MIN (r->vpath_x[0] + r->delta_x - 1, r->w - 1); */
   /* x_max = MIN (r->vpath_x[0] + r->delta_x, r->w - 1); */
-  x_max = MIN (r->vpath_x[0], r->w - 1);
+  x_max = MIN (r->nrg_xmax[0], r->w - 1);
 
   for (x = x_min; x <= x_max; x++)
     {
@@ -1221,10 +1214,9 @@ lqr_carver_update_mmap (LqrCarver * r)
     {
       CATCH_CANC(r);
 
-      /* make sure to include the seam */
-      x_min = MIN (x_min, MAX(r->vpath_x[y] - 1, 0));
-      x_max = MAX (x_max, MIN(r->vpath_x[y], r->w - 1));
-      /* x_max = MAX (x_max, r->vpath_x[y] - 1); */
+      /* make sure to include the changed energy region */
+      x_min = MIN (x_min, r->nrg_xmin[y]);
+      x_max = MAX (x_max, r->nrg_xmax[y]);
 
       /* expand the affected region by delta_x */
       x_min = MAX (x_min - r->delta_x, 0);
@@ -1281,12 +1273,12 @@ lqr_carver_update_mmap (LqrCarver * r)
            * with the previous map */
           if (r->least[data] == least)
             {
-              if ((x == x_min) && (x < r->vpath_x[y] - 1)
+              if ((x == x_min) && (x < r->nrg_xmin[y])
                   && (r->m[data] == r->en[data] + m))
                 {
                   x_min++;
                 }
-              if ((x > r->vpath_x[y]) && (r->m[data] == r->en[data] + m))
+              if ((x > r->nrg_xmax[y]) && (r->m[data] == r->en[data] + m))
                 {
                   if (stop == 0)
                     {
@@ -1317,6 +1309,7 @@ lqr_carver_update_mmap (LqrCarver * r)
     }
   return LQR_OK;
 }
+
 
 
 /* compute seam path from minpath map */
