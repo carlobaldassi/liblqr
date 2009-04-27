@@ -160,6 +160,13 @@
     } \
 } G_STMT_END
 
+#define CATCH_CANC_N(carver) G_STMT_START { \
+  if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \
+    { \
+      return NULL; \
+    } \
+} G_STMT_END
+
 /* Carver states */
 
 enum _LqrCarverState {
@@ -198,6 +205,7 @@ struct _LqrCarver
 
   gint transposed;                /* flag to set transposed state */
   gboolean active;                /* flag to set if carver is active */
+  gboolean nrg_active;            /* flag to set if carver energy is active */
   LqrCarver* root;                /* pointer to the root carver */
 
   gboolean resize_aux_layers;     /* flag to determine whether the auxiliary layers are resized */
@@ -259,8 +267,8 @@ struct _LqrCarver
 /* constructor base */
 LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels);
 
-/* Init energy */
-LqrRetVal lqr_carver_init_energy (LqrCarver *r);
+/* Init energy related structures only */
+LqrRetVal lqr_carver_init_energy_related (LqrCarver *r);
 
 /* build maps */
 LqrRetVal lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */

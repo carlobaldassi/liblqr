@@ -52,6 +52,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->max_level = 1;
   r->transposed = 0;
   r->active = FALSE;
+  r->nrg_active = FALSE;
   r->root = NULL;
   r->rigidity = 0;
   r->resize_aux_layers = FALSE;
@@ -192,11 +193,12 @@ lqr_carver_destroy (LqrCarver * r)
 /*** initialization ***/
 
 LqrRetVal
-lqr_carver_init_energy (LqrCarver *r)
+lqr_carver_init_energy_related (LqrCarver *r)
 {
   gint y, x;
 
   CATCH_F (r->active == FALSE);
+  CATCH_F (r->nrg_active == FALSE);
 
   CATCH_MEM (r->en = g_try_new (gfloat, r->w * r->h));
   CATCH_MEM (r->_raw = g_try_new (gint, r->h_start * r->w_start));
@@ -210,6 +212,8 @@ lqr_carver_init_energy (LqrCarver *r)
           r->raw[y][x] = y * r->w_start + x;
         }
     }
+
+  r->nrg_active = TRUE;
 
   return LQR_OK;
 }
@@ -229,7 +233,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
   CATCH_MEM (r->m = g_try_new (gfloat, r->w * r->h));
   CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
 
-  CATCH (lqr_carver_init_energy (r));
+  CATCH (lqr_carver_init_energy_related (r));
 
   CATCH_MEM (r->vpath = g_try_new (gint, r->h));
   CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
@@ -1013,11 +1017,14 @@ lqr_carver_inflate (LqrCarver * r, gint l)
     {
       /* r->vs = NULL; */
     }
+  if (r->nrg_active)
+    {
+      CATCH_MEM (r->en = g_try_new0 (gfloat, w1 * r->h0));
+    }
   if (r->active)
     {
       r->bias = new_bias;
       r->rigidity_mask = new_rigmask;
-      CATCH_MEM (r->en = g_try_new0 (gfloat, w1 * r->h0));
       CATCH_MEM (r->m = g_try_new0 (gfloat, w1 * r->h0));
       CATCH_MEM (r->least = g_try_new0 (gint, w1 * r->h0));
     }
@@ -1587,7 +1594,9 @@ lqr_carver_flatten (LqrCarver * r)
       if (r->rigidity_mask) {
               CATCH_MEM (new_rigmask = g_try_new (gfloat, r->w * r->h));
       }
-
+    }
+  if (r->nrg_active)
+    {
       g_free (r->_raw);
       g_free (r->raw);
       CATCH_MEM (r->_raw = g_try_new (gint, r->w * r->h));
@@ -1601,7 +1610,7 @@ lqr_carver_flatten (LqrCarver * r)
     {
       CATCH_CANC (r);
 
-      if (r->active)
+      if (r->nrg_active)
         {
           r->raw[y] = r->_raw + y * r->w;
         }
@@ -1618,6 +1627,9 @@ lqr_carver_flatten (LqrCarver * r)
               if (r->rigidity_mask) {
                       new_rigmask[z0] = r->rigidity_mask[r->c->now];
               }
+            }
+          if (r->nrg_active)
+            {
               r->raw[y][x] = z0;
             }
           lqr_cursor_next (r->c);
@@ -1648,9 +1660,12 @@ lqr_carver_flatten (LqrCarver * r)
       CATCH_MEM (r->vs = g_try_new0 (gint, r->w * r->h));
       CATCH (lqr_carver_propagate_vsmap(r));
     }
-  if (r->active)
+  if (r->nrg_active)
     {
       CATCH_MEM (r->en = g_try_new0 (gfloat, r->w * r->h));
+    }
+  if (r->active)
+    {
       CATCH_MEM (r->m = g_try_new0 (gfloat, r->w * r->h));
       CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
     }
@@ -1740,6 +1755,9 @@ lqr_carver_transpose (LqrCarver * r)
         {
           CATCH_MEM (new_rigmask = g_try_new (gfloat, r->w0 * r->h0));
         }
+    }
+  if (r->nrg_active)
+    {
       g_free (r->_raw);
       g_free (r->raw);
       CATCH_MEM (r->_raw = g_try_new0 (gint, r->h0 * r->w0));
@@ -1749,7 +1767,7 @@ lqr_carver_transpose (LqrCarver * r)
   /* compute trasposed maps */
   for (x = 0; x < r->w; x++)
     {
-      if (r->active)
+      if (r->nrg_active)
         {
           r->raw[x] = r->_raw + x * r->h0;
         }
@@ -1767,6 +1785,9 @@ lqr_carver_transpose (LqrCarver * r)
               if (r->rigidity_mask) {
                       new_rigmask[z1] = r->rigidity_mask[z0];
               }
+            }
+          if (r->nrg_active)
+            {
               r->raw[x][y] = z1;
             }
         }
@@ -1796,9 +1817,12 @@ lqr_carver_transpose (LqrCarver * r)
       CATCH_MEM (r->vs = g_try_new0 (gint, r->w0 * r->h0));
       CATCH (lqr_carver_propagate_vsmap(r));
     }
-  if (r->active)
+  if (r->nrg_active)
     {
       CATCH_MEM (r->en = g_try_new0 (gfloat, r->w0 * r->h0));
+    }
+  if (r->active)
+    {
       CATCH_MEM (r->m = g_try_new0 (gfloat, r->w0 * r->h0));
       CATCH_MEM (r->least = g_try_new (gint, r->w0 * r->h0));
     }

@@ -710,87 +710,67 @@ lqr_carver_generate_rcache (LqrCarver * r)
 }
 
 LQR_PUBLIC
-LqrEnergyPreview *
-lqr_energy_preview_new_builtin (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth, LqrImageType image_type,
-                                        LqrEnergyFuncBuiltinType ef_ind)
-{
-  LqrEnergyPreview * ep;
-  switch (ef_ind)
-    {
-      case LQR_EF_GRAD_NORM:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHT, NULL));
-        break;
-      case LQR_EF_GRAD_SUMABS:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHT, NULL));
-        break;
-      case LQR_EF_GRAD_XABS:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHT, NULL));
-        break;
-      case LQR_EF_LUMA_GRAD_NORM:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_grad_norm, 1, LQR_ER_LUMA, NULL));
-        break;
-      case LQR_EF_LUMA_GRAD_SUMABS:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_LUMA, NULL));
-        break;
-      case LQR_EF_LUMA_GRAD_XABS:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_grad_xabs, 1, LQR_ER_LUMA, NULL));
-        break;
-      case LQR_EF_NULL:
-        TRY_N_N (ep = lqr_energy_preview_new (buffer, width, height, channels, colour_depth, image_type, lqr_energy_builtin_null, 0, LQR_ER_BRIGHT, NULL));
-        break;
-      default:
-        return NULL;
-    }
-
-  return ep;
-}
-
-LQR_PUBLIC
-LqrEnergyPreview *
-lqr_energy_preview_new (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth, LqrImageType image_type,
-                                        LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data)
+LqrCarver *
+lqr_energy_preview_new (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth)
 {
   LqrCarver * r;
   TRY_N_N (r = lqr_carver_new_ext (buffer, width, height, channels, colour_depth));
   lqr_carver_set_preserve_input_image (r);
-  TRY_E_N (lqr_carver_set_image_type (r, image_type));
-  TRY_E_N (lqr_carver_init_energy (r));
+  TRY_E_N (lqr_carver_init_energy_related (r));
   lqr_carver_set_use_cache (r, TRUE);
-  TRY_E_N (lqr_carver_set_energy_function (r, en_func, radius, reader_type, extra_data));
-  TRY_E_N (lqr_carver_build_emap (r));
-  return (LqrEnergyPreview *) r;
+  return r;
 }
 
 LQR_PUBLIC
-gfloat
-lqr_energy_preview_read(LqrEnergyPreview * energy_preview, gint x, gint y)
+gfloat *
+lqr_energy_preview_get_energy(LqrCarver * r, gint orientation)
 {
+  gint x, y;
+  gint z0 = 0;
+  gint w, h;
+  gint buf_size;
   gint data;
-  LqrCarver * r = (LqrCarver *) energy_preview;
-  data = r->raw[y][x];
-  return r->en[data];
-}
+  gfloat * nrg_buffer;
+  gfloat nrg;
+  gfloat nrg_min = G_MAXFLOAT;
+  gfloat nrg_max = 0;
 
-LQR_PUBLIC
-void
-lqr_energy_preview_destroy (LqrEnergyPreview * energy_preview)
-{
-  lqr_carver_destroy ((LqrCarver *) energy_preview);
-}
+  TRY_E_N (orientation == 0 || orientation == 1);
+  TRY_F_N (r->nrg_active);
+  CATCH_CANC_N (r);
 
-LQR_PUBLIC
-gint
-lqr_energy_preview_get_width (LqrEnergyPreview * energy_preview)
-{
-  LqrCarver * r = (LqrCarver *) energy_preview;
-  return r->w;
-}
+  buf_size = r->w * r->h;
+  TRY_N_N (nrg_buffer = g_try_new (gfloat, buf_size));
 
-LQR_PUBLIC
-gint
-lqr_energy_preview_get_height (LqrEnergyPreview * energy_preview)
-{
-  LqrCarver * r = (LqrCarver *) energy_preview;
-  return r->h;
+  if (orientation != lqr_carver_get_orientation(r))
+    {
+      TRY_E_N (lqr_carver_transpose(r));
+    }
+  TRY_E_N (lqr_carver_build_emap (r));
+
+  w = lqr_carver_get_width(r);
+  h = lqr_carver_get_height(r);
+
+  for (y = 0; y < h; y++)
+    {
+      for (x = 0; x < w; x++)
+        {
+          data = orientation == 0 ? r->raw[y][x] : r->raw[x][y];
+          nrg = r->en[data];
+          nrg_max = MAX (nrg_max, nrg);
+          nrg_min = MIN (nrg_min, nrg);
+          nrg_buffer[z0++] = r->en[data];
+        }
+    }
+
+  if (nrg_max > 0)
+    {
+      for (z0 = 0; z0 < buf_size; z0++)
+        {
+          nrg_buffer[z0] = (nrg_buffer[z0] - nrg_min) / (nrg_max - nrg_min);
+        }
+    }
+
+  return nrg_buffer;
 }
 

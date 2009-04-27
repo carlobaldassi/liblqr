@@ -50,9 +50,9 @@ typedef enum _LqrRetVal LqrRetVal;
 
 #define TRY_N_N(assign) if ((assign) == NULL) { return NULL; }
 #define TRY_E_N(assign) if ((assign) != LQR_OK) { return NULL; }
+#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
 /*
 #define TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
-#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
 #define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
 */
 
