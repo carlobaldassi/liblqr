@@ -376,44 +376,6 @@ lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrRea
   return 0;
 }
 
-
-#if 0
-/* compute energy at x, y */
-gfloat
-lqr_energy_abs (LqrCarver * r, gint x, gint y)
-{
-  gdouble gx, gy;
-
-  if (y == 0)
-    {
-      gy = (*(r->nrg_builtin->rfabs))(r, x, y + 1, x, y);
-    }
-  else if (y < r->h - 1)
-    {
-      gy = 0.5 * (*(r->nrg_builtin->rfabs))(r, x, y + 1, x, y - 1);
-    }
-  else
-    {
-      gy = (*(r->nrg_builtin->rfabs))(r, x, y, x, y - 1);
-    }
-
-  if (x == 0)
-    {
-      gx = (*(r->nrg_builtin->rfabs))(r, x + 1, y, x, y);
-    }
-  else if (x < r->w - 1)
-    {
-      gx = 0.5 * (*(r->nrg_builtin->rfabs))(r, x + 1, y, x - 1, y);
-    }
-  else
-    {
-      gx = (*(r->nrg_builtin->rfabs))(r, x, y, x - 1, y);
-    }
-  return (*(r->nrg_builtin->gf))(gx, gy);
-}
-#endif
-
-/* gradient function for energy computation */
 LQR_PUBLIC
 LqrRetVal
 lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType ef_ind)
@@ -459,6 +421,10 @@ lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radiu
   r->nrg_radius = radius;
   r->nrg_read_t = reader_type;
   r->nrg_extra_data = extra_data;
+
+  g_free(r->rcache);
+  r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
 
   lqr_rwindow_destroy (r->rwindow);
 

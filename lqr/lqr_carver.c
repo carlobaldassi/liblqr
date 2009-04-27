@@ -91,6 +91,7 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   lqr_carver_set_energy_function_builtin(r, LQR_EF_GRAD_XABS);
   r->nrg_xmin = NULL;
   r->nrg_xmax = NULL;
+  r->nrg_uptodate = FALSE;
 
   r->leftright = 0;
   r->lr_switch_frequency = 0;
@@ -324,6 +325,10 @@ lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
   }
   r->image_type = image_type;
 
+  g_free(r->rcache);
+  r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
+
   return LQR_OK;
 }
 
@@ -341,6 +346,11 @@ lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
     return LQR_ERROR;
   }
   r->image_type = LQR_CUSTOM_IMAGE;
+
+  g_free(r->rcache);
+  r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
+
   return LQR_OK;
 }
 
@@ -358,6 +368,11 @@ lqr_carver_set_black_channel (LqrCarver * r, gint channel_index)
     return LQR_ERROR;
   }
   r->image_type = LQR_CUSTOM_IMAGE;
+
+  g_free(r->rcache);
+  r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
+
   return LQR_OK;
 }
 
@@ -525,6 +540,11 @@ lqr_carver_build_emap (LqrCarver * r)
 
   CATCH_CANC(r);
 
+  if (r->nrg_uptodate)
+    {
+      return LQR_OK;
+    }
+
   if (r->use_rcache && r->rcache == NULL)
     {
       CATCH_MEM (r->rcache = lqr_carver_generate_rcache (r));
@@ -540,6 +560,8 @@ lqr_carver_build_emap (LqrCarver * r)
           CATCH (lqr_carver_compute_e(r, x, y));
         }
     }
+
+  r->nrg_uptodate = TRUE;
 
   return LQR_OK;
 }
@@ -985,6 +1007,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   g_free (r->rigidity_mask);
 
   r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
 
   r->rgb = new_rgb;
   r->preserve_in_buffer = FALSE;
@@ -1073,6 +1096,8 @@ lqr_carver_carve (LqrCarver * r)
 #endif /* __LQR_DEBUG__ */
         }
     }
+
+  r->nrg_uptodate = FALSE;
 }
 
 
@@ -1083,6 +1108,10 @@ lqr_carver_update_emap (LqrCarver * r)
   gint x, y;
   gint y1, y1_min, y1_max;
 
+  if (r->nrg_uptodate)
+    {
+      return LQR_OK;
+    }
   if (r->use_rcache)
     {
       CATCH_F (r->rcache != NULL);
@@ -1123,6 +1152,9 @@ lqr_carver_update_emap (LqrCarver * r)
           CATCH (lqr_carver_compute_e (r, x, y));
         }
     }
+
+  r->nrg_uptodate = TRUE;
+
   return LQR_OK;
 }
 
@@ -1145,6 +1177,7 @@ lqr_carver_update_mmap (LqrCarver * r)
   gint x_stop;
 
   CATCH_CANC(r);
+  CATCH_F (r->nrg_uptodate);
 
   /* span first row */
   /* x_min = MAX (r->vpath_x[0] - r->delta_x, 0); */
@@ -1482,6 +1515,7 @@ lqr_carver_flatten (LqrCarver * r)
   g_free (r->least);
 
   r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
 
   /* allocate room for new map */
   BUF_TRY_NEW0_RET_LQR(new_rgb, r->w * r->h * r->channels, r->col_depth);
@@ -1648,6 +1682,7 @@ lqr_carver_transpose (LqrCarver * r)
   g_free (r->rgb_ro_buffer);
 
   r->rcache = NULL;
+  r->nrg_uptodate = FALSE;
 
   /* allocate room for the new maps */
   BUF_TRY_NEW0_RET_LQR(new_rgb, r->w0 * r->h0 * r->channels, r->col_depth);

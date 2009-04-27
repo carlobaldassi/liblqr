@@ -249,6 +249,8 @@ struct _LqrCarver
   gint *nrg_xmin;                 /* auxiliary vector for energy update */
   gint *nrg_xmax;                 /* auxiliary vector for energy update */
 
+  gboolean nrg_uptodate;          /* flag set if energy map is up to date */
+
   gdouble * rcache;               /* array of brightness (or luma or else) levels for energy computation */
   gboolean use_rcache;            /* wheter to cache brightness, luma etc. */
 
