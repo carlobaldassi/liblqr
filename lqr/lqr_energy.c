@@ -737,7 +737,13 @@ lqr_energy_preview_get_energy(LqrCarver * r, gint orientation)
 
   TRY_E_N (orientation == 0 || orientation == 1);
   TRY_F_N (r->nrg_active);
+
   CATCH_CANC_N (r);
+
+  if (r->w != r->w_start - r->max_level + 1)
+    {
+      TRY_E_N (lqr_carver_flatten(r));
+    }
 
   buf_size = r->w * r->h;
   TRY_N_N (nrg_buffer = g_try_new (gfloat, buf_size));
