@@ -30,11 +30,43 @@
 
 LQR_PUBLIC
 LqrRetVal
+lqr_carver_bias_add_xy(LqrCarver *r, gdouble bias, gint x, gint y)
+{
+  gint xt, yt;
+
+  if (bias == 0)
+    {
+      return LQR_OK;
+    }
+
+  CATCH_CANC (r);
+  CATCH_F (r->active);
+  if ((r->w != r->w0) || (r->w_start != r->w0) ||
+      (r->h != r->h0) || (r->h_start != r->h0))
+    {
+      CATCH (lqr_carver_flatten(r));
+    }
+  if (r->bias == NULL)
+    {
+      CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w0 * r->h0));
+    }
+
+  xt = r->transposed ? y : x;
+  yt = r->transposed ? x : y;
+
+  r->bias[yt * r->w0 + xt] += (gfloat) bias / 2;
+
+  return LQR_OK;
+}
+
+LQR_PUBLIC
+LqrRetVal
 lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off)
 {
   gint x, y;
+  gint xt, yt;
+  gint wt, ht;
   gint x1, y1, x2, y2;
-  gint transposed = FALSE;
   gfloat bias;
 
   if (bias_factor == 0)
@@ -49,20 +81,18 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
     {
       CATCH (lqr_carver_flatten(r));
     }
-  if (r->transposed)
-    {
-      transposed = TRUE;
-      CATCH (lqr_carver_transpose(r));
-    }
   if (r->bias == NULL)
     {
       CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
     }
 
+  wt = r->transposed ? r->h : r->w;
+  ht = r->transposed ? r->w : r->h;
+
   x1 = MAX (0, x_off);
   y1 = MAX (0, y_off);
-  x2 = MIN (r->w, width + x_off);
-  y2 = MIN (r->h, height + y_off);
+  x2 = MIN (wt, width + x_off);
+  y2 = MIN (ht, height + y_off);
 
   for (y = 0; y < y2 - y1; y++)
     {
@@ -70,16 +100,14 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
         {
           bias = (gfloat) ((gdouble) bias_factor * buffer[y * width + x] / 2);
 
-          r->bias[(y + y1) * r->w0 + (x + x1)] += bias;
+          xt = r->transposed ? y : x;
+          yt = r->transposed ? x : y;
+
+          r->bias[(yt + y1) * r->w0 + (xt + x1)] += bias;
 
         }
 
     }
-  if (transposed)
-    {
-      CATCH (lqr_carver_transpose(r));
-    }
-
 
   return LQR_OK;
 }
@@ -89,7 +117,7 @@ LQR_PUBLIC
 LqrRetVal
 lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor)
 {
-  return lqr_carver_bias_add_area(r, buffer, bias_factor, r->w0, r->h0, 0, 0);
+  return lqr_carver_bias_add_area(r, buffer, bias_factor, lqr_carver_get_width(r), lqr_carver_get_height(r), 0, 0);
 }
 
 LQR_PUBLIC
@@ -98,8 +126,9 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
 {
   gint x, y, k, c_channels;
   gboolean has_alpha;
+  gint xt, yt;
+  gint wt, ht;
   gint x0, y0, x1, y1, x2, y2;
-  gint transposed = FALSE;
   gint sum;
   gfloat bias;
 
@@ -115,11 +144,6 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
     {
       CATCH (lqr_carver_flatten(r));
     }
-  if (r->transposed)
-    {
-      transposed = TRUE;
-      CATCH (lqr_carver_transpose(r));
-    }
   if (r->bias == NULL)
     {
       CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
@@ -128,12 +152,15 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
   has_alpha = (channels == 2 || channels >= 4);
   c_channels = channels - (has_alpha ? 1 : 0);
 
+  wt = r->transposed ? r->h : r->w;
+  ht = r->transposed ? r->w : r->h;
+
   x0 = MIN (0, x_off);
   y0 = MIN (0, y_off);
   x1 = MAX (0, x_off);
   y1 = MAX (0, y_off);
-  x2 = MIN (r->w0, width + x_off);
-  y2 = MIN (r->h0, height + y_off);
+  x2 = MIN (wt, width + x_off);
+  y2 = MIN (ht, height + y_off);
 
   for (y = 0; y < y2 - y1; y++)
     {
@@ -151,15 +178,13 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
               bias *= (gfloat) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
             }
 
-          r->bias[(y + y1) * r->w0 + (x + x1)] += bias;
+          xt = r->transposed ? y : x;
+          yt = r->transposed ? x : y;
+
+          r->bias[(yt + y1) * r->w0 + (xt + x1)] += bias;
 
         }
 
-    }
-
-  if (transposed)
-    {
-      CATCH (lqr_carver_transpose(r));
     }
 
   return LQR_OK;
@@ -169,7 +194,7 @@ LQR_PUBLIC
 LqrRetVal
 lqr_carver_bias_add_rgb(LqrCarver *r, guchar *rgb, gint bias_factor, gint channels)
 {
-  return lqr_carver_bias_add_rgb_area(r, rgb, bias_factor, channels, r->w0, r->h0, 0, 0);
+  return lqr_carver_bias_add_rgb_area(r, rgb, bias_factor, channels, lqr_carver_get_width(r), lqr_carver_get_height(r), 0, 0);
 }
 
 

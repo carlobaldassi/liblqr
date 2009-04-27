@@ -29,6 +29,7 @@
 
 /* PUBLIC BIAS-RELATED FUNCTIONS */
 
+LqrRetVal lqr_carver_bias_add_xy(LqrCarver *r, gdouble bias, gint x, gint y);
 LqrRetVal lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *buffer, gint bias_factor, gint channels, gint width, gint height, gint x_off, gint y_off);
 LqrRetVal lqr_carver_bias_add_rgb(LqrCarver *r, guchar *buffer, gint bias_factor, gint channels);
 LqrRetVal lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off, gint y_off);

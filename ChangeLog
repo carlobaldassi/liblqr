@@ -2,8 +2,10 @@
 
 	* New framework for energy definition, 
 	  including energy previews
+	* Added lqr_carver_bias_add_xy
 	* Better bias managment (saves memory if
-	  bias is not used)
+	  bias is not used, no unnecessary
+	  transpositions)
 
 2009-04-16  Carlo Baldassi  <carlobaldassi@gmail.com>
 
