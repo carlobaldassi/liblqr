@@ -32,6 +32,7 @@
 #error "lqr_rwindow_pub.h must be included prior to lqr_energy_pub.h"
 #endif /* __LQR_READER_WINDOW_PUB_H__ */
 
+typedef LqrCarver LqrEnergyPreview;
 
 enum _LqrEnergyFuncBuiltinType
 {
@@ -50,5 +51,18 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 
 LqrRetVal lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType ef_ind);
 LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data);
+
+LqrEnergyPreview * lqr_energy_preview_new_builtin (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth,
+                                        LqrImageType image_type, LqrEnergyFuncBuiltinType ef_ind);
+
+LqrEnergyPreview * lqr_energy_preview_new (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth, LqrImageType image_type,
+                                        LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data);
+
+gfloat lqr_energy_preview_read(LqrEnergyPreview * energy_preview, gint x, gint y);
+
+void lqr_energy_preview_destroy (LqrEnergyPreview * energy_preview);
+gint lqr_energy_preview_get_width (LqrEnergyPreview * energy_preview);
+gint lqr_energy_preview_get_height (LqrEnergyPreview * energy_preview);
+
 
 #endif /* __LQR_ENERGY_PUB_H__ */

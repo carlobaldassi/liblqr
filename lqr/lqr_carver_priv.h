@@ -232,7 +232,6 @@ struct _LqrCarver
 
   LqrProgress * progress;         /* pointer to progress update functions */
 
-  gboolean nrg_builtin_flag;      /* flag to determine if the energy function used is builtin */
   LqrEnergyFunc nrg;              /* pointer to a general energy function */
   gint nrg_radius;                /* energy function radius */
   LqrEnergyReaderType nrg_read_t; /* energy function reader type */
@@ -260,6 +259,9 @@ struct _LqrCarver
 /* constructor base */
 LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels);
 
+/* Init energy */
+LqrRetVal lqr_carver_init_energy (LqrCarver *r);
+
 /* build maps */
 LqrRetVal lqr_carver_build_maps (LqrCarver * r, gint depth);     /* build all */
 LqrRetVal lqr_carver_build_emap (LqrCarver * r);     /* energy */
@@ -267,8 +269,8 @@ LqrRetVal lqr_carver_build_mmap (LqrCarver * r);     /* minpath */
 LqrRetVal lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility */
 
 /* internal functions for maps computation */
-//inline gfloat lqr_carver_read (LqrCarver * r, gint x, gint y); /* read the average value at given point */
-LqrRetVal lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c (fast) */
+LqrRetVal lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c */
+LqrRetVal lqr_carver_compute_e_nobias (LqrCarver * r, gint x, gint y); /* same as above without bias */
 LqrRetVal lqr_carver_update_emap (LqrCarver * r);    /* update energy map after seam removal */
 LqrRetVal lqr_carver_update_mmap (LqrCarver * r);    /* minpath */
 void lqr_carver_build_vpath (LqrCarver * r);    /* compute seam path */

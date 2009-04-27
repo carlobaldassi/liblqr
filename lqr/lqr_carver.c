@@ -191,21 +191,14 @@ lqr_carver_destroy (LqrCarver * r)
 
 /*** initialization ***/
 
-LQR_PUBLIC
 LqrRetVal
-lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
+lqr_carver_init_energy (LqrCarver *r)
 {
   gint y, x;
-
-  CATCH_CANC (r);
 
   CATCH_F (r->active == FALSE);
 
   CATCH_MEM (r->en = g_try_new (gfloat, r->w * r->h));
-  CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
-  CATCH_MEM (r->m = g_try_new (gfloat, r->w * r->h));
-  CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
-
   CATCH_MEM (r->_raw = g_try_new (gint, r->h_start * r->w_start));
   CATCH_MEM (r->raw = g_try_new (gint *, r->h_start));
 
@@ -217,6 +210,26 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
           r->raw[y][x] = y * r->w_start + x;
         }
     }
+
+  return LQR_OK;
+}
+
+
+LQR_PUBLIC
+LqrRetVal
+lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
+{
+  gint x;
+
+  CATCH_CANC (r);
+
+  CATCH_F (r->active == FALSE);
+
+  CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
+  CATCH_MEM (r->m = g_try_new (gfloat, r->w * r->h));
+  CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
+
+  CATCH (lqr_carver_init_energy (r));
 
   CATCH_MEM (r->vpath = g_try_new (gint, r->h));
   CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
@@ -513,16 +526,48 @@ lqr_carver_build_emap (LqrCarver * r)
       CATCH_MEM (r->rcache = lqr_carver_generate_rcache (r));
     }
 
-  for (y = 0; y < r->h; y++)
+  if (r->bias != NULL)
     {
-      CATCH_CANC(r);
-      /* r->nrg_xmin[y] = 0; */
-      /* r->nrg_xmax[y] = r->w - 1; */
-      for (x = 0; x < r->w; x++)
+      for (y = 0; y < r->h; y++)
         {
-          CATCH (lqr_carver_compute_e(r, x, y));
+          CATCH_CANC(r);
+          /* r->nrg_xmin[y] = 0; */
+          /* r->nrg_xmax[y] = r->w - 1; */
+          for (x = 0; x < r->w; x++)
+            {
+              CATCH (lqr_carver_compute_e(r, x, y));
+            }
         }
     }
+  else
+    {
+      for (y = 0; y < r->h; y++)
+        {
+          CATCH_CANC(r);
+          /* r->nrg_xmin[y] = 0; */
+          /* r->nrg_xmax[y] = r->w - 1; */
+          for (x = 0; x < r->w; x++)
+            {
+              CATCH (lqr_carver_compute_e_nobias(r, x, y));
+            }
+        }
+    }
+
+  return LQR_OK;
+}
+
+LqrRetVal
+lqr_carver_compute_e_nobias (LqrCarver * r, gint x, gint y)
+{
+  gint data;
+
+  /* removed CANC check for performance reasons */
+  /* CATCH_CANC (r); */
+
+  data = r->raw[y][x];
+
+  CATCH (lqr_rwindow_fill (r->rwindow, r, x, y));
+  r->en[data] = r->nrg(x, y, r->w, r->h, r->rwindow, r->nrg_extra_data);
 
   return LQR_OK;
 }
