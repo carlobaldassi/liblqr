@@ -1,3 +1,8 @@
+2009-04-27  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* New framework for energy definition, 
+	  including energy previews
+
 2009-04-16  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Added cancel methods and structures
