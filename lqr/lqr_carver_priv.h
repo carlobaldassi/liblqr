@@ -278,7 +278,6 @@ LqrRetVal lqr_carver_build_vsmap (LqrCarver * r, gint depth);    /* visibility *
 
 /* internal functions for maps computation */
 LqrRetVal lqr_carver_compute_e (LqrCarver * r, gint x, gint y);      /* compute energy of point at c */
-LqrRetVal lqr_carver_compute_e_nobias (LqrCarver * r, gint x, gint y); /* same as above without bias */
 LqrRetVal lqr_carver_update_emap (LqrCarver * r);    /* update energy map after seam removal */
 LqrRetVal lqr_carver_update_mmap (LqrCarver * r);    /* minpath */
 void lqr_carver_build_vpath (LqrCarver * r);    /* compute seam path */

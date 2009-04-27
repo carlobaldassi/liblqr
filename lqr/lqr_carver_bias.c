@@ -34,6 +34,7 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
 {
   gint x, y;
   gint x1, y1, x2, y2;
+  gint transposed = FALSE;
   gfloat bias;
 
   if (bias_factor == 0)
@@ -50,7 +51,12 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
     }
   if (r->transposed)
     {
+      transposed = TRUE;
       CATCH (lqr_carver_transpose(r));
+    }
+  if (r->bias == NULL)
+    {
+      CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
     }
 
   x1 = MAX (0, x_off);
@@ -69,6 +75,11 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint w
         }
 
     }
+  if (transposed)
+    {
+      CATCH (lqr_carver_transpose(r));
+    }
+
 
   return LQR_OK;
 }
@@ -88,7 +99,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
   gint x, y, k, c_channels;
   gboolean has_alpha;
   gint x0, y0, x1, y1, x2, y2;
-  gint transposed = 0;
+  gint transposed = FALSE;
   gint sum;
   gfloat bias;
 
@@ -106,8 +117,12 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint c
     }
   if (r->transposed)
     {
-      transposed = 1;
+      transposed = TRUE;
       CATCH (lqr_carver_transpose(r));
+    }
+  if (r->bias == NULL)
+    {
+      CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h));
     }
 
   has_alpha = (channels == 2 || channels >= 4);

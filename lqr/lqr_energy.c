@@ -762,10 +762,10 @@ lqr_energy_preview_get_energy(LqrCarver * r, gint orientation)
       for (x = 0; x < w; x++)
         {
           data = orientation == 0 ? r->raw[y][x] : r->raw[x][y];
-          nrg = r->en[data];
+          nrg = tanh(r->en[data]);
           nrg_max = MAX (nrg_max, nrg);
           nrg_min = MIN (nrg_min, nrg);
-          nrg_buffer[z0++] = r->en[data];
+          nrg_buffer[z0++] = nrg;
         }
     }
 
