@@ -1,5 +1,5 @@
 /* LiquidRescaling Library
- * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+ * Copyright (C) 2007 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
  * All Rights Reserved.
  *
  * This library implements the algorithm described in the paper
@@ -20,20 +20,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef __LQR_CURSOR_PUB_H__
-#define __LQR_CURSOR_PUB_H__
 
-#ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_cursor_pub.h"
-#endif /* __LQR_BASE_H__ */
+#ifndef __LQR_READER_WINDOW_H__
+#define __LQR_READER_WINDOW_H__
 
-/* LQR_CURSOR CLASS DECLARATION */
+#include <lqr/lqr_rwindow_pub.h>
+#include <lqr/lqr_rwindow_priv.h>
 
-struct _LqrCursor;              /* a "smart" index to read the carver */
-typedef struct _LqrCursor LqrCursor;
+#endif /* __LQR_READER_WINDOW_H__ */
 
-/* LQR_CURSOR CLASS PUBLIC FUNCTIONS */
-
-/* no public functions for this class */
-
-#endif /* __LQR_CURSOR_PUB_H__ */

@@ -20,20 +20,33 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef __LQR_CURSOR_PUB_H__
-#define __LQR_CURSOR_PUB_H__
+
+#ifndef __LQR_READER_WINDOW_PUB_H__
+#define __LQR_READER_WINDOW_PUB_H__
 
 #ifndef __LQR_BASE_H__
-#error "lqr_base.h must be included prior to lqr_cursor_pub.h"
+#error "lqr_base.h must be included prior to lqr_rwindow_pub.h"
 #endif /* __LQR_BASE_H__ */
 
-/* LQR_CURSOR CLASS DECLARATION */
+enum _LqrEnergyReaderType
+{
+  LQR_ER_BRIGHT,                /* read brightness */
+  LQR_ER_LUMA,                  /* read luma */
+  LQR_ER_RGBA,                  /* read RGBA */
+  LQR_ER_CUSTOM                 /* read the buffer as-is*/
+};
 
-struct _LqrCursor;              /* a "smart" index to read the carver */
-typedef struct _LqrCursor LqrCursor;
+typedef enum _LqrEnergyReaderType LqrEnergyReaderType;
 
-/* LQR_CURSOR CLASS PUBLIC FUNCTIONS */
+struct _LqrReaderWindow;
 
-/* no public functions for this class */
+typedef struct _LqrReaderWindow LqrReaderWindow;
 
-#endif /* __LQR_CURSOR_PUB_H__ */
+gdouble lqr_rwindow_read (LqrReaderWindow * rwindow, gint x, gint y, gint channel);
+
+LqrEnergyReaderType lqr_rwindow_get_read_t (LqrReaderWindow * rwindow);
+gint lqr_rwindow_get_radius (LqrReaderWindow * rwindow);
+gint lqr_rwindow_get_channels (LqrReaderWindow * rwindow);
+
+#endif /* __LQR_READER_WINDOW_PUB_H__ */
+
