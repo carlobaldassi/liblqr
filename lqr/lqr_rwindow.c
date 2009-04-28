@@ -366,7 +366,7 @@ lqr_rwindow_read_custom (LqrReaderWindow * rwindow, gint x, gint y, gint channel
   return rwindow->buffer[x][rwindow->channels * y + channel];
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gdouble
 lqr_rwindow_read (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 {
@@ -396,21 +396,21 @@ lqr_rwindow_read (LqrReaderWindow * rwindow, gint x, gint y, gint channel)
 }
 
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrEnergyReaderType
 lqr_rwindow_get_read_t (LqrReaderWindow * rwindow)
 {
   return rwindow->read_t;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_rwindow_get_radius (LqrReaderWindow * rwindow)
 {
   return rwindow->radius;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_rwindow_get_channels (LqrReaderWindow * rwindow)
 {

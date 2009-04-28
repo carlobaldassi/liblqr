@@ -29,7 +29,7 @@
 
 /**** SEAMS BUFFER FUNCTIONS ****/
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrVMap*
 lqr_vmap_new (gint * buffer, gint width, gint height, gint depth, gint orientation)
 {
@@ -44,7 +44,7 @@ lqr_vmap_new (gint * buffer, gint width, gint height, gint depth, gint orientati
   return vmap;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_vmap_destroy (LqrVMap * vmap)
 {
@@ -52,35 +52,35 @@ lqr_vmap_destroy (LqrVMap * vmap)
   g_free (vmap);
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint *
 lqr_vmap_get_data (LqrVMap *vmap)
 {
   return vmap->buffer;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_vmap_get_width (LqrVMap *vmap)
 {
   return vmap->width;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_vmap_get_height (LqrVMap *vmap)
 {
   return vmap->height;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_vmap_get_depth (LqrVMap *vmap)
 {
   return vmap->depth;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_vmap_get_orientation (LqrVMap *vmap)
 {
@@ -88,7 +88,7 @@ lqr_vmap_get_orientation (LqrVMap *vmap)
 }
 
 /* dump the visibility level of the image */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrVMap*
 lqr_vmap_dump (LqrCarver * r)
 {
@@ -147,7 +147,7 @@ lqr_vmap_dump (LqrCarver * r)
 
 
 /* dump the visibility level of the image */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_vmap_internal_dump (LqrCarver * r)
 {
@@ -208,7 +208,7 @@ lqr_vmap_internal_dump (LqrCarver * r)
 }
 
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_vmap_load (LqrCarver *r, LqrVMap *vmap)
 {

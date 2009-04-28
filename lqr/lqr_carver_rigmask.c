@@ -49,7 +49,7 @@ lqr_carver_rigmask_init (LqrCarver *r)
 }
 
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint height, gint x_off, gint y_off)
 {
@@ -92,14 +92,14 @@ lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint heig
 }
 
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_rigmask_add(LqrCarver *r, gdouble *buffer)
 {
   return lqr_carver_rigmask_add_area(r, buffer, r->w0, r->h0, 0, 0);
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint channels, gint width, gint height, gint x_off, gint y_off)
 {
@@ -169,7 +169,7 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint channels, gint w
   return LQR_OK;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *rgb, gint channels)
 {

@@ -70,14 +70,14 @@ lqr_carver_list_destroy(LqrCarverList * list)
     }
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrCarverList *
 lqr_carver_list_start (LqrCarver *r)
 {
   return r->attached_list;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrCarverList *
 lqr_carver_list_next (LqrCarverList * list)
 {
@@ -85,7 +85,7 @@ lqr_carver_list_next (LqrCarverList * list)
   return list->next;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrCarver *
 lqr_carver_list_current (LqrCarverList * list)
 {
@@ -93,7 +93,7 @@ lqr_carver_list_current (LqrCarverList * list)
   return list->current;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data)
 {
@@ -106,7 +106,7 @@ lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok da
   return LQR_OK;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_list_foreach_recursive (LqrCarverList * list, LqrCarverFunc func, LqrDataTok data)
 {

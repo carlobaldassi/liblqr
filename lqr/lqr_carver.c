@@ -129,14 +129,14 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   return r;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrCarver *
 lqr_carver_new (guchar * buffer, gint width, gint height, gint channels)
 {
   return lqr_carver_new_ext (buffer, width, height, channels, LQR_COLDEPTH_8I);
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrCarver *
 lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth)
 {
@@ -154,7 +154,7 @@ lqr_carver_new_ext (void * buffer, gint width, gint height, gint channels, LqrCo
 }
 
 /* destructor */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_destroy (LqrCarver * r)
 {
@@ -220,7 +220,7 @@ lqr_carver_init_energy_related (LqrCarver *r)
 }
 
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 {
@@ -261,7 +261,7 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
 /*** set attributes ***/
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
 {
@@ -332,7 +332,7 @@ lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type)
   return LQR_OK;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
 {
@@ -354,7 +354,7 @@ lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index)
   return LQR_OK;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_set_black_channel (LqrCarver * r, gint channel_index)
 {
@@ -379,7 +379,7 @@ lqr_carver_set_black_channel (LqrCarver * r, gint channel_index)
 /* set gradient function */
 /* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
 /* lqr_carver_set_energy_function_builtin() should be used in newly written code instead */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 {
@@ -409,7 +409,7 @@ lqr_carver_set_gradient_function (LqrCarver * r, LqrGradFuncType gf_ind)
 }
 
 /* attach carvers to be scaled along with the main one */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 {
@@ -426,7 +426,7 @@ lqr_carver_attach (LqrCarver * r, LqrCarver * aux)
 }
 
 /* set the seam output flag */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_dump_vmaps (LqrCarver *r)
 {
@@ -434,7 +434,7 @@ lqr_carver_set_dump_vmaps (LqrCarver *r)
 }
 
 /* unset the seam output flag */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_no_dump_vmaps (LqrCarver *r)
 {
@@ -442,7 +442,7 @@ lqr_carver_set_no_dump_vmaps (LqrCarver *r)
 }
 
 /* set order if rescaling in both directions */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 {
@@ -450,7 +450,7 @@ lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order)
 }
 
 /* set leftright switch interval */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_side_switch_frequency (LqrCarver *r, guint switch_frequency)
 {
@@ -458,7 +458,7 @@ lqr_carver_set_side_switch_frequency (LqrCarver *r, guint switch_frequency)
 }
 
 /* set enlargement step */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step)
 {
@@ -468,7 +468,7 @@ lqr_carver_set_enl_step (LqrCarver *r, gfloat enl_step)
   return LQR_OK;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_use_cache (LqrCarver *r, gboolean use_cache)
 {
@@ -482,7 +482,7 @@ lqr_carver_set_use_cache (LqrCarver *r, gboolean use_cache)
 }
 
 /* set progress reprot */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 {
@@ -491,7 +491,7 @@ lqr_carver_set_progress (LqrCarver *r, LqrProgress *p)
 }
 
 /* flag the input buffer to avoid destruction */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_set_preserve_input_image(LqrCarver *r)
 {
@@ -1480,7 +1480,7 @@ lqr_carver_set_width_attached (LqrCarver * r, LqrDataTok data)
 
 /* flatten the image to its current state
  * (all maps are reset, invisible points are lost) */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_flatten (LqrCarver * r)
 {
@@ -1983,7 +1983,7 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
 }
 
 /* liquid rescale public method */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_resize (LqrCarver * r, gint w1, gint h1)
 {
@@ -2059,7 +2059,7 @@ lqr_carver_set_state_attached (LqrCarver * r, LqrDataTok data)
 }
 
 /* cancel the current action from a different thread */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_cancel (LqrCarver * r)
 {
@@ -2080,14 +2080,14 @@ lqr_carver_cancel (LqrCarver * r)
 }
 
 /* get current size */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_width(LqrCarver* r)
 {
   return (r->transposed ? r->h : r->w);
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_height(LqrCarver* r)
 {
@@ -2095,14 +2095,14 @@ lqr_carver_get_height(LqrCarver* r)
 }
 
 /* get reference size */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_ref_width(LqrCarver* r)
 {
   return (r->transposed ? r->h_start : r->w_start);
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_ref_height(LqrCarver* r)
 {
@@ -2110,14 +2110,14 @@ lqr_carver_get_ref_height(LqrCarver* r)
 }
 
 /* get colour channels */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_channels (LqrCarver * r)
 {
   return r->channels;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_bpp (LqrCarver * r)
 {
@@ -2125,7 +2125,7 @@ lqr_carver_get_bpp (LqrCarver * r)
 }
 
 /* get colour depth */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 LqrColDepth
 lqr_carver_get_col_depth (LqrCarver * r)
 {
@@ -2133,7 +2133,7 @@ lqr_carver_get_col_depth (LqrCarver * r)
 }
 
 /* get enlargement step */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gfloat
 lqr_carver_get_enl_step (LqrCarver * r)
 {
@@ -2141,7 +2141,7 @@ lqr_carver_get_enl_step (LqrCarver * r)
 }
 
 /* get orientation */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_orientation (LqrCarver* r)
 {
@@ -2149,7 +2149,7 @@ lqr_carver_get_orientation (LqrCarver* r)
 }
 
 /* get depth */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gint
 lqr_carver_get_depth (LqrCarver *r)
 {
@@ -2158,7 +2158,7 @@ lqr_carver_get_depth (LqrCarver *r)
 
 
 /* readout reset */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 void
 lqr_carver_scan_reset (LqrCarver * r)
 {
@@ -2184,7 +2184,7 @@ lqr_carver_scan_reset_all (LqrCarver *r)
 
 
 /* readout all, pixel by bixel */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gboolean
 lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
 {
@@ -2209,7 +2209,7 @@ lqr_carver_scan (LqrCarver * r, gint * x, gint * y, guchar ** rgb)
   return TRUE;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gboolean
 lqr_carver_scan_ext (LqrCarver * r, gint * x, gint * y, void ** rgb)
 {
@@ -2233,14 +2233,14 @@ lqr_carver_scan_ext (LqrCarver * r, gint * x, gint * y, void ** rgb)
 }
 
 /* readout all, by line */
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gboolean
 lqr_carver_scan_by_row (LqrCarver *r)
 {
   return r->transposed ? FALSE : TRUE;
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gboolean
 lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
 {
@@ -2251,7 +2251,7 @@ lqr_carver_scan_line (LqrCarver * r, gint * n, guchar ** rgb)
   return lqr_carver_scan_line_ext (r, n, (void**) rgb);
 }
 
-LQR_PUBLIC
+/* LQR_PUBLIC */
 gboolean
 lqr_carver_scan_line_ext (LqrCarver * r, gint * n, void ** rgb)
 {
