@@ -230,11 +230,14 @@ lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity)
 
   CATCH_F (r->active == FALSE);
 
+  if (r->nrg_active == FALSE)
+    {
+      CATCH (lqr_carver_init_energy_related (r));
+    }
+
   /* CATCH_MEM (r->bias = g_try_new0 (gfloat, r->w * r->h)); */
   CATCH_MEM (r->m = g_try_new (gfloat, r->w * r->h));
   CATCH_MEM (r->least = g_try_new (gint, r->w * r->h));
-
-  CATCH (lqr_carver_init_energy_related (r));
 
   CATCH_MEM (r->vpath = g_try_new (gint, r->h));
   CATCH_MEM (r->vpath_x = g_try_new (gint, r->h));
@@ -1006,6 +1009,7 @@ lqr_carver_inflate (LqrCarver * r, gint l)
   g_free (r->bias);
   g_free (r->rigidity_mask);
 
+  r->bias = NULL;
   r->rcache = NULL;
   r->nrg_uptodate = FALSE;
 
@@ -1522,10 +1526,6 @@ lqr_carver_flatten (LqrCarver * r)
 
   if (r->active)
     {
-      if (r->bias)
-        {
-          CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w * r->h));
-        }
       if (r->rigidity_mask)
         {
           CATCH_MEM (new_rigmask = g_try_new (gfloat, r->w * r->h));
@@ -1533,6 +1533,10 @@ lqr_carver_flatten (LqrCarver * r)
     }
   if (r->nrg_active)
     {
+      if (r->bias)
+        {
+          CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w * r->h));
+        }
       g_free (r->_raw);
       g_free (r->raw);
       CATCH_MEM (r->_raw = g_try_new (gint, r->w * r->h));
@@ -1559,10 +1563,6 @@ lqr_carver_flatten (LqrCarver * r)
             }
           if (r->active)
             {
-              if (r->bias)
-                {
-                  new_bias[z0] = r->bias[r->c->now];
-                }
               if (r->rigidity_mask)
                 {
                   new_rigmask[z0] = r->rigidity_mask[r->c->now];
@@ -1570,6 +1570,10 @@ lqr_carver_flatten (LqrCarver * r)
             }
           if (r->nrg_active)
             {
+              if (r->bias)
+                {
+                  new_bias[z0] = r->bias[r->c->now];
+                }
               r->raw[y][x] = z0;
             }
           lqr_cursor_next (r->c);
@@ -1583,10 +1587,13 @@ lqr_carver_flatten (LqrCarver * r)
     }
   r->rgb = new_rgb;
   r->preserve_in_buffer = FALSE;
-  if (r->active)
+  if (r->nrg_active)
     {
       g_free (r->bias);
       r->bias = new_bias;
+    }
+  if (r->active)
+    {
       g_free (r->rigidity_mask);
       r->rigidity_mask = new_rigmask;
     }
@@ -1689,10 +1696,6 @@ lqr_carver_transpose (LqrCarver * r)
 
   if (r->active)
     {
-      if (r->bias)
-        {
-          CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w0 * r->h0));
-        }
       if (r->rigidity_mask)
         {
           CATCH_MEM (new_rigmask = g_try_new (gfloat, r->w0 * r->h0));
@@ -1700,6 +1703,10 @@ lqr_carver_transpose (LqrCarver * r)
     }
   if (r->nrg_active)
     {
+      if (r->bias)
+        {
+          CATCH_MEM (new_bias = g_try_new0 (gfloat, r->w0 * r->h0));
+        }
       g_free (r->_raw);
       g_free (r->raw);
       CATCH_MEM (r->_raw = g_try_new0 (gint, r->h0 * r->w0));
@@ -1723,10 +1730,6 @@ lqr_carver_transpose (LqrCarver * r)
             }
           if (r->active)
             {
-              if (r->bias)
-                {
-                  new_bias[z1] = r->bias[z0];
-                }
               if (r->rigidity_mask)
                 {
                   new_rigmask[z1] = r->rigidity_mask[z0];
@@ -1734,6 +1737,10 @@ lqr_carver_transpose (LqrCarver * r)
             }
           if (r->nrg_active)
             {
+              if (r->bias)
+                {
+                  new_bias[z1] = r->bias[z0];
+                }
               r->raw[x][y] = z1;
             }
         }
@@ -1747,10 +1754,13 @@ lqr_carver_transpose (LqrCarver * r)
   r->rgb = new_rgb;
   r->preserve_in_buffer = FALSE;
 
-  if (r->active)
+  if (r->nrg_active)
     {
       g_free (r->bias);
       r->bias = new_bias;
+    }
+  if (r->active)
+    {
       g_free (r->rigidity_mask);
       r->rigidity_mask = new_rigmask;
     }
