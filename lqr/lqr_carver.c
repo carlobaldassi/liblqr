@@ -62,6 +62,9 @@ LqrCarver * lqr_carver_new_common (gint width, gint height, gint channels)
   r->flushed_vs = NULL;
   r->preserve_in_buffer = FALSE;
   TRY_N_N (r->progress = lqr_progress_new());
+  r->session_update_step = 1;
+  r->session_rescale_total = 0;
+  r->session_rescale_current = 0;
 
   r->en = NULL;
   r->bias = NULL;
@@ -693,7 +696,6 @@ LqrRetVal
 lqr_carver_build_vsmap (LqrCarver * r, gint depth)
 {
   gint l;
-  gint update_step;
   gint lr_switch_interval = 0;
   LqrDataTok data_tok;
 
@@ -719,9 +721,6 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
    * lqr_carver_set_width(w_start - max_level + 1);
    * has been given */
 
-  /* update step for progress reprt*/
-  update_step = (gint) MAX ((depth - r->max_level) * r->progress->update_step, 1);
-
   /* left-right switch interval */
   if (r->lr_switch_frequency)
     {
@@ -733,10 +732,10 @@ lqr_carver_build_vsmap (LqrCarver * r, gint depth)
     {
       CATCH_CANC(r);
 
-      if ((l - r->max_level) % update_step == 0)
+      if ((l - r->max_level + r->session_rescale_current) % r->session_update_step == 0)
         {
-          lqr_progress_update (r->progress, (gdouble) (l - r->max_level) /
-                                (gdouble) (depth - r->max_level));
+          lqr_progress_update (r->progress, (gdouble) (l - r->max_level + r->session_rescale_current) /
+                                (gdouble) (r->session_rescale_total));
         }
 
 #ifdef __LQR_DEBUG__
@@ -1948,6 +1947,16 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
   CATCH_F (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_STD);
   CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_RESIZING, TRUE));
 
+  /* update step for progress reprt*/
+  r->session_rescale_total = gamma > 0 ? gamma : -gamma;
+  r->session_rescale_current = 0;
+  r->session_update_step = (gint) MAX (r->session_rescale_total * r->progress->update_step, 1);
+
+  if (r->session_rescale_total)
+    {
+      lqr_progress_init (r->progress, r->progress->init_width_message);
+    }
+
   while (gamma)
     {
       gint delta0 = MIN (delta, delta_max);
@@ -1960,18 +1969,18 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
         }
       new_w = MIN (w1, r->w_start + delta_max);
       gamma = w1 - new_w;
-      lqr_progress_init (r->progress, r->progress->init_width_message);
       CATCH (lqr_carver_build_maps (r, delta0 + 1));
       lqr_carver_set_width (r, new_w);
 
       data_tok.integer = new_w;
       lqr_carver_list_foreach_recursive (r->attached_list,  lqr_carver_set_width_attached, data_tok);
 
+      r->session_rescale_current = r->session_rescale_total - (gamma > 0 ? gamma : -gamma);
+
       if (r->dump_vmaps)
         {
           CATCH (lqr_vmap_internal_dump (r));
         }
-      lqr_progress_end (r->progress, r->progress->end_width_message);
       if (new_w < w1)
         {
           CATCH (lqr_carver_flatten(r));
@@ -1981,6 +1990,11 @@ lqr_carver_resize_width (LqrCarver * r, gint w1)
               delta_max = 1;
             }
         }
+    }
+
+  if (r->session_rescale_total)
+    {
+      lqr_progress_end (r->progress, r->progress->end_width_message);
     }
 
   CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_STD, TRUE));
@@ -2022,6 +2036,16 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
   CATCH_F (g_atomic_int_get(&r->state) == LQR_CARVER_STATE_STD);
   CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_RESIZING, TRUE));
 
+  /* update step for progress reprt*/
+  r->session_rescale_total = gamma > 0 ? gamma : -gamma;
+  r->session_rescale_current = 0;
+  r->session_update_step = (gint) MAX (r->session_rescale_total * r->progress->update_step, 1);
+
+  if (r->session_rescale_total)
+    {
+      lqr_progress_init (r->progress, r->progress->init_height_message);
+    }
+
   while (gamma)
     {
       gint delta0 = MIN (delta, delta_max);
@@ -2033,18 +2057,18 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
         }
       new_w = MIN (h1, r->w_start + delta_max);
       gamma = h1 - new_w;
-      lqr_progress_init (r->progress, r->progress->init_height_message);
       CATCH (lqr_carver_build_maps (r, delta0 + 1));
       lqr_carver_set_width (r, new_w);
 
       data_tok.integer = new_w;
       lqr_carver_list_foreach_recursive (r->attached_list,  lqr_carver_set_width_attached, data_tok);
 
+      r->session_rescale_current = r->session_rescale_total - (gamma > 0 ? gamma : - gamma);
+
       if (r->dump_vmaps)
         {
           CATCH (lqr_vmap_internal_dump (r));
         }
-      lqr_progress_end (r->progress, r->progress->end_height_message);
       if (new_w < h1)
         {
           CATCH (lqr_carver_flatten(r));
@@ -2054,6 +2078,11 @@ lqr_carver_resize_height (LqrCarver * r, gint h1)
               delta_max = 1;
             }
         }
+    }
+
+  if (r->session_rescale_total)
+    {
+      lqr_progress_end (r->progress, r->progress->end_height_message);
     }
 
   CATCH (lqr_carver_set_state (r, LQR_CARVER_STATE_STD, TRUE));

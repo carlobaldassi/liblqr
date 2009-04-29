@@ -1,6 +1,9 @@
 2009-04-28  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Heavily optimised the update_mmap code
+	* Progress report spans whole sessions instead
+	  of being divided into steps when enlagement
+	  exceeds the enl_step
 
 2009-04-27  Carlo Baldassi  <carlobaldassi@gmail.com>
 

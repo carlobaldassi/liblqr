@@ -381,6 +381,9 @@ struct _LqrCarver
   gfloat enl_step;                /* maximum enlargement ratio in a single step */
 
   LqrProgress * progress;         /* pointer to progress update functions */
+  gint session_update_step;       /* update step for the rescaling session */
+  gint session_rescale_total;     /* total amount of rescaling for the session */
+  gint session_rescale_current;   /* current amount of rescaling for the session */
 
   LqrEnergyFunc nrg;              /* pointer to a general energy function */
   gint nrg_radius;                /* energy function radius */
