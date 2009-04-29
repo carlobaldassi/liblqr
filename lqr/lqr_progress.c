@@ -122,7 +122,7 @@ LqrRetVal
 lqr_progress_set_init_width_message(LqrProgress *p, const gchar * message)
 {
   CATCH_F (p);
-  strncpy(p->init_width_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
+  g_strlcpy(p->init_width_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
   return LQR_OK;
 }
 
@@ -131,7 +131,7 @@ LqrRetVal
 lqr_progress_set_init_height_message(LqrProgress *p, const gchar * message)
 {
   CATCH_F (p != NULL);
-  strncpy(p->init_height_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
+  g_strlcpy(p->init_height_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
   return LQR_OK;
 }
 
@@ -140,7 +140,7 @@ LqrRetVal
 lqr_progress_set_end_width_message(LqrProgress *p, const gchar * message)
 {
   CATCH_F (p != NULL);
-  strncpy(p->end_width_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
+  g_strlcpy(p->end_width_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
   return LQR_OK;
 }
 
@@ -149,7 +149,7 @@ LqrRetVal
 lqr_progress_set_end_height_message(LqrProgress *p, const gchar * message)
 {
   CATCH_F (p != NULL);
-  strncpy(p->end_height_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
+  g_strlcpy(p->end_height_message, message, LQR_PROGRESS_MAX_MESSAGE_LENGTH);
   return LQR_OK;
 }
 
