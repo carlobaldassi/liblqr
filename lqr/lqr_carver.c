@@ -1112,6 +1112,8 @@ lqr_carver_update_emap (LqrCarver * r)
   gint x, y;
   gint y1, y1_min, y1_max;
 
+  CATCH_CANC (r);
+
   if (r->nrg_uptodate)
     {
       return LQR_OK;
@@ -1120,8 +1122,6 @@ lqr_carver_update_emap (LqrCarver * r)
     {
       CATCH_F (r->rcache != NULL);
     }
-
-  CATCH_CANC (r);
 
   for (y = 0; y < r->h; y++)
     {
@@ -1173,15 +1173,23 @@ lqr_carver_update_mmap (LqrCarver * r)
 {
   gint x, y;
   gint x_min, x_max;
-  gint x1;
+  gint x1, dx;
   gint x1_min, x1_max;
   gint data, data_down, least;
   gfloat m, m1, r_fact;
+  gfloat new_m;
+  gfloat * mc = NULL;
   gint stop;
   gint x_stop;
 
   CATCH_CANC(r);
   CATCH_F (r->nrg_uptodate);
+
+  if (r->rigidity)
+    {
+      CATCH_MEM (mc = g_try_new(gfloat, 2 * r->delta_x + 1));
+      mc += r->delta_x;
+    }
 
   /* span first row */
   /* x_min = MAX (r->vpath_x[0] - r->delta_x, 0); */
@@ -1195,6 +1203,7 @@ lqr_carver_update_mmap (LqrCarver * r)
       data = r->raw[0][x];
       r->m[data] = r->en[data];
     }
+
 
   /* other rows */
   for (y = 1; y < r->h; y++)
@@ -1223,49 +1232,101 @@ lqr_carver_update_mmap (LqrCarver * r)
 
           /* find the minimum in the previous rows
            * as in build_mmap() */
-          x1_min = MAX (-x, -r->delta_x);
-          x1_max = MIN (r->w - 1 - x, r->delta_x);
-          data_down = r->raw[y - 1][x + x1_min];
-          least = data_down;
+          x1_min = MAX (0, x - r->delta_x);
+          x1_max = MIN (r->w - 1, x + r->delta_x);
+
           if (r->rigidity)
             {
-              m = r->m[data_down] + r_fact * r->rigidity_map[x1_min];
-              for (x1 = x1_min + 1; x1 <= x1_max; x1++)
+              dx = x1_min - x;
+              switch (x1_max - x1_min + 1)
                 {
-                  data_down = r->raw[y - 1][x + x1];
-                  m1 = r->m[data_down] + r_fact * r->rigidity_map[x1];
-                  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-                    {
-                      m = m1;
-                      least = data_down;
-                    }
+                  case 1:
+                    MRSET1(y, x1_min, dx);
+                    m = r->leftright ? MRMINR1(y, x1_min, dx) : MRMINL1(y, x1_min, dx);
+                    break;
+                  case 2:
+                    MRSET2(y, x1_min, dx);
+                    m = r->leftright ? MRMINR2(y, x1_min, dx) : MRMINL2(y, x1_min, dx);
+                    break;
+                  case 3:
+                    MRSET3(y, x1_min, dx);
+                    m = r->leftright ? MRMINR3(y, x1_min, dx) : MRMINL3(y, x1_min, dx);
+                    break;
+                  case 4:
+                    MRSET4(y, x1_min, dx);
+                    m = r->leftright ? MRMINR4(y, x1_min, dx) : MRMINL4(y, x1_min, dx);
+                    break;
+                  case 5:
+                    MRSET5(y, x1_min, dx);
+                    m = r->leftright ? MRMINR5(y, x1_min, dx) : MRMINL5(y, x1_min, dx);
+                    break;
+                  default:
+                    data_down = r->raw[y - 1][x1_min];
+                    least = data_down;
+                    m = r->m[data_down] + r_fact * r->rigidity_map[dx++];
+                    /* fprintf(stderr, "y,x=%i,%i x1=%i dx=%i mr=%g MR=%g m=%g M=%g\n", y, x, x1_min, dx, m, MRDOWN(y, x1_min, dx), r->m[data_down], MDOWN(y, x1_min)); fflush(stderr);   */
+                    for (x1 = x1_min + 1; x1 <= x1_max; x1++, dx++)
+                      {
+                        data_down = r->raw[y - 1][x1];
+                        m1 = r->m[data_down] + r_fact * r->rigidity_map[dx];
+                        /* fprintf(stderr, "y,x=%i,%i x1=%i dx=%i mr=%g MR=%g m=%g M=%g\n", y, x, x1, dx, m1, MRDOWN(y, x1, dx), r->m[data_down], MDOWN(y, x1)); fflush(stderr);   */
+                        if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+                          {
+                            m = m1;
+                            least = data_down;
+                          }
+                      }
                 }
+                /* fprintf(stderr, "y,x=%i,%i x1_min,max=%i,%i least=%i m=%g\n", y, x, x1_min, x1_max, least, m); fflush(stderr); */
             }
           else
             {
-              m = r->m[data_down];
-              for (x1 = x1_min + 1; x1 <= x1_max; x1++)
+              switch (x1_max - x1_min + 1)
                 {
-                  data_down = r->raw[y - 1][x + x1];
-                  m1 = r->m[data_down];
-                  if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
-                    {
-                      m = m1;
-                      least = data_down;
-                    }
+                  case 1:
+                    m = r->leftright ? MMINR1(y, x1_min) : MMINL1(y, x1_min);
+                    break;
+                  case 2:
+                    m = r->leftright ? MMINR2(y, x1_min) : MMINL2(y, x1_min);
+                    break;
+                  case 3:
+                    m = r->leftright ? MMINR3(y, x1_min) : MMINL3(y, x1_min);
+                    break;
+                  case 4:
+                    m = r->leftright ? MMINR4(y, x1_min) : MMINL4(y, x1_min);
+                    break;
+                  case 5:
+                    m = r->leftright ? MMINR5(y, x1_min) : MMINL5(y, x1_min);
+                    break;
+                  default:
+                    data_down = r->raw[y - 1][x1_min];
+                    least = data_down;
+                    m = r->m[data_down];
+                    for (x1 = x1_min + 1; x1 <= x1_max; x1++)
+                      {
+                        data_down = r->raw[y - 1][x1];
+                        m1 = r->m[data_down];
+                        if ((m1 < m) || ((m1 == m) && (r->leftright == 1)))
+                          {
+                            m = m1;
+                            least = data_down;
+                          }
+                      }
                 }
+                /* fprintf(stderr, "y,x=%i,%i x1_min,max=%i,%i least=%i m=%g\n", y, x, x1_min, x1_max, least, m); fflush(stderr);   */
             }
+
+          new_m = r->en[data] + m;
 
           /* reduce the range if there's no difference
            * with the previous map */
           if (r->least[data] == least)
             {
-              if ((x == x_min) && (x < r->nrg_xmin[y])
-                  && (r->m[data] == r->en[data] + m))
+              if ((x == x_min) && (r->m[data] == new_m))
                 {
                   x_min++;
                 }
-              if ((x > r->nrg_xmax[y]) && (r->m[data] == r->en[data] + m))
+              if (r->m[data] == new_m)
                 {
                   if (stop == 0)
                     {
@@ -1284,7 +1345,7 @@ lqr_carver_update_mmap (LqrCarver * r)
             }
 
           /* set current m */
-          r->m[data] = r->en[data] + m;
+          r->m[data] = new_m;
           r->least[data] = least;
 
           if ((x == x_max) && (stop))
@@ -1294,6 +1355,13 @@ lqr_carver_update_mmap (LqrCarver * r)
         }
 
     }
+
+  if (r->rigidity)
+    {
+      mc -= r->delta_x;
+      g_free(mc);
+    }
+
   return LQR_OK;
 }
 
