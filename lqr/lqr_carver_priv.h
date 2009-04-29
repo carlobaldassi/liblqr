@@ -306,7 +306,8 @@
 #define MRMINR4(y, x, dx) MRMINR4G((y), (x), (x) + 1, (x) + 2, (x) + 3, (dx), (dx) + 1, (dx) + 2, (dx) + 3)
 #define MRMINR5(y, x, dx) MRMINR5G((y), (x), (x) + 1, (x) + 2, (x) + 3, (x) + 4, (dx), (dx) + 1, (dx) + 2, (dx) + 3, (dx) + 4)
 
-
+/* Tolerance for update_mmap */
+#define UPDATE_TOLERANCE (1e-5)
 
 /* Carver states */
 

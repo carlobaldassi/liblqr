@@ -1,3 +1,7 @@
+2009-04-28  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Heavily optimised the update_mmap code
+
 2009-04-27  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* New framework for energy definition, 

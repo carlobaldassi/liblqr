@@ -1318,34 +1318,35 @@ lqr_carver_update_mmap (LqrCarver * r)
 
           new_m = r->en[data] + m;
 
-          /* reduce the range if there's no difference
+          /* reduce the range if there's no (relevant) difference
            * with the previous map */
           if (r->least[data] == least)
             {
-              if ((x == x_min) && (r->m[data] == new_m))
-                {
-                  x_min++;
-                }
-              if (r->m[data] == new_m)
+              if (fabsf(r->m[data] - new_m) < UPDATE_TOLERANCE)
                 {
                   if (stop == 0)
                     {
                       x_stop = x;
                     }
                   stop = 1;
+                  new_m = r->m[data];
                 }
               else
                 {
                   stop = 0;
+                  r->m[data] = new_m;
+                }
+              if ((x == x_min) && stop)
+                {
+                  x_min++;
                 }
             }
           else
             {
               stop = 0;
+              r->m[data] = new_m;
             }
 
-          /* set current m */
-          r->m[data] = new_m;
           r->least[data] = least;
 
           if ((x == x_max) && (stop))
