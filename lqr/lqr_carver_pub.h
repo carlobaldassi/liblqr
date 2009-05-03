@@ -73,6 +73,7 @@ LqrRetVal lqr_carver_init (LqrCarver *r, gint delta_x, gfloat rigidity) LQR_PUBL
 /* set attributes */
 LqrRetVal lqr_carver_set_image_type (LqrCarver * r, LqrImageType image_type) LQR_PUBLIC;
 LqrRetVal lqr_carver_set_alpha_channel (LqrCarver * r, gint channel_index) LQR_PUBLIC;
+LqrRetVal lqr_carver_set_black_channel (LqrCarver * r, gint channel_index) LQR_PUBLIC;
 void lqr_carver_set_dump_vmaps (LqrCarver *r) LQR_PUBLIC;
 void lqr_carver_set_no_dump_vmaps (LqrCarver *r) LQR_PUBLIC;
 void lqr_carver_set_resize_order (LqrCarver *r, LqrResizeOrder resize_order) LQR_PUBLIC;
@@ -106,6 +107,7 @@ gint lqr_carver_get_ref_width (LqrCarver * r) LQR_PUBLIC;
 gint lqr_carver_get_ref_height (LqrCarver * r) LQR_PUBLIC;
 gint lqr_carver_get_orientation (LqrCarver * r) LQR_PUBLIC;
 LqrColDepth lqr_carver_get_col_depth (LqrCarver * r) LQR_PUBLIC;
+LqrImageType lqr_carver_get_image_type (LqrCarver * r) LQR_PUBLIC;
 gfloat lqr_carver_get_enl_step (LqrCarver *r) LQR_PUBLIC;
 gint lqr_carver_get_depth (LqrCarver *r) LQR_PUBLIC;
 

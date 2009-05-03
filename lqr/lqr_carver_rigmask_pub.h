@@ -29,6 +29,7 @@
 
 /* PUBLIC RIGMASK-RELATED FUNCTIONS */
 
+LqrRetVal lqr_carver_rigmask_add_xy(LqrCarver *r, gdouble rigidity, gint x, gint y) LQR_PUBLIC;
 LqrRetVal lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *buffer, gint channels, gint width, gint height, gint x_off, gint y_off) LQR_PUBLIC;
 LqrRetVal lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *buffer, gint channels) LQR_PUBLIC;
 LqrRetVal lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint height, gint x_off, gint y_off) LQR_PUBLIC;

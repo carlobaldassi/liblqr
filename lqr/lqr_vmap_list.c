@@ -99,7 +99,7 @@ lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data)
   LqrVMapList * now = list;
   if (now != NULL)
     {
-      CATCH (func(now->current, data));
+      LQR_CATCH (func(now->current, data));
       return lqr_vmap_list_foreach (now->next, func, data);
     }
   return LQR_OK;

@@ -701,7 +701,7 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   gint w, h;
 
   /* make sure the image is RGB */
-  CATCH_F (lqr_carver_get_channels(r) == 3);
+  LQR_CATCH_F (lqr_carver_get_channels(r) == 3);
 
   /* resize the image canvas as needed to
    * fit for the new size */

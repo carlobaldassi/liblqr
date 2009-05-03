@@ -100,7 +100,7 @@ lqr_carver_list_foreach (LqrCarverList * list, LqrCarverFunc func, LqrDataTok da
   LqrCarverList * now = list;
   if (now != NULL)
     {
-      CATCH (func(now->current, data));
+      LQR_CATCH (func(now->current, data));
       return lqr_carver_list_foreach (now->next, func, data);
     }
   return LQR_OK;
@@ -113,8 +113,8 @@ lqr_carver_list_foreach_recursive (LqrCarverList * list, LqrCarverFunc func, Lqr
   LqrCarverList * now = list;
   if (now != NULL)
     {
-      CATCH (func(now->current, data));
-      CATCH (lqr_carver_list_foreach (now->current->attached_list, func, data));
+      LQR_CATCH (func(now->current, data));
+      LQR_CATCH (lqr_carver_list_foreach (now->current->attached_list, func, data));
       return lqr_carver_list_foreach (now->next, func, data);
     }
   return LQR_OK;

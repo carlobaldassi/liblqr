@@ -80,7 +80,7 @@ lqr_rwindow_fill_rgba (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 
   buffer = rwindow->buffer;
 
-  CATCH_F (lqr_rwindow_get_read_t (rwindow) == LQR_ER_RGBA);
+  LQR_CATCH_F (lqr_rwindow_get_read_t (rwindow) == LQR_ER_RGBA);
 
   for (i = -rwindow->radius; i <= rwindow->radius; i++)
     {
@@ -114,7 +114,7 @@ lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint 
 
   buffer = rwindow->buffer;
 
-  CATCH_F (lqr_rwindow_get_read_t (rwindow) == LQR_ER_CUSTOM);
+  LQR_CATCH_F (lqr_rwindow_get_read_t (rwindow) == LQR_ER_CUSTOM);
 
   for (i = -rwindow->radius; i <= rwindow->radius; i++)
     {
@@ -144,7 +144,7 @@ lqr_rwindow_fill_custom (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint 
 LqrRetVal
 lqr_rwindow_fill (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
-  CATCH_CANC (r);
+  LQR_CATCH_CANC (r);
 
   if (rwindow->use_rcache)
     {
@@ -158,13 +158,13 @@ lqr_rwindow_fill (LqrReaderWindow * rwindow, LqrCarver * r, gint x, gint y)
     {
       case LQR_ER_BRIGHT:
       case LQR_ER_LUMA:
-        CATCH (lqr_rwindow_fill_std(rwindow, r, x, y));
+        LQR_CATCH (lqr_rwindow_fill_std(rwindow, r, x, y));
         break;
       case LQR_ER_RGBA:
-        CATCH (lqr_rwindow_fill_rgba(rwindow, r, x, y));
+        LQR_CATCH (lqr_rwindow_fill_rgba(rwindow, r, x, y));
         break;
       case LQR_ER_CUSTOM:
-        CATCH (lqr_rwindow_fill_custom(rwindow, r, x, y));
+        LQR_CATCH (lqr_rwindow_fill_custom(rwindow, r, x, y));
         break;
       default:
         return LQR_ERROR;

@@ -139,28 +139,28 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        CATCH_MEM (dest = g_try_new0 (lqr_t_8i, size)); \
+        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_8i, size)); \
         break; \
       case LQR_COLDEPTH_16I: \
-        CATCH_MEM (dest = g_try_new0 (lqr_t_16i, size)); \
+        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_16i, size)); \
         break; \
       case LQR_COLDEPTH_32F: \
-        CATCH_MEM (dest = g_try_new0 (lqr_t_32f, size)); \
+        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_32f, size)); \
         break; \
       case LQR_COLDEPTH_64F: \
-        CATCH_MEM (dest = g_try_new0 (lqr_t_64f, size)); \
+        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_64f, size)); \
         break; \
     } \
 } G_STMT_END
 
-#define CATCH_CANC(carver) G_STMT_START { \
+#define LQR_CATCH_CANC(carver) G_STMT_START { \
   if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \
     { \
       return LQR_USRCANCEL; \
     } \
 } G_STMT_END
 
-#define CATCH_CANC_N(carver) G_STMT_START { \
+#define LQR_CATCH_CANC_N(carver) G_STMT_START { \
   if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \
     { \
       return NULL; \
