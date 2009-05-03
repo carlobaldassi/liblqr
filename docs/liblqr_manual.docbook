@@ -18,6 +18,14 @@
 	<!ENTITY col_depth_16i "<literal>LQR_COLDEPTH_16I</literal>">
 	<!ENTITY col_depth_32f "<literal>LQR_COLDEPTH_32F</literal>">
 	<!ENTITY col_depth_64f "<literal>LQR_COLDEPTH_64F</literal>">
+	<!ENTITY img_type_grey "<literal>LQR_GREY_IMAGE</literal>">
+	<!ENTITY img_type_greya "<literal>LQR_GREYA_IMAGE</literal>">
+	<!ENTITY img_type_rgb "<literal>LQR_RGB_IMAGE</literal>">
+	<!ENTITY img_type_rgba "<literal>LQR_RGBA_IMAGE</literal>">
+	<!ENTITY img_type_cmy "<literal>LQR_CMY_IMAGE</literal>">
+	<!ENTITY img_type_cmyk "<literal>LQR_CMYK_IMAGE</literal>">
+	<!ENTITY img_type_cmyka "<literal>LQR_CMYKA_IMAGE</literal>">
+	<!ENTITY img_type_custom "<literal>LQR_CUSTOM_IMAGE</literal>">
 	<!ENTITY err_ok "<literal><errorcode>LQR_OK</errorcode></literal>">
 	<!ENTITY err_err "<literal><errorcode>LQR_ERROR</errorcode></literal>">
 	<!ENTITY err_nomem "<literal><errorcode>LQR_NOMEM</errorcode></literal>">
@@ -37,14 +45,14 @@
 			<surname>Baldassi</surname>
 		</author>
 		<productname class='copyright'>LqR library</productname>
-		<productnumber>0.4.0 API (3:0:3)</productnumber>
+		<productnumber>LQR_0.4.0 API (3:0:3)</productnumber>
 		<copyright>
 			<year>2007</year>
 			<year>2008</year>
 			<year>2009</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>16 Apr 2009</date>
+		<date>30 Apr 2009</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -351,7 +359,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				</variablelist>
 			</para>
 			<para>
-				At top level, the user should handle these values explicitly, because
+				At top level, it is important that the user handle these values explicitly, because
 				the library functions don't do anything else than stopping and returning an
 				error signal in case of errors. An easy way is setting up some macros
 				and wrap each function call with those, as shown in the example files.
@@ -361,7 +369,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				to wrap function calls, in order to propagate these signals:
 				<variablelist>
 					<varlistentry>
-						<term><literal><function>CATCH</function> (<parameter>expr</parameter>)</literal></term>
+						<term><literal><function>LQR_CATCH</function> (<parameter>expr</parameter>)</literal></term>
 						<listitem>
 							<para>
 								if <parameter>expr</parameter> is equal to &err_ok;	
@@ -372,7 +380,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 						</listitem>
 					</varlistentry>
 					<varlistentry>
-						<term><literal><function>CATCH_F</function> (<parameter>expr</parameter>)</literal></term>
+						<term><literal><function>LQR_CATCH_F</function> (<parameter>expr</parameter>)</literal></term>
 						<listitem>
 							<para>
 								returns &err_err; if
@@ -381,7 +389,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 						</listitem>
 					</varlistentry>
 					<varlistentry>
-						<term><literal><function>CATCH_MEM</function> (<parameter>expr</parameter>)</literal></term>
+						<term><literal><function>LQR_CATCH_MEM</function> (<parameter>expr</parameter>)</literal></term>
 						<listitem>
 							<para>
 								returns &err_nomem; if
@@ -390,6 +398,15 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 						</listitem>
 					</varlistentry>
 				</variablelist>
+				<note>
+                                    <para>
+                                      The names of these macros have changed since version <literal>0.4</literal>; the previous names
+                                      <function>CATCH</function>, <function>CATCH_F</function> and
+                                      <function>CATCH_MEM</function> are still available, but they can be disabled
+                                      at configure time if they cause conflicts (<command>configure --help</command> for details).
+                                    </para>
+				</note>
+                                
 			</para>
 		</sect1>
 
@@ -489,19 +506,27 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				<para>
 					Floating point type values must range between <literal>0</literal> and <literal>1</literal>.
 				</para>
+                                <para>
+                                        The library has some support for different image types and color models. When a &carv_obj; object is
+                                        created, the image type is automatically set from the number of channels (basically, assuming that the
+                                        image is either grayscale or RGB with possibly an alpha channel), but it is important to set
+                                        it manually using the function <function>lqr_carver_set_image_type</function> if your program
+                                        has to deal with different color models.
+                                        See the section <link linkend="image-type">Choosing the image type</link> for more details.
+                                </para>
 				<para>
 					By default, the buffer is assumed to be a copy of the original image, and therefore it is owned
 					by the &carv_obj; object and must not be accessed directly any more (and of course it must not be freed,
-					the &carv_obj; destructor does it).
+                                        the &carv_obj; <link linkend="release">destructor</link> does it).
 					If, instead, you want the &lqrl; to keep the buffer intact, you must flag
-					the &carv_obj; after creation, using this function:
+                                        the &carv_obj; after creation (or after <link linkend="carver-init">activation</link>), using this function:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_set_preserve_input_image</function></funcdef>
 							<paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
-					This function must be used only once, before any other operation takes place.
+                                        This function must be used before any other operation takes place.
 				</para>
 			</sect2>
 
@@ -541,6 +566,112 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					</para>
 				</important>
 			</sect2>
+
+			<sect2 id="image-type">
+				<title>Choosing the image type</title>
+				<para>
+                                  The library supports a small number of different image types/color models in order to correctly compute
+                                  quantities such as the brightness of a pixel, which are important for automatic feature detection.
+                                </para>
+                                <para>
+                                  The image type can be set manually using the function:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>LqrRetVal <function>lqr_carver_set_image_type</function></funcdef>
+                                                  <paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+                                                  <paramdef> LqrImageType <parameter>image_type</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                </para>
+                                <para>
+                                  The type <type>LqrImageType</type> is an <literal>enum</literal> which can take these values:
+                                  <itemizedlist>
+                                          <listitem>&img_type_grey;</listitem>
+                                          <listitem>&img_type_greya;</listitem>
+                                          <listitem>&img_type_rgb;</listitem>
+                                          <listitem>&img_type_rgba;</listitem>
+                                          <listitem>&img_type_cmy;</listitem>
+                                          <listitem>&img_type_cmyk;</listitem>
+                                          <listitem>&img_type_cmyka;</listitem>
+                                          <listitem>&img_type_custom;</listitem>
+                                  </itemizedlist>
+                                </para>
+                                <para>
+                                  When creating a &carv_obj; object, the image type is inferred from the number of channels
+                                  according to this table:
+                                  <table id="def-image-types">
+                                          <title>Image types assigned by default</title>
+                                          <tgroup cols="2">
+                                                  <thead>
+                                                          <row>
+                                                                  <entry>channels</entry>
+                                                                  <entry>type</entry>
+                                                          </row>
+                                                  </thead>
+                                                  <tbody>
+                                                          <row>
+                                                                  <entry>1</entry>
+                                                                  <entry>&img_type_grey;</entry>
+                                                          </row>
+                                                          <row>
+                                                                  <entry>2</entry>
+                                                                  <entry>&img_type_greya;</entry>
+                                                          </row>
+                                                          <row>
+                                                                  <entry>3</entry>
+                                                                  <entry>&img_type_rgb;</entry>
+                                                          </row>
+                                                          <row>
+                                                                  <entry>4</entry>
+                                                                  <entry>&img_type_rgba;</entry>
+                                                          </row>
+                                                          <row>
+                                                                  <entry>5</entry>
+                                                                  <entry>&img_type_cmyka;</entry>
+                                                          </row>
+                                                          <row>
+                                                                  <entry>&gt;5</entry>
+                                                                  <entry>&img_type_custom;</entry>
+                                                          </row>
+                                                  </tbody>
+                                          </tgroup>
+                                  </table>
+                                </para>
+                                <para>
+                                  When setting a carver to &img_type_custom;, it is assumed that there are no alpha or
+                                  black channels, but if there are, their index can be specified with the functions:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>LqrRetVal <function>lqr_carver_set_alpha_channel</function></funcdef>
+                                                  <paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+                                                  <paramdef> gint <parameter>channel_index</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>LqrRetVal <function>lqr_carver_set_black_channel</function></funcdef>
+                                                  <paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+                                                  <paramdef> gint <parameter>channel_index</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                  Use the value <literal>-1</literal> in the indices arguments to unset those channels.
+                                  Note that using &img_type_custom; in a carver normally requires special care
+                                  in the choice and definitions of the energy functions (see <!--TODO add link to energy stuff-->).
+                                </para>
+                                <note>
+                                  <para>
+                                    Setting manually the alpha or black channel with the above functions automatically sets
+                                    the carver image type to &img_type_custom;.
+                                  </para>
+                                </note>
+                                <note>
+                                  <para>
+                                    The support for CMY (and derived) color models is very naïve, since no color profiles are yet managed by
+                                    the library.
+                                  </para>
+                                </note>
+                        </sect2>
+
 
 
 		</sect1>
@@ -875,6 +1006,360 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 			</sect2>
 		</sect1>
 
+		<sect1 id="energy">
+			<title>The automatic feature detection</title>
+
+			<sect2 id="energy-foreword">
+				<title>Foreword</title>
+
+				<para>
+                                        The automatic feature detection relies on the evaluation of the relevance of each pixel; this
+                                        quantity is called `energy': the higher the energy of a pixel, the less likely it will be
+                                        that such pixel will be directly affected by the rescaling algorithm. The energy function which the
+                                        library uses can be customised; normally, edge detector filters are the best choices for this
+                                        purpose.
+                                </para>
+                                <para>
+                                        Briefly, each energy function used by the library receives the current position and image size as 
+                                        parameters, and is provided access to a square of values from the image, centered around the
+                                        current position. This access is provided through an object which is called a "reader window",
+                                        and the image pixels are not read directly, but rather they are accessed according to a "reader type",
+                                        which means that the energy function can get e.g. the brightness of a pixel without needing to care for
+                                        the image type or the colour depth.
+                                </para>
+                                <para>
+                                        The library provides a small set of very simple (yet effective) gradient-based energy functions and a
+                                        customisation framework for defining more functions.
+                                </para>
+
+                        </sect2>
+			<sect2 id="energy-builtin">
+				<title>Builtin energy functions</title>
+
+				<para>
+                                  The library has some builtin functions for energy evaluation; in order to set one of
+                                  the builtin functions in a &carv_obj; object this function is used:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>LqrRetVal <function>lqr_carver_set_energy_function_builtin</function></funcdef>
+                                                  <paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+                                                  <paramdef>LqrEnergyFunctionBuiltinType <parameter>ef_ind</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                </para>
+				<para>
+                                        The currently available builtin functions which can be used as <parameter>ef_ind</parameter> are:
+                                        <variablelist>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_GRAD_XABS</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                  absolute value of the brightness gradient in the direction
+                                                                  of the rescaling (this is the default)
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_GRAD_SUMABS</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                        sum of absolute values of the brightness gradients in both directions
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_GRAD_NORM</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                        norm of the brightness gradient
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_LUMA_GRAD_XABS</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                  absolute value of the luma gradient in the direction
+                                                                  of the rescaling (this is the default)
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_LUMA_GRAD_SUMABS</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                        sum of absolute values of the luma gradients in both directions
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_LUMA_GRAD_NORM</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                        norm of the luma gradient
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                                <varlistentry>
+                                                        <term><literal>LQR_EF_NULL</literal></term>
+                                                        <listitem>
+                                                                <para>
+                                                                        null
+                                                                </para>
+                                                        </listitem>
+                                                </varlistentry>
+                                        </variablelist>
+                                </para>
+                                <para>
+                                  All of the above gradient functions have a radius of 1 pixel.
+                                </para>
+                                
+                        </sect2>
+
+                        <sect2 id="energy-custom">
+                                <title>Custom energy functions</title>
+
+                                <para>
+                                  Custom energy functions for a &carv_obj; object are set using this funciton:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>LqrRetVal <function>lqr_carver_set_energy_function</function></funcdef>
+                                                  <paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+                                                  <paramdef>LqrEnergyFunc <parameter>ef_func</parameter></paramdef>
+                                                  <paramdef>gint <parameter>radius</parameter></paramdef>
+                                                  <paramdef>LqrEnergyReaderType <parameter>reader_type</parameter></paramdef>
+                                                  <paramdef>gpointer <parameter>extra_data</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                  Here, <parameter>ef_func</parameter> is the function (the prototype will be explained below),
+                                  <parameter>radius</parameter> is used to set the size of the square region around each pixel which
+                                  is used to evaluate the energy for that pixel, <parameter>reader_type</parameter> is used to
+                                  set which quantity is used for the energy computation (e.g. brightness, luma etc.) and
+                                  <parameter>extra_data</parameter> is a (void) pointer which can be used to pass additional parameters
+                                  to the energy function.
+                                </para>
+                                <para>
+                                  The <type><literal>LqrEnergyReaderType</literal></type> is an enum which can take these values (also
+                                  noted is the number of channels of the corresponging output):
+                                  <variablelist>
+                                          <varlistentry>
+                                                  <term><literal>LQR_ER_BRIGHT</literal></term>
+                                                  <listitem>
+                                                          <para>
+                                                            brightness (1 channel)
+                                                          </para>
+                                                  </listitem>
+                                          </varlistentry>
+                                          <varlistentry>
+                                                  <term><literal>LQR_ER_BRIGHT</literal></term>
+                                                  <listitem>
+                                                          <para>
+                                                            luma (1 channel)
+                                                          </para>
+                                                  </listitem>
+                                          </varlistentry>
+                                          <varlistentry>
+                                                  <term><literal>LQR_ER_RGBA</literal></term>
+                                                  <listitem>
+                                                          <para>
+                                                            RGBA (4 channels)
+                                                          </para>
+                                                  </listitem>
+                                          </varlistentry>
+                                          <varlistentry>
+                                                  <term><literal>LQR_ER_CUSTOM</literal></term>
+                                                  <listitem>
+                                                          <para>
+                                                            read the normalised image channels as they are (as many channels as the image has)
+                                                          </para>
+                                                  </listitem>
+                                          </varlistentry>
+                                  </variablelist>
+                                  These readouts always return values beetween <literal>0</literal> and <literal>1</literal>.
+                                </para>
+                                <note>
+                                  <para>
+                                    Note that these readouts may have special meanings depending on the image type:
+                                    <itemizedlist>
+                                      <listitem>
+                                        <para>
+                                          for <literal>LQR_GREY_IMAGE</literal>, <literal>LQR_GREYA_IMAGE</literal> and
+                                          <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_LUMA</literal> readout
+                                          will yield the same result as <literal>LQR_ER_BRIGHT</literal>
+                                        </para>
+                                      </listitem>
+                                      <listitem>
+                                        <para>
+                                          for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHTNESS</literal>
+                                          readout will return the average pixel value (additive, i.e. if a black channel is present
+                                          the channel values will be inverted and multiplied by the black channel inverse), multiplied
+                                          by the alpha channel value.
+                                        </para>
+                                      </listitem>
+                                      <listitem>
+                                        <para>
+                                          for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_RGBA</literal> readout
+                                          <emphasis>cannot be used</emphasis>: it will always return <literal>0</literal>
+                                        </para>
+                                      </listitem>
+                                    </itemizedlist>
+                                  </para>
+                                </note>
+                                <para>
+                                  The custom energy function must be declared like in the following sample
+                                  declaration:
+                                  <example id="ex-custom-en-decl">
+                                          <title>Custom energy declaration</title>
+                                          <programlisting>
+gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwindow, gpointer extra_data)
+                                          </programlisting>
+                                  </example>
+                                  This function should return the energy at pixel <parameter>x</parameter>, <parameter>y</parameter>, based
+                                  on the knowledge of the current image size (obtained from <parameter>weight</parameter> and
+                                  <parameter>height</parameter>) and the content of the image in a square around that pixel, which is passed through
+                                  the <parameter>rwindow</parameter> reading window: in order to access this content, this function must be used:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>gdouble <function>lqr_rwindow_read</function></funcdef>
+                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                                  <paramdef>gint <parameter>x</parameter></paramdef>
+                                                  <paramdef>gint <parameter>y</parameter></paramdef>
+                                                  <paramdef>channel <parameter>channel</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                  When reading out the content from a a window, the <parameter>x</parameter> and <parameter>y</parameter>
+                                  parameters are relative to the window centre (which instead is given by the <parameter>x</parameter>,
+                                  <parameter>y</parameter> parameters passed to the custom energy function), and they both range between
+                                  <literal><symbol>-radius</symbol></literal> and
+                                  <literal><symbol>radius</symbol></literal> included (<parameter>radius</parameter> being the same one which is used
+                                  in <function>lqr_carver_set_energy_function</function>). The parameter <parameter>channel</parameter> specifies
+                                  which channel to read out; depending on the <parameter>read_type</parameter> passed to
+                                  <function>lqr_carver_set_energy_function</function> the range and meaning of this parameter will change: for
+                                  the cases <literal>LQR_ER_BRIGHT</literal> and <literal>LQR_ER_LUMA</literal> it must be <literal>0</literal>,
+                                  because the readout consists of a single channel, for <literal>LQR_ER_RGBA</literal> it must be between
+                                  <literal>0</literal> and <literal>3</literal> (and then the readout will contain the RGBA information), while
+                                  for <literal>LQR_ER_CUSTOM</literal> it must be one of the original image channels.
+                                </para>
+                                <para>
+                                  The <parameter>rwindow</parameter> parameters can be read out from within a custom defined energy function
+                                  using these functions:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>LqrEnergyReaderType <function>lqr_rwindow_get_read_t</function></funcdef>
+                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                          </funcprototype>
+                                          <funcprototype>
+                                                  <funcdef>gint <function>lqr_rwindow_get_radius</function></funcdef>
+                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                          </funcprototype>
+                                          <funcprototype>
+                                                  <funcdef>gint <function>lqr_rwindow_get_channels</function></funcdef>
+                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                </para>
+                                <para>
+                                  Following is an example of how a simple energy function (a very poor one for the purpose of feature
+                                  detection), based on a convolution, can be defined and used:
+                                  <example id="ex-custom-en-def">
+                                          <title>Custom energy definition and setup</title>
+                                          <programlisting>
+/* definition */
+
+gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwindow, gpointer extra_data)
+{
+  gint i, j;
+  gdouble f;
+  gdouble e = 0;
+  gdouble n = 0;
+
+  gint radius = lqr_read_window_get_radius (rwindow);
+
+  for (i = -radius; i &lt;= radius; i++) {
+    for (j = -radius; j &lt;= radius; j++) {
+      /* boundary check */
+      if (x + i &lt; 0 || x + i >= w || y + j &lt; 0 || y + j >= h) {
+        continue;
+      }
+      f = sin(0.5 * M_PI * i / radius) * sin(0.5 * M_PI * j / radius);
+      n += fabs(f);
+      /* here we assume we will be only using brightness or luma,
+       * therefore we just ask for channel 0 */
+      e += f * lqr_rwindow_read(rwindow, i, j, 0);
+    }
+  }
+  e /= n;
+
+  return (gfloat) fabs(e);
+}
+
+/* to use it (e.g. with a radius of 2 and using brightness): */
+
+lqr_carver_set_energy_function (carver, my_energy, 2, LQR_ER_BRIGHT, NULL);
+                                          </programlisting>
+                                  </example>
+                                </para>
+                                <important>
+                                  <para>
+                                    There is no internal check for out-of-bounds requests, therefore boundary checking will
+                                    have to be implemented explicitly, as shown in the above example.
+                                  </para>
+                                </important>
+                                <important>
+                                  <para>
+                                    The energy functions are called over the transposed image in case of vertical scaling,
+                                    therefore, if they are asymmetrical, the result will be different depending on the scaling
+                                    orientation (this is the case for example for the <literal>LQR_EF_GRAD_XABS</literal>
+                                    builtin function).
+                                  </para>
+                                </important>
+                                <note>
+                                        <para>
+                                                In actual code, the call to
+                                                <function>lqr_carver_set_energy_function</function> should
+                                                be protected to test its return value.
+                                        </para>
+                                </note>
+                        </sect2>
+
+                        <sect2 id="energy-readout">
+                                <title>Reading out the energy</title>
+
+                                <para>
+                                  The energy can be read out in a format suitable for plotting it, using this function:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>gfloat * <function>lqr_carver_get_energy</function></funcdef>
+                                                  <paramdef>LqrCarver * <parameter>carver</parameter></paramdef>
+                                                  <paramdef>gint <parameter>orientation</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                  This function returns a buffer containing the energy values at the time of calling, ordered
+                                  by row and then by column. All values range between <literal>0</literal> and <literal>1</literal>.
+                                  The buffer must be freed by the user when it is not needed any more.
+                                </para>
+                                <para>
+                                  The <parameter>orientation</parameter> paramter determines which orientation will be used
+                                  when computing the energy: <literal>0</literal> means horizontal, <literal>1</literal> means vertical.
+                                </para>
+                                <para>
+                                  The <parameter>carver</parameter> need not be initialised; if a bias was added to it (see the
+                                  <link linkend="bias">Adding a bias</link> section), its effect
+                                  is included in the output.
+                                </para>
+                                <para>
+                                  The above function does not return the true energy which is used internally, because that would not be
+                                  suitable for plotting. If the true energy value is desired, this function must be used instead:
+                                  <funcsynopsis>
+                                          <funcprototype>
+                                                  <funcdef>gfloat * <function>lqr_carver_get_true_energy</function></funcdef>
+                                                  <paramdef>LqrCarver * <parameter>carver</parameter></paramdef>
+                                                  <paramdef>gint <parameter>orientation</parameter></paramdef>
+                                          </funcprototype>
+                                  </funcsynopsis>
+                                </para>
+                        </sect2>
+                </sect1>
 		<sect1 id="bias">
 			<title>Adding a bias</title>
 
@@ -900,9 +1385,8 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				</para>
 				<important>
 					<para>
-						The bias has to be added always <emphasis>after</emphasis>
-						the &carv_obj; initialization and <emphasis>before</emphasis>
-						resizing takes place.
+                                                The bias has to be added before the resizing takes place
+                                                (but it can be added before initialisation since version 0.4).
 					</para>
 				</important>
 				<note>
@@ -914,12 +1398,30 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				</note>
 			</sect2>
 
+			<sect2 id="bias-xy">
+				<title>Adding a bias pixel by pixel</title>
+
+				<para>
+					The function to use in order to add a bias to a given pixel is:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_xy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble <parameter>bias</parameter></paramdef>
+							<paramdef>gint <parameter>x</parameter></paramdef>
+							<paramdef>gint <parameter>y</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+                                        Typical values for the <parameter>bias</parameter> parameter would be between
+                                        <literal>100</literal> and <literal>10000</literal> in module.
+                                </para>
+                        </sect2>
+
 			<sect2 id="bias-float">
 				<title>Using an array of floating-point values</title>
 
 				<para>
-					The bias values are stored as an array of floating points.
-					It is possible to use directly one such array through
+					It is possible to use a whole array of floating points at once through
 					this function:
 					<funcsynopsis>
 						<funcprototype>
@@ -935,14 +1437,16 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					and it is assumed to have the same size as the image loaded in
 					<parameter>carver</parameter>, while <parameter>bias_factor</parameter> is an
 					overall bias factor, which can be used to affect the global
-					bias level: if the elements of buffer are of order 1, a standard
-					choice for the bias_factor would be between 100 and 1000.
+                                        bias level: if the elements of <parameter>buffer</parameter> are of order 1,
+                                        a standard choice for the bias_factor would be between <literal>100</literal> and
+                                        <literal>10000</literal> (in module).
 				</para>
 				<note>
 					<para>
 						This function, and all the following, will not swallow
 						the buffer (to the contrary of what happens e.g. when creating
-						a new &carv_obj; object).
+                                                a new &carv_obj; object and allowing the default behaviour), therefore
+                                                the buffer must be freed by the user afterwards.
 					</para>
 				</note>
 			</sect2>
@@ -980,7 +1484,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 						<parameter>channels</parameter> value: if this is 1 or 3, no alpha
 						channel is assumed, if it is 2 or 4 or greater, it is assumed that the last
 						channel holds the alpha value. If this is not what you want, you should
-						resort to the previous method.
+						resort to one of the previous methods.
 					</para>
 				</important>
 			</sect2>
@@ -989,9 +1493,9 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				<title>Operating on a specific area</title>
 
 				<para>
-					The above functions operate on the whole &carv_obj; image.
-					It is also possible to access specific image regions; for
-					the floating point use:
+					The two previously described functions operate on the whole &carv_obj; image.
+					It is also possible to access specific image regions in a similar way; for
+					the floating point case use:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
@@ -1004,7 +1508,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 							<paramdef>gint <parameter>y_off</parameter></paramdef>
 						</funcprototype>
 					</funcsynopsis>
-					while for the rgb image use:
+					while for the rgb image case use:
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add_rgb_area</function></funcdef>
@@ -1058,32 +1562,56 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					the image while keeping the seams optimal in other areas.
 				</para>
 				<para>
-					The library interface to deal with rigidity masks follows verty closely
-					the scheme for bias masks as described in the <link linkend="bias">bias section</link>),
-					the only difference being that no equivalent to the bias factor has to be
-					provided.
+					The library interface to deal with rigidity masks follows very closely
+					the scheme for bias masks as described in the <link linkend="bias">bias section</link>,
+					the main difference being that no equivalent to the bias factor has to be
+                                        provided (since it is already given in the <function>lqr_carver_init</function> function).
 				</para>
 				<important>
 					<para>
 						The rigidity mask has to be added always <emphasis>after</emphasis>
 						the &carv_obj; initialization and <emphasis>before</emphasis>
-						resizing takes place.
+                                                resizing takes place. (Note that this is different from the bias, which
+                                                instead can also be added to non-initialised carver objects.)
+					</para>
+				</important>
+				<important>
+					<para>
+                                                Whenever a rigidity mask is set, all pixels for which the value is not explicitly
+                                                defined will have coefficient 0, i.e. the rigidity setting will will be disabled.
 					</para>
 				</important>
 				<note>
 					<para>
-						All of the functions can be called multiple times; in such case, their
-						effect will be summed up.
+                                                All of the functions can be called multiple times, but their effect is not summed
+                                                up, to the contrary of what happens for the bias functions; instead, new values
+                                                will substitute old ones when the affected regions overlap.
 					</para>
 				</note>
 			</sect2>
+
+			<sect2 id="rigmask-xy">
+				<title>Adding an individual rigidity coefficient to a pixel</title>
+
+				<para>
+					The function to use in order to set the rigidity mask at a given pixel is:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_xy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble <parameter>rigidity</parameter></paramdef>
+							<paramdef>gint <parameter>x</parameter></paramdef>
+							<paramdef>gint <parameter>y</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+                                </para>
+                        </sect2>
 
 			<sect2 id="rigmask-float">
 				<title>Using an array of floating-point values</title>
 
 				<para>
-					The rigidity mask values are stored as an array of floating points.
-					It is possible to use directly one such array through
+					It is possible to use a whole array of floating points at once through
 					this function:
 					<funcsynopsis>
 						<funcprototype>
@@ -1094,7 +1622,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					</funcsynopsis>
 				</para>
 				<para>
-					Here, <parameter>buffer</parameter> is an array contining the bias values,
+					Here, <parameter>buffer</parameter> is an array contining the rigidity coefficients values,
 					and it is assumed to have the same size as the image loaded in
 					<parameter>carver</parameter>.
 				</para>
@@ -1102,7 +1630,8 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					<para>
 						This function, and all the following, will not swallow
 						the buffer (to the contrary of what happens e.g. when creating
-						a new &carv_obj; object).
+                                                a new &carv_obj; object and allowing the default behaviour), therefore
+                                                the buffer must be freed by the user afterwards.
 					</para>
 				</note>
 			</sect2>
@@ -1139,7 +1668,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 						<parameter>channels</parameter> value: if this is 1 or 3, no alpha
 						channel is assumed, if it is 2 or 4, it is assumed that the last
 						channel is holds the alpha value. If this is not what you want, you should
-						resort to the previous method.
+						resort to one of the previous methods.
 					</para>
 				</important>
 			</sect2>
@@ -1148,8 +1677,8 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				<title>Operating on a specific area</title>
 
 				<para>
-					The above functions operate on the whole &carv_obj; image.
-					It is also possible to access specific image regions; for
+					The two previously described functions operate on the whole &carv_obj; image.
+					It is also possible to access specific image regions in a similar way; for
 					the floating point use:
 					<funcsynopsis>
 						<funcprototype>
@@ -1191,12 +1720,6 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 					&carv_obj; image area : only the parts which overlap with it will be used.
 					For example, the offsets can also be negative.
 				</para>
-				<note>
-					<para>
-						Outside of the affected areas, the rigidity will be set to 0, which means
-						that the global rigidity value will not be used for such areas.
-					</para>
-				</note>
 			</sect2>
 		</sect1>
 
@@ -1206,67 +1729,6 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 			<para>
 				The behaviour can be tuned through some additional functions.
 			</para>
-
-
-			<sect2 id="gradient">
-				<title>Choosing a gradient function</title>
-
-				<para>
-					The automatic feature detection relies on the computation
-					of the gradient in each pixel of the image. The function to use
-					can be set through:
-					<funcsynopsis>
-						<funcprototype>
-							<funcdef>void <function>lqr_carver_set_gradient_function</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>LqrGradFuncType <parameter>gf_ind</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-				</para>
-				<para>
-					The possible values for <parameter>gf_ind</parameter> are:
-					<variablelist>
-						<varlistentry>
-							<term><literal>LQR_GF_XABS</literal></term>
-							<listitem>
-								<para>
-									absolute value of the gradient in the direction of the rescaling
-									(this is the default)
-								</para>
-							</listitem>
-						</varlistentry>
-						<varlistentry>
-							<term><literal>LQR_GF_SUMABS</literal></term>
-							<listitem>
-								<para>
-									sum of absolute values of the gradients in both directions
-								</para>
-							</listitem>
-						</varlistentry>
-						<varlistentry>
-							<term><literal>LQR_GF_NORM</literal></term>
-							<listitem>
-								<para>
-									gradient norm
-								</para>
-							</listitem>
-						</varlistentry>
-						<varlistentry>
-							<term><literal>LQR_GF_NULL</literal></term>
-							<listitem>
-								<para>
-									null
-								</para>
-							</listitem>
-						</varlistentry>
-					</variablelist>
-				</para>
-				<para>
-					The null value can be used to override completely the automatic
-					feature detection (see the <link linkend="bias">Adding a bias</link>
-					section).
-				</para>
-			</sect2>
 
 			<sect2 id="lqr-enl-step">
 				<title>Setting the enlargement step</title>
@@ -1444,7 +1906,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				</para>
 				<para>
 					In order to revert the effect of <function>lqr_carver_set_dump_vmaps</function>,
-					thus stopping the automatic dumping, use function
+					thus stopping the automatic dumping, use the function
 					<funcsynopsis>
 						<funcprototype>
 							<funcdef>void <function>lqr_carver_set_no_dump_vmaps</function></funcdef>
@@ -1543,10 +2005,10 @@ while (list)
 						<title>Accessing visibility maps #2</title>
 						<programlisting>
 LqrRetVal my_func (LqrVMap vmap, gpointer data)
-  {
-    [... do something on vmap ... ]
-    return LQR_OK;
-  }
+{
+  [... do something on vmap ... ]
+  return LQR_OK;
+}
 
 LqrVMapList *list;
 
@@ -2189,6 +2651,56 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					</para>
 				</refsect1>
 			</refentry>
+
+                        <refentry id="ref-lqr-image-type">
+                                <refmeta>
+                                        <refentrytitle><type>LqrImageType</type></refentrytitle>
+                                        <manvolnum>3</manvolnum>
+                                </refmeta>
+
+                                <refnamediv>
+                                        <refname>LqrImageType</refname>
+                                        <refpurpose>carver objects image type (colour model) specification</refpurpose>
+                                </refnamediv>
+
+                                <refsect1>
+                                        <title>Description</title>
+                                        <para>
+                                          The &carv_obj; objects use knowledge about the image type they're working on in
+                                          order to compute correctly some quantities (e.g. the brightness) for the automatic
+                                          feature detection. Image types are set automatically by the constructors, but
+                                          they can also be specified manually using quantities of the type
+                                          <type>LqrImageType</type>, which is an <literal>enum</literal> which can take these
+                                          values:
+                                          <itemizedlist>
+                                                  <listitem>&img_type_grey;</listitem>
+                                                  <listitem>&img_type_greya;</listitem>
+                                                  <listitem>&img_type_rgb;</listitem>
+                                                  <listitem>&img_type_rgba;</listitem>
+                                                  <listitem>&img_type_cmy;</listitem>
+                                                  <listitem>&img_type_cmyk;</listitem>
+                                                  <listitem>&img_type_cmyka;</listitem>
+                                                  <listitem>&img_type_custom;</listitem>
+                                          </itemizedlist>
+                                        </para>
+                                        <para>
+                                          Use the function <xref linkend="ref-lqr-carver-set-image-type"></xref> to set the image type
+                                          of a carver, and the function <xref linkend="ref-lqr-carver-get-image-type"></xref> to
+                                          read it out.
+                                        </para>
+                                </refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-new"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-set-image-type"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-get-image-type"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
 		</sect1>
 		
 		<sect1 id="ref-carve">
@@ -2252,6 +2764,47 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						must not be accessed any more, unless you subsequently call the
 						<xref linkend="ref-lqr-carver-set-preserve-input-image"></xref> function.
 					</para>
+                                        <para>
+                                                The image type is et automatically from the value of <parameter>channels</parameter>
+                                                according to this table:
+                                                <table id="ref-def-image-types">
+                                                        <title>Image types assigned by default</title>
+                                                        <tgroup cols="2">
+                                                                <thead>
+                                                                        <row>
+                                                                                <entry>channels</entry>
+                                                                                <entry>type</entry>
+                                                                        </row>
+                                                                </thead>
+                                                                <tbody>
+                                                                        <row>
+                                                                                <entry>1</entry>
+                                                                                <entry>&img_type_grey;</entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry>2</entry>
+                                                                                <entry>&img_type_greya;</entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry>3</entry>
+                                                                                <entry>&img_type_rgb;</entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry>4</entry>
+                                                                                <entry>&img_type_rgba;</entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry>5</entry>
+                                                                                <entry>&img_type_cmyka;</entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry>&gt;5</entry>
+                                                                                <entry>&img_type_custom;</entry>
+                                                                        </row>
+                                                                </tbody>
+                                                        </tgroup>
+                                                </table>
+                                        </para>
 				</refsect1>
 				<refsect1>
 					<title>Return value</title>
@@ -2266,6 +2819,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-image-type"></xref></member>
 							<member><xref linkend="ref-lqr-carver-destroy"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
@@ -2383,10 +2937,208 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-new"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
 			</refentry>
+
+			<refentry id="ref-lqr-carver-set-image-type">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_image_type</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_image_type</refname>
+					<refpurpose>sets the image type of an &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_image_type</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrImageType <parameter>image_type</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+                                                The function <function>lqr_carver_set_image_type</function> sets
+                                                the image type of the &carv_obj; pointed to by <parameter>carver</parameter>
+                                                to <parameter>image_type</parameter>.
+					</para>
+					<para>
+                                                If <parameter>image_type</parameter> is equal to &img_type_custom;, it is assumed
+                                                that there are no alpha or black channels. You can set those independently using
+                                                <xref linkend="ref-lqr-carver-set-alpha-channel"></xref> and
+                                                <xref linkend="ref-lqr-carver-set-black-channel"></xref>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-alpha-channel"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-black-channel"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-image-type"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-alpha-channel">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_alpha_channel</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_alpha_channel</refname>
+					<refpurpose>sets the alpha channel index in a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_alpha_channel</function></funcdef>
+                                                        <paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+                                                        <paramdef> gint <parameter>channel_index</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+                                                The function <function>lqr_carver_set_alpha_channel</function> sets
+                                                the alpha channel index of the image stored in the &carv_obj; pointed to
+                                                by <parameter>carver</parameter> to <parameter>channel_index</parameter>
+                                                (between <literal>0</literal> and <literal>channels - 1</literal>,
+                                                where <literal>channels</literal> is the number of colour channels
+                                                of the <parameter>carver</parameter>).
+					</para>
+					<para>
+                                                Use a negative value for <parameter>cahnnel_index</parameter> to specify
+                                                that no alpha channel is present.
+					</para>
+					<para>
+                                                If the specified channel coincides with the current value of the black channel,
+                                                the black channel is unset.
+					</para>
+					<para>
+                                                Calling this function sets the image time of the <parameter>carver</parameter>
+                                                to &img_type_custom;.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-black-channel"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-black-channel">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_black_channel</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_black_channel</refname>
+					<refpurpose>sets the black channel index in a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_black_channel</function></funcdef>
+                                                        <paramdef> LqrCarver * <parameter>carver</parameter></paramdef>
+                                                        <paramdef> gint <parameter>channel_index</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+                                                The function <function>lqr_carver_set_black_channel</function> sets
+                                                the black channel index of the image stored in the &carv_obj; pointed to
+                                                by <parameter>carver</parameter> to <parameter>channel_index</parameter>
+                                                (between <literal>0</literal> and <literal>channels - 1</literal>,
+                                                where <literal>channels</literal> is the number of colour channels
+                                                of the <parameter>carver</parameter>).
+					</para>
+					<para>
+                                                Use a negative value for <parameter>cahnnel_index</parameter> to specify
+                                                that no black channel is present.
+					</para>
+					<para>
+                                                If the specified channel coincides with the current value of the alpha channel,
+                                                the alpha channel is unset.
+					</para>
+					<para>
+                                                Calling this function sets the image time of the <parameter>carver</parameter>
+                                                to &img_type_custom;. Furthermore, the image color model will be assumed to be
+                                                subtractive by the reader functions. <!--TODO: what are the reader functions?-->
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Return value</title>
+					<para>
+						The return value follows the &lqrl; signalling system.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-alpha-channel"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+
 
 			<refentry id="ref-lqr-carver-resize">
 				<refmeta>
@@ -3177,6 +3929,56 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				</refsect1>
 			</refentry>
 
+			<refentry id="ref-lqr-carver-get-image-type">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_image_type</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_image_type</refname>
+					<refpurpose>get the image type of a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrImageType <function>lqr_carver_get_image_type</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+						The function <function>lqr_carver_get_image_type</function> returns
+						the image type (i.e. colour model) of the image contained in the &carv_obj; object
+						pointed to by <parameter>carver</parameter>.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-new"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-image-type"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-channels"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-col-depth"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-get-orientation"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
 			<refentry id="ref-lqr-carver-get-enl-step">
 				<refmeta>
 					<refentrytitle><function>lqr_carver_get_enl_step</function></refentrytitle>
@@ -3783,7 +4585,10 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						The function <function>lqr_carver_set_preserve_input_image</function> flags
 						the &carv_obj; object pointed to by <parameter>carver</parameter> so that
 						it does not alter in any way the buffer which is passed to it by the
-						constructor.
+                                                constructor. It must be used before any resizing-related operation takes place,
+                                                either after the <parameter>carver</parameter> construction or after the calls
+                                                to <xref linkend="ref-lqr-carver-init"></xref> or
+                                                <xref linkend="ref-lqr-vmap-load"></xref> .
 					</para>
 				</refsect1>
 
@@ -3791,6 +4596,8 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-init"></xref></member>
+							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
@@ -4592,9 +5399,9 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 						&carv_obj; object pointed to by <parameter>carver</parameter>.
 					</para>
 					<para>
-						It can only be called over uninitialized carver objects, therefore care must be taken not
-						to exceed the loaded map depth when resizing (see the &vmap_obj; objects format description
-						in the page for <xref linkend="ref-lqr-vmap-new"></xref>).
+                                                It can only be called over uninitialized carver objects, therefore care must be taken not
+                                                to exceed the loaded map depth when resizing (see the &vmap_obj; objects format description
+                                                in the page for <xref linkend="ref-lqr-vmap-new"></xref>).
 					</para>
 				<refsect1>
 
@@ -5745,8 +6552,8 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 	<appendix id="app-new">
 		<title>API changes in new versions of the library</title>
 
-		<sect1 id="app-new-0-4">
-			<title>New symbols in version 0.4</title>
+		<sect1 id="app-new-LQR_0-4">
+			<title>New symbols in version LQR_0.4</title>
 			<para>
 				<simplelist>
 					<member><link linkend="ref-lqr-carver-set-preserve-input-image"><function>lqr_carver_set_preserve_input_image</function></link></member>
