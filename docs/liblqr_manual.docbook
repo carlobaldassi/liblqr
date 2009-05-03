@@ -1022,7 +1022,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                 <para>
                                         Briefly, each energy function used by the library receives the current position and image size as 
                                         parameters, and is provided access to a square of values from the image, centered around the
-                                        current position. This access is provided through an object which is called a "reader window",
+                                        current position. This access is provided through an object which is called a "reading window",
                                         and the image pixels are not read directly, but rather they are accessed according to a "reader type",
                                         which means that the energy function can get e.g. the brightness of a pixel without needing to care for
                                         the image type or the colour depth.
@@ -1211,7 +1211,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                   <example id="ex-custom-en-decl">
                                           <title>Custom energy declaration</title>
                                           <programlisting>
-gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwindow, gpointer extra_data)
+gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwindow, gpointer extra_data)
                                           </programlisting>
                                   </example>
                                   This function should return the energy at pixel <parameter>x</parameter>, <parameter>y</parameter>, based
@@ -1221,7 +1221,7 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwin
                                   <funcsynopsis>
                                           <funcprototype>
                                                   <funcdef>gdouble <function>lqr_rwindow_read</function></funcdef>
-                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                                  <paramdef>LqrReadingWindow * <parameter>rwindow</parameter></paramdef>
                                                   <paramdef>gint <parameter>x</parameter></paramdef>
                                                   <paramdef>gint <parameter>y</parameter></paramdef>
                                                   <paramdef>channel <parameter>channel</parameter></paramdef>
@@ -1246,15 +1246,15 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwin
                                   <funcsynopsis>
                                           <funcprototype>
                                                   <funcdef>LqrEnergyReaderType <function>lqr_rwindow_get_read_t</function></funcdef>
-                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                                  <paramdef>LqrReadingWindow * <parameter>rwindow</parameter></paramdef>
                                           </funcprototype>
                                           <funcprototype>
                                                   <funcdef>gint <function>lqr_rwindow_get_radius</function></funcdef>
-                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                                  <paramdef>LqrReadingWindow * <parameter>rwindow</parameter></paramdef>
                                           </funcprototype>
                                           <funcprototype>
                                                   <funcdef>gint <function>lqr_rwindow_get_channels</function></funcdef>
-                                                  <paramdef>LqrReaderWindow * <parameter>rwindow</parameter></paramdef>
+                                                  <paramdef>LqrReadingWindow * <parameter>rwindow</parameter></paramdef>
                                           </funcprototype>
                                   </funcsynopsis>
                                 </para>
@@ -1266,7 +1266,7 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwin
                                           <programlisting>
 /* definition */
 
-gfloat my_energy (gint x, gint y, gint width, gint height, LqrReaderWindow *rwindow, gpointer extra_data)
+gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwindow, gpointer extra_data)
 {
   gint i, j;
   gdouble f;

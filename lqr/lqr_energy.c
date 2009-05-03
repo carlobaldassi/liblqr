@@ -305,11 +305,11 @@ lqr_carver_read_cached_custom (LqrCarver * r, gint x, gint y, gint channel)
 }
 
 gfloat
-lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, LqrGradFunc gf)
+lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, LqrGradFunc gf)
 {
   gdouble gx, gy;
 
-  gdouble (*bread_func) (LqrReaderWindow *, gint, gint);
+  gdouble (*bread_func) (LqrReadingWindow *, gint, gint);
 
   switch (lqr_rwindow_get_read_t(rwindow))
     {
@@ -356,25 +356,25 @@ lqr_energy_builtin_grad_all (gint x, gint y, gint img_width, gint img_height, Lq
 }
 
 gfloat
-lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
+lqr_energy_builtin_grad_norm (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data)
 {
   return lqr_energy_builtin_grad_all(x, y, img_width, img_height, rwindow, lqr_grad_norm);
 }
 
 gfloat
-lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
+lqr_energy_builtin_grad_sumabs (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data)
 {
   return lqr_energy_builtin_grad_all(x, y, img_width, img_height, rwindow, lqr_grad_sumabs);
 }
 
 gfloat
-lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
+lqr_energy_builtin_grad_xabs (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data)
 {
   return lqr_energy_builtin_grad_all(x, y, img_width, img_height, rwindow, lqr_grad_xabs);
 }
 
 gfloat
-lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data)
+lqr_energy_builtin_null (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data)
 {
   return 0;
 }

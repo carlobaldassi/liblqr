@@ -389,7 +389,7 @@ struct _LqrCarver
   gint nrg_radius;                /* energy function radius */
   LqrEnergyReaderType nrg_read_t; /* energy function reader type */
   gpointer nrg_extra_data;        /* extra data to pass on to the energy function */
-  LqrReaderWindow * rwindow;      /* reader window for energy computation */
+  LqrReadingWindow * rwindow;     /* reading window for energy computation */
 
   gint *nrg_xmin;                 /* auxiliary vector for energy update */
   gint *nrg_xmax;                 /* auxiliary vector for energy update */

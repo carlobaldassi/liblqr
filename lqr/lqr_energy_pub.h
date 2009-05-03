@@ -45,7 +45,7 @@ enum _LqrEnergyFuncBuiltinType
 
 typedef enum _LqrEnergyFuncBuiltinType LqrEnergyFuncBuiltinType;
 
-typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrReaderWindow * rwindow, gpointer extra_data);
+typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data);
 
 LqrRetVal lqr_carver_set_energy_function_builtin (LqrCarver * r, LqrEnergyFuncBuiltinType ef_ind) LQR_PUBLIC;
 LqrRetVal lqr_carver_set_energy_function (LqrCarver * r, LqrEnergyFunc en_func, gint radius, LqrEnergyReaderType reader_type, gpointer extra_data) LQR_PUBLIC;
