@@ -55,7 +55,7 @@
 			<year>2009</year>
 			<holder>Carlo Baldassi</holder>
 		</copyright>
-		<date>30 Apr 2009</date>
+		<date>4 Maj 2009</date>
 	</bookinfo>
 
 	<chapter id="Introduction">
@@ -4160,104 +4160,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				</refsect1>
 			</refentry>
 
-
-			<refentry id="ref-lqr-carver-set-gradient-function">
-				<refmeta>
-					<refentrytitle><function>lqr_carver_set_gradient_function</function></refentrytitle>
-					<manvolnum>3</manvolnum>
-				</refmeta>
-
-				<refnamediv>
-					<refname>lqr_carver_set_gradient_function</refname>
-					<refpurpose>set the gradient function for an &carv_obj; object</refpurpose>
-				</refnamediv>
-
-				<refsynopsisdiv>
-					<funcsynopsis>
-						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
-						<funcprototype>
-							<funcdef>void <function>lqr_carver_set_gradient_function</function></funcdef>
-							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
-							<paramdef>LqrGradFuncType <parameter>gf_ind</parameter></paramdef>
-						</funcprototype>
-					</funcsynopsis>
-				</refsynopsisdiv>
-
-				<refsect1>
-					<title>Description</title>
-					<para>
-						Function <function>lqr_carver_set_gradient_function</function> is used
-						to set the function of the gradient which will be used by
-						the &carv_obj; object pointed to by <parameter>carver</parameter>
-						in determining the relevance of a pixel (less relevant pixels being the ones which
-						tend to be crossed by the seams, and thus the ones affected by rescaling).
-						For each pixel, the gradient is computed for each direction as the difference
-						of the values of nighboring pixels, the value being computed as the average
-						over the colour channels multiplied by the alpha channel value (if present).
-					</para>
-					<para>
-						Possible values of the argument <parameter>gs_ind</parameter> are:
-						<variablelist>
-							<varlistentry>
-								<term><literal>LQR_GF_XABS</literal></term>
-								<listitem>
-									<para>
-										absolute value of the gradient in the direction of the rescaling
-									</para>
-								</listitem>
-							</varlistentry>
-							<varlistentry>
-								<term><literal>LQR_GF_SUMABS</literal></term>
-								<listitem>
-									<para>
-										sum of absolute values of the gradients in both directions
-									</para>
-								</listitem>
-							</varlistentry>
-							<varlistentry>
-								<term><literal>LQR_GF_NORM</literal></term>
-								<listitem>
-									<para>
-										gradient norm
-									</para>
-								</listitem>
-							</varlistentry>
-							<varlistentry>
-								<term><literal>LQR_GF_NULL</literal></term>
-								<listitem>
-									<para>
-										always returns 0
-									</para>
-								</listitem>
-							</varlistentry>
-						</variablelist>
-					</para>
-					<para>
-						The default value for newly created &carv_obj; objects is <literal>LQR_GF_XABS</literal>.
-						The value <literal>LQR_GF_NULL</literal> can be used together with the function
-						<xref linkend="ref-lqr-carver-bias-add-area"></xref> ant the like to override completely the
-						automatic feature detection.
-					</para>
-				</refsect1>
-
-				<refsect1>
-					<title>See also</title>
-					<para>
-						<simplelist type="inline">
-							<member><xref linkend="ref-lqr-carver-init"></xref></member>
-							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
-						</simplelist>
-					</para>
-				</refsect1>
-			</refentry>
-
 			<refentry id="ref-lqr-carver-set-enl-step">
 				<refmeta>
 					<refentrytitle><function>lqr_carver_set_enl_step</function></refentrytitle>
@@ -4320,7 +4222,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-get-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-ref-width"></xref></member>
 							<member><xref linkend="ref-lqr-carver-get-ref-height"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
@@ -4376,7 +4277,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
@@ -4455,7 +4355,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
@@ -4530,7 +4429,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
@@ -4584,7 +4482,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
@@ -4636,7 +4533,6 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
@@ -4686,14 +4582,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>See also</title>
 					<para>
 						<simplelist type="inline">
-							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
-							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -6090,7 +5984,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                                                 <simplelist type="inline">
                                                         <member><xref linkend="ref-lqr-carver-set-energy-function-builtin"></xref></member>
                                                         <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
-                                                        <member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-bias-add"></xref></member>
                                                 </simplelist>
                                         </para>
                                 </refsect1>
@@ -6307,19 +6201,97 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                                         </para>
                                 </refsect1>
                         </refentry>
+
+			<refentry id="ref-lqr-carver-set-gradient-function">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_gradient_function</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_gradient_function</refname>
+					<refpurpose>set the gradient function for an &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_gradient_function</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrGradFuncType <parameter>gf_ind</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+                                                The function <function>lqr_carver_set_gradient_function</function> is deprecated and
+                                                should not be used in newly written code. The function
+                                                <xref linkend="ref-lqr-carver-set-energy-function-builtin"></xref> should be used instead.
+                                        </para>
+                                        <para>
+                                                The function <function>lqr_carver_set_gradient_function</function> is still maintained
+                                                for backwards compatibility reasons; its result is equivalent to calling
+                                                <function>lqr_carver_set_energy_function_builtin</function>, with the following
+                                                mapping between the argument <parameter>gs_ind</parameter> of the former and the
+                                                argument <parameter>ef_ind</parameter> of the latter:
+                                                <informaltable id="ref-gs-ef-mapping">
+                                                        <tgroup cols="2">
+                                                                <thead>
+                                                                        <row>
+                                                                          <entry><type><literal>LqrGradFuncType</literal></type></entry>
+                                                                          <entry><type><literal>LqrEnergyFuncBuiltinType</literal></type></entry>
+                                                                        </row>
+                                                                </thead>
+                                                                <tbody>
+                                                                        <row>
+                                                                                <entry><literal>LQR_GF_XABS</literal></entry>
+                                                                                <entry><literal>LQR_EF_GRAD_XABS</literal></entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry><literal>LQR_GF_SUMABS</literal></entry>
+                                                                                <entry><literal>LQR_EF_GRAD_SUMABS</literal></entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry><literal>LQR_GF_NORM</literal></entry>
+                                                                                <entry><literal>LQR_EF_GRAD_NORM</literal></entry>
+                                                                        </row>
+                                                                        <row>
+                                                                                <entry><literal>LQR_GF_NULL</literal></entry>
+                                                                                <entry><literal>LQR_EF_NULL</literal></entry>
+                                                                        </row>
+                                                                </tbody>
+                                                        </tgroup>
+                                                </informaltable>
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-set-energy-function-builtin"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
                 </sect1>
 
 
 		<sect1 id="ref-bias">
 			<title>Bias</title>
 
-			<refentry id="ref-lqr-carver-bias-add-area">
+			<refentry id="ref-lqr-carver-bias-add">
 				<refmeta>
-					<refentrytitle><function>lqr_carver_bias_add_area</function></refentrytitle>
+					<refentrytitle><function>lqr_carver_bias_add</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
+					<refname>lqr_carver_bias_add_xy</refname>
 					<refname>lqr_carver_bias_add_area</refname>
 					<refname>lqr_carver_bias_add</refname>
 					<refname>lqr_carver_bias_add_rgb_area</refname>
@@ -6330,6 +6302,13 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 				<refsynopsisdiv>
 					<funcsynopsis>
 						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_bias_add_xy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble <parameter>bias</parameter></paramdef>
+							<paramdef>gint <parameter>x</parameter></paramdef>
+							<paramdef>gint <parameter>y</parameter></paramdef>
+						</funcprototype>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_bias_add_area</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -6368,19 +6347,40 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 				</refsynopsisdiv>
 
 				<refsect1>
+					<title>Foreword</title>
+
+					<para>
+                                                All the functions described in this page are used to add a bias to &carv_obj; objects.
+                                                A positive biased pixel will be more likely to be avoided by seams, and thus be preserved
+                                                during rescaling, while a negative bias has the opposite effect.
+					</para>
+					<para>
+                                                All of these functions must be called before <xref linkend="ref-lqr-carver-resize"></xref>.
+                                                If called multiple times, the biases added at each call will sum up.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Adding a bias pixel by pixel</title>
+
+					<para>
+                                                The function <function>lqr_carver_bias_add_xy</function> adds a bias to the
+                                                &param_x;, &param_y; pixel of the image loaded into the &carv_obj; object pointed to by
+						<parameter>carver</parameter>
+					</para>
+                                        <para>
+                                                A typical value for <parameter>bias_factor</parameter> would be
+                                                <literal>1000</literal> (in absolute value).
+					</para>
+				</refsect1>
+
+				<refsect1>
 					<title>Adding a bias from a buffer</title>
 
 					<para>
 						The function <function>lqr_carver_bias_add_area</function> adds a bias to an
 						area of the image loaded into the &carv_obj; object pointed to by
-						<parameter>carver</parameter>. A positive biased area will be more likely to be
-						avoided by seams, and thus be preserved during rescaling, while a negative bias has the
-						opposite effect.
-					</para>
-					<para>
-						This function must be called after <xref linkend="ref-lqr-carver-init"></xref>
-						and before <xref linkend="ref-lqr-carver-resize"></xref>. If called multiple
-						times, the biases added at each call will sum up.
+						<parameter>carver</parameter>.
 					</para>
 					<para>
 						The parameter <parameter>buffer</parameter> must point to an array of <type>doubles</type>
@@ -6395,7 +6395,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 					<para>
 						The parameter <parameter>bias_factor</parameter> is an overall bias scale. A typical
 						value when the buffer contents are of the order of <literal>1</literal> would be
-						<literal>1000</literal>.
+                                                <literal>1000</literal> (in absolute value).
 					</para>
 					<para>
 						The function <function>lqr_carver_bias_add</function> can be used when the area
@@ -6442,7 +6442,47 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
-							<member><xref linkend="ref-lqr-carver-rigmask-add-area"></xref></member>
+							<member><xref linkend="ref-lqr-carver-rigmask-add"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-bias-clear">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_bias_clear</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_bias_clear</refname>
+					<refpurpose>clear an &carv_obj; bias</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_bias_clear</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_carver_bias_clear</function> clears the bias from
+                                                the &carv_obj; object pointed to by <parameter>carver</parameter>
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-bias-add"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -6452,13 +6492,14 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 		<sect1 id="ref-rigmask">
 			<title>Rigidity masks</title>
 
-			<refentry id="ref-lqr-carver-rigmask-add-area">
+			<refentry id="ref-lqr-carver-rigmask-add">
 				<refmeta>
-					<refentrytitle><function>lqr_carver_rigmask_add_area</function></refentrytitle>
+					<refentrytitle><function>lqr_carver_rigmask_add</function></refentrytitle>
 					<manvolnum>3</manvolnum>
 				</refmeta>
 
 				<refnamediv>
+					<refname>lqr_carver_rigmask_add_xy</refname>
 					<refname>lqr_carver_rigmask_add_area</refname>
 					<refname>lqr_carver_rigmask_add</refname>
 					<refname>lqr_carver_rigmask_add_rgb_area</refname>
@@ -6469,6 +6510,13 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 				<refsynopsisdiv>
 					<funcsynopsis>
 						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_xy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gdouble <parameter>rigidity</parameter></paramdef>
+							<paramdef>gint <parameter>x</parameter></paramdef>
+							<paramdef>gint <parameter>y</parameter></paramdef>
+						</funcprototype>
 						<funcprototype>
 							<funcdef>LqrRetVal <function>lqr_carver_rigmask_add_area</function></funcdef>
 							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
@@ -6503,18 +6551,48 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 				</refsynopsisdiv>
 
 				<refsect1>
-					<title>Adding a rigidity mask from a buffer</title>
+					<title>Foreword</title>
+
+					<para>
+                                                All the functions described in this page are used to add a rigidity mask to &carv_obj; objects.
+                                                Whenever one of these functions is called, a rigidity mask is activated for the whole image;
+                                                the mask contains coefficients which modulate the value of the rigidity (which is set with
+                                                <xref linkend="ref-lqr-carver-init"></xref>) in different areas of the image.
+					</para>
+					<para>
+                                                It is very important to note that using no rigidity masks at all is equivalent to use a
+                                                rigidity mask over the whole image with all the values set to <literal>1.0</literal>, but,
+                                                when first adding a rigidity mask to a &carv_obj; object, all the pixels outside the affected
+                                                area will have their rigidity set to zero; therefore, the functions
+						<function>lqr_carver_rigmask_add_xy</function>,
+						<function>lqr_carver_rigmask_add_area</function> and
+						<function>lqr_carver_rigmask_add_rgb_area</function>
+						actually affect the whole image, despite their name.
+					</para>
+                                        <para>
+                                                All the functions must be called after <function>lqr_carver_init</function>
+                                                and before <function>lqr_carver_resize</function>. If called multiple times over the same area,
+                                                new values will replace the old ones.
+                                        </para>
+				</refsect1>
+
+				<refsect1>
+					<title>Setting the rigidity mask pixel by pixel</title>
+
+					<para>
+                                                The function <function>lqr_carver_rigmask_add_xy</function> sets the rigidity mask value
+                                                of the &param_x;, &param_y; pixel of the image loaded into the &carv_obj; object pointed to by
+						<parameter>carver</parameter>
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>Setting the rigidity mask from a buffer</title>
 
 					<para>
 						The function <function>lqr_carver_rigmask_add_area</function> adds a rigidity mask to an
 						area of the image loaded in the &carv_obj; object pointed to by 
-						<parameter>carver</parameter>. Adding a positive rigidity to an area
-						will give a bias towards straighter seams (in the transversal direction with respect to the
-						rescaling direction), if they happen to cross that area.
-					</para>
-					<para>
-						This function must be called after <function>lqr_carver_init</function>
-						and before <function>lqr_carver_resize</function>.
+						<parameter>carver</parameter>.
 					</para>
 					<para>
 						The parameter <parameter>buffer</parameter> must point to an array of <type>doubles</type>
@@ -6532,14 +6610,6 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 						<function>lqr_carver_init</function>.
 					</para>
 					<para>
-						Note that using no rigidity masks at all is equivalent to use a rigidity mask over the whole
-						image with all the values set to <literal>1.0</literal>, but, when first adding a rigidity
-						mask to a &carv_obj; object, all the pixels outside the affected area will have their
-						rigidity set to zero; therefore, the function
-						<function>lqr_carver_rigmask_add_area</function>
-						actually affects the whole image, despite its name.
-					</para>
-					<para>
 						The function <function>lqr_carver_rigmask_add</function> can be used when the area
 						to add is of the same size of the image loaded in the &carv_obj; object and the
 						offsets are <literal>0</literal>.
@@ -6547,7 +6617,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 				</refsect1>
 
 				<refsect1>
-					<title>Adding a rigidity mask from an image</title>
+					<title>Setting the rigidity mask from an image</title>
 
 					<para>
 						The functions <function>lqr_carver_rigmask_add_rgb_area</function> and
@@ -6584,7 +6654,47 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-ret-val"></xref></member>
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
-							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
+							<member><xref linkend="ref-lqr-carver-bias-add"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-rigmask-clear">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_rigmask_clear</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_rigmask_clear</refname>
+					<refpurpose>clear an &carv_obj; rigidity mask</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_rigmask_clear</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_carver_rigmask_clear</function> clears the rigidity mask from
+                                                the &carv_obj; object pointed to by <parameter>carver</parameter>
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-rigmask-add"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -7234,9 +7344,27 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 			<title>New symbols in version 0.4</title>
 			<para>
 				<simplelist>
+					<member><link linkend="ref-lqr-image-type"><type>LqrImageType</type></link></member>
+					<member><link linkend="ref-lqr-carver-set-image-type"><function>lqr_carver_set_image_type</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-image-type"><function>lqr_carver_get_image_type</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-alpha-channel"><function>lqr_carver_set_alpha_channel</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-black-channel"><function>lqr_carver_set_black_channel</function></link></member>
 					<member><link linkend="ref-lqr-carver-set-preserve-input-image"><function>lqr_carver_set_preserve_input_image</function></link></member>
-					<member><link linkend="ref-lqr-carver-cancel"><function>lqr_carver_cancel</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-use-cache"><function>lqr_carver_set_use_cache</function></link></member>
 					<member><link linkend="ref-lqr-carver-list-foreach"><function>lqr_carver_list_foreach_recursive</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-energy-function-builtin"><function>lqr_carver_set_energy_function_builtin</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-energy-function"><function>lqr_carver_set_energy_function</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-energy"><function>lqr_carver_get_energy</function></link></member>
+					<member><link linkend="ref-lqr-carver-get-energy"><function>lqr_carver_get_true_energy</function></link></member>
+					<member><link linkend="ref-lqr-rwindow-read"><function>lqr_rwindow_read</function></link></member>
+					<member><link linkend="ref-lqr-rwindow-get-read-t"><function>lqr_rwindow_get_read_t</function></link></member>
+					<member><link linkend="ref-lqr-rwindow-get-radius"><function>lqr_rwindow_get_radius</function></link></member>
+					<member><link linkend="ref-lqr-rwindow-get-channels"><function>lqr_rwindow_get_channels</function></link></member>
+					<member><link linkend="ref-lqr-carver-bias-add"><function>lqr_carver_bias_add_xy</function></link></member>
+					<member><link linkend="ref-lqr-carver-bias-clear"><function>lqr_carver_bias_clear</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add"><function>lqr_carver_rigmask_add_xy</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-clear"><function>lqr_carver_rigmask_clear</function></link></member>
+					<member><link linkend="ref-lqr-carver-cancel"><function>lqr_carver_cancel</function></link></member>
 				</simplelist>
 			</para>
 		</sect1>
@@ -7266,10 +7394,20 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 					<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_channels</function></link></member>
 					<member><link linkend="ref-lqr-carver-get-col-depth"><function>lqr_carver_get_col_depth</function></link></member>
 					<member><link linkend="ref-lqr-carver-set-side-switch-frequency"><function>lqr_carver_set_side_switch_frequency</function></link></member>
-					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add</function></link></member>
-					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_area</function></link></member>
-					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb</function></link></member>
-					<member><link linkend="ref-lqr-carver-rigmask-add-area"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add"><function>lqr_carver_rigmask_add</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add"><function>lqr_carver_rigmask_add_area</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add"><function>lqr_carver_rigmask_add_rgb</function></link></member>
+					<member><link linkend="ref-lqr-carver-rigmask-add"><function>lqr_carver_rigmask_add_rgb_area</function></link></member>
+				</simplelist>
+			</para>
+		</sect1>
+
+		<sect1 id="app-deprecated">
+			<title>Deprecated symbols</title>
+			<para>
+				<simplelist>
+					<member><link linkend="ref-lqr-carver-get-channels"><function>lqr_carver_get_bpp</function></link></member>
+					<member><link linkend="ref-lqr-carver-set-gradient-function"><function>lqr_carver_set_gradient_function</function></link></member>
 				</simplelist>
 			</para>
 		</sect1>

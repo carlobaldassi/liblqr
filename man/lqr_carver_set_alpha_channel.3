@@ -1,0 +1,61 @@
+.\"     Title: \fBlqr_carver_set_alpha_channel\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_CARVER_SET_ALPHA_CHANNE" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_set_alpha_channel \- sets the alpha channel index in a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 39
+.BI "LqrRetVal lqr_carver_set_alpha_channel(LqrCarver\ *\ " "carver" ", gint\ " "channel_index" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_set_alpha_channel\fR
+sets the alpha channel index of the image stored in the
+LqrCarver
+pointed to by
+\fIcarver\fR
+to
+\fIchannel_index\fR
+(between
+0
+and
+channels \- 1, where
+channels
+is the number of colour channels of the
+\fIcarver\fR)\&.
+.PP
+Use a negative value for
+\fIcahnnel_index\fR
+to specify that no alpha channel is present\&.
+.PP
+If the specified channel coincides with the current value of the black channel, the black channel is unset\&.
+.PP
+Calling this function sets the image time of the
+\fIcarver\fR
+to
+LQR_CUSTOM_IMAGE\&.
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\&.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrImageType\fR(3), \fBlqr_carver_new\fR(3), \fBlqr_carver_set_image_type\fR(3), \fBlqr_carver_set_black_channel\fR(3), \fBlqr_carver_get_image_type\fR(3), \fBlqr_carver_get_channels\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

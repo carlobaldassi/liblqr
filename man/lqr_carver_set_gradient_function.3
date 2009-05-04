@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_set_gradient_function\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 16 Apr 2009
+.\"      Date: 4 Maj 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.4.0 API (3:0:3)
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_SET_GRADIENT_FUN" "3" "16 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SET_GRADIENT_FUN" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -23,50 +23,59 @@ lqr_carver_set_gradient_function \- set the gradient function for an LqrCarver o
 .BI "void lqr_carver_set_gradient_function(LqrCarver*\ " "carver" ", LqrGradFuncType\ " "gf_ind" ");"
 .SH "DESCRIPTION"
 .PP
-Function
+The function
 \fBlqr_carver_set_gradient_function\fR
-is used to set the function of the gradient which will be used by the
-LqrCarver
-object pointed to by
-\fIcarver\fR
-in determining the relevance of a pixel (less relevant pixels being the ones which tend to be crossed by the seams, and thus the ones affected by rescaling)\&. For each pixel, the gradient is computed for each direction as the difference of the values of nighboring pixels, the value being computed as the average over the colour channels multiplied by the alpha channel value (if present)\&.
+is deprecated and should not be used in newly written code\&. The function
+\fBlqr_carver_set_energy_function_builtin\fR(3)
+should be used instead\&.
 .PP
-Possible values of the argument
+The function
+\fBlqr_carver_set_gradient_function\fR
+is still maintained for backwards compatibility reasons; its result is equivalent to calling
+\fBlqr_carver_set_energy_function_builtin\fR, with the following mapping between the argument
 \fIgs_ind\fR
-are:
-.PP
+of the former and the argument
+\fIef_ind\fR
+of the latter:
+.TS
+allbox tab(:);
+lB lB.
+T{
+\fBLqrGradFuncType\fR
+T}:T{
+\fBLqrEnergyFuncBuiltinType\fR
+T}
+.T&
+l l
+l l
+l l
+l l.
+T{
 LQR_GF_XABS
-.RS 4
-absolute value of the gradient in the direction of the rescaling
-.RE
-.PP
+T}:T{
+LQR_EF_GRAD_XABS
+T}
+T{
 LQR_GF_SUMABS
-.RS 4
-sum of absolute values of the gradients in both directions
-.RE
-.PP
+T}:T{
+LQR_EF_GRAD_SUMABS
+T}
+T{
 LQR_GF_NORM
-.RS 4
-gradient norm
-.RE
-.PP
+T}:T{
+LQR_EF_GRAD_NORM
+T}
+T{
 LQR_GF_NULL
-.RS 4
-always returns 0
-.RE
-.PP
-The default value for newly created
-LqrCarver
-objects is
-LQR_GF_XABS\&. The value
-LQR_GF_NULL
-can be used together with the function
-\fBlqr_carver_bias_add_area\fR(3)
-ant the like to override completely the automatic feature detection\&.
+T}:T{
+LQR_EF_NULL
+T}
+.TE
+.sp
 .SH "SEE ALSO"
 .PP
 
-\fBlqr_carver_init\fR(3), \fBlqr_carver_bias_add_area\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3), \fBlqr_carver_set_preserve_input_image\fR(3)
+\fBlqr_carver_set_energy_function_builtin\fR(3), \fBlqr_carver_set_energy_function\fR(3)
 .SH "COPYRIGHT"
 Copyright \(co 2007-2009 Carlo Baldassi
 .br

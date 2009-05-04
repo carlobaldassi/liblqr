@@ -1,0 +1,51 @@
+.\"     Title: \fBlqr_carver_set_image_type\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_CARVER_SET_IMAGE_TYPE\F" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_set_image_type \- sets the image type of an LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 36
+.BI "LqrRetVal lqr_carver_set_image_type(LqrCarver*\ " "carver" ", LqrImageType\ " "image_type" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_set_image_type\fR
+sets the image type of the
+LqrCarver
+pointed to by
+\fIcarver\fR
+to
+\fIimage_type\fR\&.
+.PP
+If
+\fIimage_type\fR
+is equal to
+LQR_CUSTOM_IMAGE, it is assumed that there are no alpha or black channels\&. You can set those independently using
+\fBlqr_carver_set_alpha_channel\fR(3)
+and
+\fBlqr_carver_set_black_channel\fR(3)\&.
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\&.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrImageType\fR(3), \fBlqr_carver_new\fR(3), \fBlqr_carver_set_alpha_channel\fR(3), \fBlqr_carver_set_black_channel\fR(3), \fBlqr_carver_get_image_type\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

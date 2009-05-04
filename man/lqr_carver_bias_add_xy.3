@@ -1,0 +1,125 @@
+.\"     Title: \fBlqr_carver_bias_add\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_CARVER_BIAS_ADD\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_bias_add_xy, lqr_carver_bias_add_area, lqr_carver_bias_add, lqr_carver_bias_add_rgb_area, lqr_carver_bias_add_rgb \- update an LqrCarver bias
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 33
+.BI "LqrRetVal lqr_carver_bias_add_xy(LqrCarver*\ " "carver" ", gdouble\ " "bias" ", gint\ " "x" ", gint\ " "y" ");"
+.HP 35
+.BI "LqrRetVal lqr_carver_bias_add_area(LqrCarver*\ " "carver" ", gdouble*\ " "buffer" ", gint\ " "bias_factor" ", gint\ " "width" ", gint\ " "height" ", gint\ " "x_off" ", gint\ " "y_off" ");"
+.HP 30
+.BI "LqrRetVal lqr_carver_bias_add(LqrCarver*\ " "carver" ", gdouble*\ " "buffer" ", gint\ " "bias_factor" ");"
+.HP 39
+.BI "LqrRetVal lqr_carver_bias_add_rgb_area(LqrCarver*\ " "carver" ", gdouble*\ " "buffer" ", gint\ " "bias_factor" ", gint\ " "channels" ", gint\ " "width" ", gint\ " "height" ", gint\ " "x_off" ", gint\ " "y_off" ");"
+.HP 34
+.BI "LqrRetVal lqr_carver_bias_add_rgb(LqrCarver*\ " "carver" ", gdouble*\ " "buffer" ", gint\ " "bias_factor" ", gint\ " "channels" ");"
+.SH "FOREWORD"
+.PP
+All the functions described in this page are used to add a bias to
+LqrCarver
+objects\&. A positive biased pixel will be more likely to be avoided by seams, and thus be preserved during rescaling, while a negative bias has the opposite effect\&.
+.PP
+All of these functions must be called before
+\fBlqr_carver_resize\fR(3)\&. If called multiple times, the biases added at each call will sum up\&.
+.SH "ADDING A BIAS PIXEL BY PIXEL"
+.PP
+The function
+\fBlqr_carver_bias_add_xy\fR
+adds a bias to the
+\fIx\fR,
+\fIy\fR
+pixel of the image loaded into the
+LqrCarver
+object pointed to by
+\fIcarver\fR
+.PP
+A typical value for
+\fIbias_factor\fR
+would be
+1000
+(in absolute value)\&.
+.SH "ADDING A BIAS FROM A BUFFER"
+.PP
+The function
+\fBlqr_carver_bias_add_area\fR
+adds a bias to an area of the image loaded into the
+LqrCarver
+object pointed to by
+\fIcarver\fR\&.
+.PP
+The parameter
+\fIbuffer\fR
+must point to an array of
+\fBdoubles\fR
+of size
+\fIwidth\fR * \fIheight\fR, ordered first by rows, then by columns\&.
+.PP
+The offset of the area relative to the image can be specified through
+\fIx_off\fR
+and
+\fIy_off\fR\&. The bias area can exceed the boundary of the image, and the offsets can be negative\&.
+.PP
+The parameter
+\fIbias_factor\fR
+is an overall bias scale\&. A typical value when the buffer contents are of the order of
+1
+would be
+1000
+(in absolute value)\&.
+.PP
+The function
+\fBlqr_carver_bias_add\fR
+can be used when the area to add is of the same size of the image loaded in the
+LqrCarver
+object and the offsets are
+0\&.
+.SH "ADDING A BIAS FROM AN IMAGE"
+.PP
+The functions
+\fBlqr_carver_bias_add_rgb_area\fR
+and
+\fBlqr_carver_bias_add_rgb\fR
+are very similar to
+\fBlqr_carver_bias_add_area\fR
+and
+\fBlqr_carver_bias_add\fR, except that they use 8\-bit multi\-channel images as inputs\&.
+.PP
+The number of channels in the image is passed via the parameter
+\fIchannels\fR\&. The last channel is assumed to be the alpha (opacity) channel if
+\fIchannels\fR
+is equal to
+2
+or greater than
+3
+(if this is not the case, use the previous functions)\&.
+.PP
+The bias is computed from the average of the colour channels, multiplied by the value of the alpha channel if present\&. For example, in RGBA images a white, nontransparent pixel is equivalent to a value of
+1\&.0
+when using a buffer in
+\fBlqr_carver_bias_add_area\fR\&.
+.SH "RETURN VALUES"
+.PP
+The return values follow the Liquid Rescale library signalling system\&.
+.SH "SEE ALSO"
+.PP
+
+\fBLqrRetVal\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_rigmask_add\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

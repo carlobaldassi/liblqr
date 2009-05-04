@@ -1,0 +1,79 @@
+.\"     Title: \fBlqr_rwindow_read\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_RWINDOW_READ\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_rwindow_read \- read the content of a LqrReadingWindow object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 24
+.BI "gfloat lqr_rwindow_read(LqrReadingWindow*\ " "rwindow" ", gint\ " "x" ", gint\ " "y" ", gint\ " "channel" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_rwindow_read\fR
+returns the content of the reading window
+\fIrwindow\fR
+at point
+\fIx\fR,
+\fIy\fR
+and at channel
+\fIchannel\fR\&.
+.PP
+The coordinates
+\fIx\fR
+and
+\fIy\fR
+are relative to the
+\fIrwindow\fR
+centre, and they both can range from
+\fI\-radius\fR
+to
+\fIradius\fR
+(extremes included), where
+\fIradius\fR
+can be obtained with the function
+\fBlqr_rwindow_get_radius\fR(3)\&.
+.PP
+The function returns
+0
+when the coordinates are out of range; however, no check is performed on the image boundary, therefore care must be taken in the readout about this\&.
+.PP
+The
+\fIchannel\fR
+parameter specifies which channel to read out; depending on the
+\fIrwindow\fR
+reader type, the range and meaning of this parameter changes: for the cases
+LQR_ER_BRIGHT
+and
+LQR_ER_LUMA
+it must be
+0, because the readout consists of a single channel, for
+LQR_ER_RGBA
+it must be between
+0
+and
+3
+(and then the readout will contain the RGBA information), while for
+LQR_ER_CUSTOM
+it must be one of the original image channels\&.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_set_energy_function\fR(3), \fBlqr_rwindow_get_read_t\fR(3), \fBlqr_rwindow_get_radius\fR(3), \fBlqr_rwindow_get_channels\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

@@ -5,6 +5,10 @@ dist_man_MANS = \
 	lqr_carver_bias_add_area.3 \
 	lqr_carver_bias_add_rgb.3 \
 	lqr_carver_bias_add_rgb_area.3 \
+	lqr_carver_bias_add_xy.3 \
+	lqr_carver_bias_clear.3 \
+	lqr_carver_bias_set_energy_function.3 \
+	lqr_carver_bias_set_energy_function_builtin.3 \
 	lqr_carver_cancel.3 \
 	lqr_carver_destroy.3 \
 	lqr_carver_flatten.3 \
@@ -12,11 +16,14 @@ dist_man_MANS = \
 	lqr_carver_get_channels.3 \
 	lqr_carver_get_col_depth.3 \
 	lqr_carver_get_depth.3 \
+	lqr_carver_get_energy.3 \
 	lqr_carver_get_enl_step.3 \
 	lqr_carver_get_height.3 \
+	lqr_carver_get_image_type.3 \
 	lqr_carver_get_orientation.3 \
 	lqr_carver_get_ref_height.3 \
 	lqr_carver_get_ref_width.3 \
+	lqr_carver_get_true_energy.3 \
 	lqr_carver_get_width.3 \
 	lqr_carver_init.3 \
 	lqr_carver_list_current.3 \
@@ -30,21 +37,28 @@ dist_man_MANS = \
 	lqr_carver_rigmask_add_area.3 \
 	lqr_carver_rigmask_add_rgb.3 \
 	lqr_carver_rigmask_add_rgb_area.3 \
+	lqr_carver_rigmask_add_xy.3 \
+	lqr_carver_rigmask_clear.3 \
 	lqr_carver_scan.3 \
 	lqr_carver_scan_by_row.3 \
 	lqr_carver_scan_ext.3 \
 	lqr_carver_scan_line.3 \
 	lqr_carver_scan_line_ext.3 \
 	lqr_carver_scan_reset.3 \
+	lqr_carver_set_alpha_channel.3 \
+	lqr_carver_set_black_channel.3 \
 	lqr_carver_set_dump_vmaps.3 \
 	lqr_carver_set_enl_step.3 \
 	lqr_carver_set_gradient_function.3 \
+	lqr_carver_set_image_type.3 \
 	lqr_carver_set_no_dump_vmaps.3 \
 	lqr_carver_set_preserve_input_image.3 \
 	lqr_carver_set_progress.3 \
 	lqr_carver_set_resize_order.3 \
 	lqr_carver_set_side_switch_frequency.3 \
+	lqr_carver_set_use_cache.3 \
 	LqrColDepth.3 \
+	LqrImageType.3 \
 	lqr_progress_new.3 \
 	lqr_progress_set_end.3 \
 	lqr_progress_set_end_height_message.3 \
@@ -55,6 +69,10 @@ dist_man_MANS = \
 	lqr_progress_set_update.3 \
 	lqr_progress_set_update_step.3 \
 	LqrRetVal.3 \
+	lqr_rwindow_get_channels.3 \
+	lqr_rwindow_get_radius.3 \
+	lqr_rwindow_get_read_t.3 \
+	lqr_rwindow_read.3 \
 	lqr_vmap_destroy.3 \
 	lqr_vmap_dump.3 \
 	lqr_vmap_get_data.3 \

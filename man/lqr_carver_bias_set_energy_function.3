@@ -1,0 +1,160 @@
+.\"     Title: \fBlqr_carver_set_energy_function\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_CARVER_SET_ENERGY_FUNCT" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_bias_set_energy_function \- set a custom energy function for a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 41
+.BI "LqrRetVal lqr_carver_set_energy_function(LqrCarver*\ " "carver" ", LqrEnergyFunc\ " "en_func" ", gint\ " "radius" ", LqrEnergyReaderType\ " "reader_type" ", gpointer\ " "extra_data" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_set_energy_function\fR
+assigns the energy function
+\fIen_func\fR
+to the
+LqrCarver
+object pointed to by
+\fIcarver\fR
+(see below for more details on custom functions definitions)\&.
+.PP
+The parameter
+\fIradius\fR
+determines the size of the square region which affects the computation around each pixel (the side of the square will be
+2 * \fIradius\fR + 1
+pixels long)\&.
+.PP
+The parameter
+\fIreader_type\fR
+sets the reader type used when reading the image, and therefore it determines what quantity will be passed on to the function
+\fIen_func\fR
+(see below for more details on reader types)\&.
+.PP
+The parameter
+\fIextra_data\fR
+is a (void) pointer which can be used to pass on additional values to the function
+\fIef_func\fR\&.
+.SH "CUSTOM FUNCTIONS DEFINITION"
+.PP
+The function
+\fIen_func\fR
+must be of type
+LqrEnergyFunc, whose prototype is defined by:
+.sp
+.RS 4
+.nf
+typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data);
+                                                
+.fi
+.RE
+.sp
+Such a function is expected to compute the energy at pixel
+\fIx\fR,
+\fIy\fR
+based on the knowledge of the current image size (obtained from
+\fIwidth\fR
+and
+\fIheight\fR) and the content of the image in a square around that pixel, which is passed through the
+\fIrwindow\fR
+reading window\&.
+.PP
+In most cases, the parameters
+\fIx\fR,
+\fIy\fR,
+\fIwidth\fR
+and
+\fIheight\fR
+would only be used to determine whether the region under consideration is at the image boundary or not\&.
+.PP
+The
+\fIrwindow\fR
+content must be read using the function
+\fBlqr_rwindow_read\fR(3)\&.
+.SH "READER TYPES"
+.PP
+The
+\fBLqrEnergyReaderType\fR
+is an enum which can take these values (also noted is the number of channels of the corresponging reading window):
+.PP
+LQR_ER_BRIGHT
+.RS 4
+brightness (1 channel)
+.RE
+.PP
+LQR_ER_BRIGHT
+.RS 4
+luma (1 channel)
+.RE
+.PP
+LQR_ER_RGBA
+.RS 4
+RGBA (4 channels)
+.RE
+.PP
+LQR_ER_CUSTOM
+.RS 4
+read the normalised image channels as they are (as many channels as the image has)
+.RE
+These readouts always return values beetween
+0
+and
+1\&.
+.PP
+Note that these readouts may have special meanings depending on the image type:
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'for
+LQR_GREY_IMAGE,
+LQR_GREYA_IMAGE
+and
+LQR_CUSTOM_IMAGE
+images, the
+LQR_ER_LUMA
+readout will yield the same result as
+LQR_ER_BRIGHT
+.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'for
+LQR_CUSTOM_IMAGE
+images, the
+LQR_ER_BRIGHTNESS
+readout will return the average pixel value (additive, i\&.e\&. if a black channel is present the channel values will be inverted and multiplied by the black channel inverse), multiplied by the alpha channel value\&.
+.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'for
+LQR_CUSTOM_IMAGE
+images, the
+LQR_ER_RGBA
+readout
+\fIcannot be used\fR: it will always return
+0
+.RE
+.sp
+.RE
+.SH "RETURN VALUE"
+.PP
+The return value follows the Liquid Rescale library signalling system\&.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_set_energy_function_builtin\fR(3), \fBlqr_carver_get_energy\fR(3), \fBlqr_rwindow_read\fR(3), \fBlqr_rwindow_get_read_t\fR(3), \fBlqr_rwindow_get_radius\fR(3), \fBlqr_rwindow_get_channels\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

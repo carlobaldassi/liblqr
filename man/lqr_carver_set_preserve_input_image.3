@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_set_preserve_input_image\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 16 Apr 2009
+.\"      Date: 4 Maj 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.4.0 API (3:0:3)
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_SET_PRESERVE_INP" "3" "16 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
+.TH "\FBLQR_CARVER_SET_PRESERVE_INP" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -29,11 +29,17 @@ flags the
 LqrCarver
 object pointed to by
 \fIcarver\fR
-so that it does not alter in any way the buffer which is passed to it by the constructor\&.
+so that it does not alter in any way the buffer which is passed to it by the constructor\&. It must be used before any resizing\-related operation takes place, either after the
+\fIcarver\fR
+construction or after the calls to
+\fBlqr_carver_init\fR(3)
+or
+\fBlqr_vmap_load\fR(3)
+\&.
 .SH "SEE ALSO"
 .PP
 
-\fBlqr_carver_set_gradient_function\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3)
+\fBlqr_carver_init\fR(3), \fBlqr_vmap_load\fR(3), \fBlqr_carver_set_enl_step\fR(3), \fBlqr_carver_set_resize_order\fR(3), \fBlqr_carver_set_dump_vmaps\fR(3), \fBlqr_carver_set_side_switch_frequency\fR(3), \fBlqr_carver_set_progress\fR(3), \fBlqr_carver_set_use_cache\fR(3)
 .SH "COPYRIGHT"
 Copyright \(co 2007-2009 Carlo Baldassi
 .br

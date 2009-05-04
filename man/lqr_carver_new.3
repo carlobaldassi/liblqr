@@ -1,11 +1,11 @@
 .\"     Title: \fBlqr_carver_new\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 16 Apr 2009
+.\"      Date: 4 Maj 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library 0.4.0 API (3:0:3)
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_NEW\FR" "3" "16 Apr 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
+.TH "\FBLQR_CARVER_NEW\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -57,6 +57,60 @@ LqrCarver
 object and must not be accessed any more, unless you subsequently call the
 \fBlqr_carver_set_preserve_input_image\fR(3)
 function\&.
+.PP
+The image type is et automatically from the value of
+\fIchannels\fR
+according to this table:
+.PP
+.B Table\ \&3.1.\ \&Image types assigned by default
+.sp -1n
+.TS
+allbox tab(:);
+lB lB.
+T{
+channels
+T}:T{
+type
+T}
+.T&
+l l
+l l
+l l
+l l
+l l
+l l.
+T{
+1
+T}:T{
+LQR_GREY_IMAGE
+T}
+T{
+2
+T}:T{
+LQR_GREYA_IMAGE
+T}
+T{
+3
+T}:T{
+LQR_RGB_IMAGE
+T}
+T{
+4
+T}:T{
+LQR_RGBA_IMAGE
+T}
+T{
+5
+T}:T{
+LQR_CMYKA_IMAGE
+T}
+T{
+>5
+T}:T{
+LQR_CUSTOM_IMAGE
+T}
+.TE
+.sp
 .SH "RETURN VALUE"
 .PP
 The return value is the address of the newly created
@@ -67,7 +121,7 @@ in case of failure (insufficient memory)\&.
 .SH "SEE ALSO"
 .PP
 
-\fBLqrColDepth\fR(3), \fBlqr_carver_destroy\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_set_preserve_input_image\fR(3)
+\fBLqrColDepth\fR(3), \fBLqrImageType\fR(3), \fBlqr_carver_destroy\fR(3), \fBlqr_carver_init\fR(3), \fBlqr_carver_set_preserve_input_image\fR(3)
 .SH "COPYRIGHT"
 Copyright \(co 2007-2009 Carlo Baldassi
 .br

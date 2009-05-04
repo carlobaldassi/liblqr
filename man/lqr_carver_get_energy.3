@@ -1,0 +1,77 @@
+.\"     Title: \fBlqr_carver_get_energy\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQR_CARVER_GET_ENERGY\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+lqr_carver_get_energy, lqr_carver_get_true_energy \- get the energy map for a LqrCarver object
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 31
+.BI "gfloat * lqr_carver_get_energy(LqrCarver*\ " "carver" ", gint\ " "orientation" ");"
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 36
+.BI "gfloat * lqr_carver_get_true_energy(LqrCarver*\ " "carver" ", gint\ " "orientation" ");"
+.SH "DESCRIPTION"
+.PP
+The function
+\fBlqr_carver_get_energy\fR
+returns a buffer (an array of
+\fBgfloats\fR) with the energy map of the image, in a format suitable for plotting: all values are in the range between
+0
+and
+1, and the true values are mapped nonlinearly and stretched on this whole range, so that the differences between the middle values are enhanced with respect to very high or very low values\&.
+.PP
+The
+\fIorientation\fR
+parameter must be either
+0
+to get the energy map used for horizontal scalings, or
+1
+to get the map for vertical scalings\&.
+.PP
+The resulting buffer size is
+\fIwidth\fR * \fIheight\fR, where
+\fIwidth\fR
+and
+\fIheight\fR
+are the current width and height of the
+\fIcarver\fR, ordered by row first, then by column\&. It must be freed manually when it is not needed any more\&.
+.PP
+The outcome will include the effect of the bias added to the
+\fIcarver\fR, if any\&.
+.PP
+This function can be called over non\-initialised
+LqrCarver
+objects, e\&.g\&. to provide previews on the effect of different energy functions, but it can also be invoked at any later time\&. Note, however, that in this latter case the
+\fIcarver\fR
+could be flattened if necessary, therefore the function invocation is potentially destructive of the internal visibiliy map\&.
+.PP
+The function
+\fBlqr_carvet_get_true_energy\fR
+is identical to the previous one, but the resulting buffer contains the true energy, not scaled nor shifted\&.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_set_energy_function_builtin\fR(3), \fBlqr_carver_set_energy_function\fR(3), \fBlqr_carver_bias_add\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br

@@ -1,0 +1,61 @@
+.\"     Title: \fBLqrImageType\fR
+.\"    Author: Carlo Baldassi
+.\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
+.\"      Date: 4 Maj 2009
+.\"    Manual: LqR library API reference
+.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"
+.TH "\FBLQRIMAGETYPE\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+LqrImageType \- carver objects image type (colour model) specification
+.SH "DESCRIPTION"
+.PP
+The
+LqrCarver
+objects use knowledge about the image type they\'re working on in order to compute correctly some quantities (e\&.g\&. the brightness) for the automatic feature detection\&. Image types are set automatically by the constructors, but they can also be specified manually using quantities of the type
+\fBLqrImageType\fR, which is an
+enum
+which can take these values:
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_GREY_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_GREYA_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_RGB_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_RGBA_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_CMY_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_CMYK_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_CMYKA_IMAGE.RE
+.sp
+.RS 4
+\h'-04'\(bu\h'+03'LQR_CUSTOM_IMAGE.RE
+.sp
+.RE
+.PP
+Use the function
+\fBlqr_carver_set_image_type\fR(3)
+to set the image type of a carver, and the function
+\fBlqr_carver_get_image_type\fR(3)
+to read it out\&.
+.SH "SEE ALSO"
+.PP
+
+\fBlqr_carver_new\fR(3), \fBlqr_carver_set_image_type\fR(3), \fBlqr_carver_get_image_type\fR(3)
+.SH "COPYRIGHT"
+Copyright \(co 2007-2009 Carlo Baldassi
+.br
