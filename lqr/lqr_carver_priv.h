@@ -167,6 +167,8 @@
     } \
 } G_STMT_END
 
+/* Macros for update_mmap speedup : without rigidity */
+
 #define DATADOWN(y, x) (r->raw[(y) - 1][(x)])
 #define MDOWN(y, x) (r->m[DATADOWN((y), (x))])
 
@@ -208,7 +210,7 @@
 #define MMINR4(y, x) MMINR4G((y), (x), (x) + 1, (x) + 2, (x) + 3)
 #define MMINR5(y, x) MMINR5G((y), (x), (x) + 1, (x) + 2, (x) + 3, (x) + 4)
 
-
+/* Macros for update_mmap speedup : with rigidity */
 
 #define MRDOWN(y, x, dx) (r->m[DATADOWN((y), (x))] + r_fact * r->rigidity_map[(dx)])
 
@@ -218,20 +220,19 @@
 #define MRSET4(y, x, dx) (MRSET3((y), (x), (dx)), MRSET1((y), (x) + 3, (dx) + 3))
 #define MRSET5(y, x, dx) (MRSET4((y), (x), (dx)), MRSET1((y), (x) + 4, (dx) + 4))
 
-/*
 #define MRMIN1G(y, x1, dx1) (least = DATADOWN((y), (x1)), mc[(dx1)])
 #define MRMINTESTL(dx1, dx2) (mc[(dx1)] <= mc[(dx2)])
 #define MRMINTESTR(dx1, dx2) (mc[(dx1)] < mc[(dx2)])
 
-#define MRMINLGG1(y, n, x1, dx1, x2, dx2)      (MRMINTESTL((dx1), (x2)) ? MRMINL ## n ## G((y), (x1), (dx1)) : MRMINL ## n ## G((y), (x2), (dx2)))
-#define MRMINLGG2(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTL((dx1), (x2)) ? MRMINL ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINL ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
-#define MRMINLGG3(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTL((dx1), (x2)) ? MRMINL ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINL ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
-#define MRMINLGG4(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTL((dx1), (x2)) ? MRMINL ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINL ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
+#define MRMINLGG1(y, n, x1, dx1, x2, dx2)      (MRMINTESTL((dx1), (dx2)) ? MRMINL ## n ## G((y), (x1), (dx1)) : MRMINL ## n ## G((y), (x2), (dx2)))
+#define MRMINLGG2(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTL((dx1), (dx2)) ? MRMINL ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINL ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
+#define MRMINLGG3(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTL((dx1), (dx2)) ? MRMINL ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINL ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
+#define MRMINLGG4(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTL((dx1), (dx2)) ? MRMINL ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINL ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
 
-#define MRMINRGG1(y, n, x1, dx1, x2, dx2)      (MRMINTESTR((dx1), (x2)) ? MRMINR ## n ## G((y), (x1), (dx1)) : MRMINR ## n ## G((y), (x2), (dx2)))
-#define MRMINRGG2(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTR((dx1), (x2)) ? MRMINR ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINR ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
-#define MRMINRGG3(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTR((dx1), (x2)) ? MRMINR ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINR ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
-#define MRMINRGG4(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTR((dx1), (x2)) ? MRMINR ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINR ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
+#define MRMINRGG1(y, n, x1, dx1, x2, dx2)      (MRMINTESTR((dx1), (dx2)) ? MRMINR ## n ## G((y), (x1), (dx1)) : MRMINR ## n ## G((y), (x2), (dx2)))
+#define MRMINRGG2(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTR((dx1), (dx2)) ? MRMINR ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINR ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
+#define MRMINRGG3(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTR((dx1), (dx2)) ? MRMINR ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINR ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
+#define MRMINRGG4(y, n, x1, dx1, x2, dx2, ...) (MRMINTESTR((dx1), (dx2)) ? MRMINR ## n ## G((y), (x1), (dx1), __VA_ARGS__ ) : MRMINR ## n ## G((y), (x2), (dx2), __VA_ARGS__ ))
 
 #define MRMINL1G(y, x1, dx1)                                     MRMIN1G((y), (x1), (dx1))
 #define MRMINL2G(y, x1, dx1, x2, dx2)                            MRMINLGG1(y, 1, (x1), (dx1), (x2), (dx2))
@@ -256,55 +257,6 @@
 #define MRMINR3(y, x, dx) MRMINR3G((y), (x), (dx), (x) + 1, (dx) + 1, (x) + 2, (dx) + 2)
 #define MRMINR4(y, x, dx) MRMINR4G((y), (x), (dx), (x) + 1, (dx) + 1, (x) + 2, (dx) + 2, (x) + 3, (dx) + 3)
 #define MRMINR5(y, x, dx) MRMINR5G((y), (x), (dx), (x) + 1, (dx) + 1, (x) + 2, (dx) + 2, (x) + 3, (dx) + 3, (x) + 4, (dx) + 4)
-*/
-
-#define MRMINL1G(y, x1, dx1) (least = DATADOWN((y), (x1)), mc[(dx1)])
-#define MRMINL2G(y, x1, x2, dx1, dx2) \
-  (mc[(dx1)] <= mc[(dx2)] ? \
-   MRMINL1G((y), (x1), (dx1)) : \
-   MRMINL1G((y), (x2), (dx2)))
-#define MRMINL3G(y, x1, x2, x3, dx1, dx2, dx3) \
-  (mc[(dx1)] <= mc[(dx2)] ? \
-   MRMINL2G((y), (x1), (x3), (dx1), (dx3)) : \
-   MRMINL2G((y), (x2), (x3), (dx2), (dx3)))
-#define MRMINL4G(y, x1, x2, x3, x4, dx1, dx2, dx3, dx4) \
-  (mc[(dx1)] <= mc[(dx2)] ? \
-   MRMINL3G((y), (x1), (x3), (x4), (dx1), (dx3), (dx4)) : \
-   MRMINL3G((y), (x2), (x3), (x4), (dx2), (dx3), (dx4)))
-#define MRMINL5G(y, x1, x2, x3, x4, x5, dx1, dx2, dx3, dx4, dx5) \
-  (mc[(dx1)] <= mc[(dx2)] ? \
-   MRMINL4G((y), (x1), (x3), (x4), (x5), (dx1), (dx3), (dx4), (dx5)) : \
-   MRMINL4G((y), (x2), (x3), (x4), (x5), (dx2), (dx3), (dx4), (dx5)))
-
-#define MRMINR1G(y, x1, dx1) (least = DATADOWN((y), (x1)), MRDOWN((y), (x1), (dx1)))
-#define MRMINR2G(y, x1, x2, dx1, dx2) \
-  (mc[(dx1)] < mc[(dx2)] ? \
-   MRMINR1G((y), (x1), (dx1)) : \
-   MRMINR1G((y), (x2), (dx2)))
-#define MRMINR3G(y, x1, x2, x3, dx1, dx2, dx3) \
-  (mc[(dx1)] < mc[(dx2)] ? \
-   MRMINR2G((y), (x1), (x3), (dx1), (dx3)) : \
-   MRMINR2G((y), (x2), (x3), (dx2), (dx3)))
-#define MRMINR4G(y, x1, x2, x3, x4, dx1, dx2, dx3, dx4) \
-  (mc[(dx1)] < mc[(dx2)] ? \
-   MRMINR3G((y), (x1), (x3), (x4), (dx1), (dx3), (dx4)) : \
-   MRMINR3G((y), (x2), (x3), (x4), (dx2), (dx3), (dx4)))
-#define MRMINR5G(y, x1, x2, x3, x4, x5, dx1, dx2, dx3, dx4, dx5) \
-  (mc[(dx1)] < mc[(dx2)] ? \
-   MRMINR4G((y), (x1), (x3), (x4), (x5), (dx1), (dx3), (dx4), (dx5)) : \
-   MRMINR4G((y), (x2), (x3), (x4), (x5), (dx2), (dx3), (dx4), (dx5)))
-
-#define MRMINL1(y, x, dx) MRMINL1G((y), (x), (dx))
-#define MRMINL2(y, x, dx) MRMINL2G((y), (x), (x) + 1, (dx), (dx) + 1)
-#define MRMINL3(y, x, dx) MRMINL3G((y), (x), (x) + 1, (x) + 2, (dx), (dx) + 1, (dx) + 2)
-#define MRMINL4(y, x, dx) MRMINL4G((y), (x), (x) + 1, (x) + 2, (x) + 3, (dx), (dx) + 1, (dx) + 2, (dx) + 3)
-#define MRMINL5(y, x, dx) MRMINL5G((y), (x), (x) + 1, (x) + 2, (x) + 3, (x) + 4, (dx), (dx) + 1, (dx) + 2, (dx) + 3, (dx) + 4)
-
-#define MRMINR1(y, x, dx) MRMINR1G((y), (x), (dx))
-#define MRMINR2(y, x, dx) MRMINR2G((y), (x), (x) + 1, (dx), (dx) + 1)
-#define MRMINR3(y, x, dx) MRMINR3G((y), (x), (x) + 1, (x) + 2, (dx), (dx) + 1, (dx) + 2)
-#define MRMINR4(y, x, dx) MRMINR4G((y), (x), (x) + 1, (x) + 2, (x) + 3, (dx), (dx) + 1, (dx) + 2, (dx) + 3)
-#define MRMINR5(y, x, dx) MRMINR5G((y), (x), (x) + 1, (x) + 2, (x) + 3, (x) + 4, (dx), (dx) + 1, (dx) + 2, (dx) + 3, (dx) + 4)
 
 /* Tolerance for update_mmap */
 #define UPDATE_TOLERANCE (1e-5)
