@@ -6,10 +6,13 @@
 	<!ENTITY carvl_obj "<classname>LqrCarverList</classname>">
 	<!ENTITY vmap_obj "<classname>LqrVMap</classname>">
 	<!ENTITY vmapl_obj "<classname>LqrVMapList</classname>">
+	<!ENTITY rwin_obj "<classname>LqrReadingWindow</classname>">
 	<!ENTITY prog_obj "<classname>LqrProgress</classname>">
 	<!ENTITY ret_true "<literal><returnvalue>TRUE</returnvalue></literal>">
 	<!ENTITY ret_false "<literal><returnvalue>FALSE</returnvalue></literal>">
 	<!ENTITY ret_null "<literal><returnvalue>NULL</returnvalue></literal>">
+	<!ENTITY param_x "<parameter>x</parameter>">
+	<!ENTITY param_y "<parameter>y</parameter>">
 	<!ENTITY param_w "<parameter>width</parameter>">
 	<!ENTITY param_h "<parameter>height</parameter>">
 	<!ENTITY param_channels "<parameter>channels</parameter>">
@@ -299,7 +302,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 			<para>
 				The return value of many functions is of type <classname>LqrRetVal</classname>. This is just an
 				enum type which can be used for signal handling,
-				see <link linkend="signals">the signal handling section</link>.
+				see the <link linkend="signals">Signal handling section</link>.
 			</para>
 			<para>
 				The other classes are optional: the class &vmap_obj; is used to hold the
@@ -656,7 +659,8 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
                                   </funcsynopsis>
                                   Use the value <literal>-1</literal> in the indices arguments to unset those channels.
                                   Note that using &img_type_custom; in a carver normally requires special care
-                                  in the choice and definitions of the energy functions (see <!--TODO add link to energy stuff-->).
+                                  in the choice and definitions of the energy functions (see the <link linkend="energy">Automatic feature
+                                  detection</link> section).
                                 </para>
                                 <note>
                                   <para>
@@ -1007,7 +1011,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 		</sect1>
 
 		<sect1 id="energy">
-			<title>The automatic feature detection</title>
+			<title>Automatic feature detection</title>
 
 			<sect2 id="energy-foreword">
 				<title>Foreword</title>
@@ -1015,21 +1019,22 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
 				<para>
                                         The automatic feature detection relies on the evaluation of the relevance of each pixel; this
                                         quantity is called `energy': the higher the energy of a pixel, the less likely it will be
-                                        that such pixel will be directly affected by the rescaling algorithm. The energy function which the
+                                        that such pixel will be directly involved in the rescaling. The energy function which the
                                         library uses can be customised; normally, edge detector filters are the best choices for this
                                         purpose.
                                 </para>
                                 <para>
-                                        Briefly, each energy function used by the library receives the current position and image size as 
+                                        There is a unified framework in the &lqrl; for energy fucntions: briefly, each energy function used
+                                        by the library receives the current position and image size as 
                                         parameters, and is provided access to a square of values from the image, centered around the
                                         current position. This access is provided through an object which is called a "reading window",
                                         and the image pixels are not read directly, but rather they are accessed according to a "reader type",
                                         which means that the energy function can get e.g. the brightness of a pixel without needing to care for
-                                        the image type or the colour depth.
+                                        the underlying image representation, i.e. the image type or the colour depth.
                                 </para>
                                 <para>
-                                        The library provides a small set of very simple (yet effective) gradient-based energy functions and a
-                                        customisation framework for defining more functions.
+                                        The library provides a small set of very simple (yet normally effective) gradient-based energy functions,
+                                        and a customisation framework for defining more functions.
                                 </para>
 
                         </sect2>
@@ -1080,7 +1085,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                                         <listitem>
                                                                 <para>
                                                                   absolute value of the luma gradient in the direction
-                                                                  of the rescaling (this is the default)
+                                                                  of the rescaling
                                                                 </para>
                                                         </listitem>
                                                 </varlistentry>
@@ -1211,7 +1216,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                   <example id="ex-custom-en-decl">
                                           <title>Custom energy declaration</title>
                                           <programlisting>
-gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwindow, gpointer extra_data)
+gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwindow, gpointer extra_data);
                                           </programlisting>
                                   </example>
                                   This function should return the energy at pixel <parameter>x</parameter>, <parameter>y</parameter>, based
@@ -1856,6 +1861,27 @@ lqr_carver_set_energy_function (carver, my_energy, 2, LQR_ER_BRIGHT, NULL);
 					map, i.e. for the intermediate steps, higher values may be required.
 				</para>
 			</sect2>
+
+			<sect2 id="cache">
+				<title>Using the cache</title>
+
+				<para>
+                                        By default, the library tries to cache some quantities in order to save computational time.
+                                        The cache may be disabled in order to save memory instead, using this function:
+					<funcsynopsis>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_use_cache</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gboolean <parameter>use_cache</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</para>
+				<para>
+                                        To disable the cache, set <parameter>use_cache</parameter> to <literal>FALSE</literal>.
+                                        To re-enable it back, set it to <literal>TRUE</literal>.
+				</para>
+			</sect2>
+
 		</sect1>
 
 		<sect1 id="vmaps">
@@ -4220,11 +4246,13 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -4297,6 +4325,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -4348,10 +4377,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -4395,7 +4426,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						Rescale operations involving both directions will dump two maps.
 					</para>
 					<para>
-						The dumped maps will be attached to the &carv_obj; object and can be accsessed
+						The dumped maps will be attached to the &carv_obj; object and can be accessed
 						at any later time using the functions
 						<xref linkend="ref-lqr-vmap-list-foreach"></xref>
 						or a combination of
@@ -4411,9 +4442,10 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						of the previous one (but the maps dumped so far will be kept).
 					</para>
 					<para>
-						Note that it is also possible to dump visibility maps manually; however, using
+						Note that it is also possible to dump the visibility maps manually; however, using
 						the automatic dump is the only way to get intermidiate maps when the function
-						<xref linkend="ref-lqr-carver-resize"></xref> performs the rescaling in both directions.
+                                                <xref linkend="ref-lqr-carver-resize"></xref> performs the rescaling in both directions,
+                                                or in more than one step.
 					</para>
 				</refsect1>
 
@@ -4424,6 +4456,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-carver-resize"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
@@ -4432,6 +4465,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-vmap-list-current"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-next"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-list-foreach"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -4497,10 +4531,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -4549,10 +4585,12 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<simplelist type="inline">
 							<member><xref linkend="ref-lqr-progress-new"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -4599,10 +4637,63 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 							<member><xref linkend="ref-lqr-carver-init"></xref></member>
 							<member><xref linkend="ref-lqr-vmap-load"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
 							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
+						</simplelist>
+					</para>
+				</refsect1>
+			</refentry>
+
+			<refentry id="ref-lqr-carver-set-use-cache">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_use_cache</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_set_use_cache</refname>
+                                        <refpurpose>enable/disable &carv_obj; object cache</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>void <function>lqr_carver_set_use_cache</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gboolean <parameter>use_cache</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+					<para>
+                                                The function <function>lqr_carver_set_use_cache</function> can be used to
+                                                disable or enable the cache for the &carv_obj;
+						object pointed to by <parameter>carver</parameter>.
+					</para>
+					<para>
+                                                By default, the caching is on.
+					</para>
+				</refsect1>
+
+				<refsect1>
+					<title>See also</title>
+					<para>
+						<simplelist type="inline">
+							<member><xref linkend="ref-lqr-carver-set-gradient-function"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-enl-step"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-resize-order"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-dump-vmaps"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-side-switch-frequency"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-progress"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-preserve-input-image"></xref></member>
+							<member><xref linkend="ref-lqr-carver-set-use-cache"></xref></member>
 						</simplelist>
 					</para>
 				</refsect1>
@@ -5632,6 +5723,593 @@ typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 			</refentry>
 		</sect1>
 
+		<sect1 id="ref-energy">
+			<title>Energy</title>
+
+			<refentry id="ref-lqr-carver-set-energy-function-builtin">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_energy_function_builtin</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_bias_set_energy_function_builtin</refname>
+					<refpurpose>set a builtin energy function for a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_energy_function_builtin</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrEnergyFuncBuiltinType <parameter>ef_ind</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_carver_set_energy_function_builtin</function> allows
+                                                to pick a builtin energy function for the &carv_obj; object pointed to by
+                                                <parameter>carver</parameter>.
+					</para>
+					<para>
+                                                The possible values for <parameter>ef_ind</parameter> are:
+                                                <variablelist>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_GRAD_XABS</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                          absolute value of the brightness gradient in the direction
+                                                                          of the rescaling (this is the default)
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_GRAD_SUMABS</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                                sum of absolute values of the brightness gradients in both directions
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_GRAD_NORM</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                                norm of the brightness gradient
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_LUMA_GRAD_XABS</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                          absolute value of the luma gradient in the direction
+                                                                          of the rescaling
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_LUMA_GRAD_SUMABS</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                                sum of absolute values of the luma gradients in both directions
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_LUMA_GRAD_NORM</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                                norm of the luma gradient
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_EF_NULL</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                                null
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                </variablelist>
+					</para>
+					<para>
+                                                All of the above gradient functions have a radius of 1 pixel.
+					</para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>Return value</title>
+                                        <para>
+                                                The return value follows the &lqrl; signalling system.
+                                        </para>
+                                </refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-get-energy"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+
+			<refentry id="ref-lqr-carver-set-energy-function">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_set_energy_function</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_bias_set_energy_function</refname>
+					<refpurpose>set a custom energy function for a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrRetVal <function>lqr_carver_set_energy_function</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>LqrEnergyFunc <parameter>en_func</parameter></paramdef>
+							<paramdef>gint <parameter>radius</parameter></paramdef>
+							<paramdef>LqrEnergyReaderType <parameter>reader_type</parameter></paramdef>
+							<paramdef>gpointer <parameter>extra_data</parameter></paramdef>
+
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_carver_set_energy_function</function> assigns the
+                                                energy function <parameter>en_func</parameter> to the &carv_obj; object pointed to by
+                                                <parameter>carver</parameter> (see below for more details on custom functions
+                                                definitions).
+                                        </para>
+                                        <para>
+                                                The parameter <parameter>radius</parameter> determines the size of the
+                                                square region which affects the computation around each pixel (the side of the square
+                                                will be <literal>2 * <parameter>radius</parameter> + 1</literal> pixels long).
+					</para>
+					<para>
+                                                The parameter <parameter>reader_type</parameter> sets the reader type used when
+                                                reading the image, and therefore it determines what quantity will be passed on 
+                                                to the function <parameter>en_func</parameter> (see below for more details on reader
+                                                types).
+                                        </para>
+                                        <para>
+                                                The parameter <parameter>extra_data</parameter> is a (void) pointer which can be
+                                                used to pass on additional values to the function <parameter>ef_func</parameter>.
+                                        </para>
+				</refsect1>
+
+                                <refsect1>
+					<title>Custom functions definition</title>
+
+                                        <para>
+                                                The function <parameter>en_func</parameter> must be of type
+                                                <classname>LqrEnergyFunc</classname>, whose prototype is defined by:
+                                                <programlisting>
+typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow, gpointer extra_data);
+                                                </programlisting>
+                                                Such a function is expected to compute the energy at pixel &param_x;,
+                                                &param_y; based on the knowledge of the current image size (obtained from &param_w;
+                                                and &param_h;) and the content of the image in a square around that pixel, which is
+                                                passed through the <parameter>rwindow</parameter> reading window.
+                                        </para>
+                                        <para>
+                                                In most cases, the parameters &param_x;, &param_y;, &param_w; and &param_h; would
+                                                only be used to determine whether the region under consideration is at the image
+                                                boundary or not.
+                                        </para>
+                                        <para>
+                                                The <parameter>rwindow</parameter> content must be read using the function
+                                                <xref linkend="ref-lqr-rwindow-read"></xref>.
+                                        </para>
+				</refsect1>
+
+                                <refsect1>
+					<title>Reader types</title>
+
+                                        <para>
+                                                The <type><literal>LqrEnergyReaderType</literal></type> is an enum which can take these
+                                                values (also noted is the number of channels of the corresponging reading window):
+                                                <variablelist>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_ER_BRIGHT</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                          brightness (1 channel)
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_ER_BRIGHT</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                          luma (1 channel)
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_ER_RGBA</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                          RGBA (4 channels)
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                        <varlistentry>
+                                                                <term><literal>LQR_ER_CUSTOM</literal></term>
+                                                                <listitem>
+                                                                        <para>
+                                                                          read the normalised image channels as they are (as many channels as the image has)
+                                                                        </para>
+                                                                </listitem>
+                                                        </varlistentry>
+                                                </variablelist>
+                                                These readouts always return values beetween <literal>0</literal> and <literal>1</literal>.
+                                      </para>
+                                      <para>
+                                                Note that these readouts may have special meanings depending on the image type:
+                                                <itemizedlist>
+                                                  <listitem>
+                                                    <para>
+                                                      for <literal>LQR_GREY_IMAGE</literal>, <literal>LQR_GREYA_IMAGE</literal> and
+                                                      <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_LUMA</literal> readout
+                                                      will yield the same result as <literal>LQR_ER_BRIGHT</literal>
+                                                    </para>
+                                                  </listitem>
+                                                  <listitem>
+                                                    <para>
+                                                      for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHTNESS</literal>
+                                                      readout will return the average pixel value (additive, i.e. if a black channel is present
+                                                      the channel values will be inverted and multiplied by the black channel inverse), multiplied
+                                                      by the alpha channel value.
+                                                    </para>
+                                                  </listitem>
+                                                  <listitem>
+                                                    <para>
+                                                      for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_RGBA</literal> readout
+                                                      <emphasis>cannot be used</emphasis>: it will always return <literal>0</literal>
+                                                    </para>
+                                                  </listitem>
+                                                </itemizedlist>
+                                      </para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>Return value</title>
+                                        <para>
+                                                The return value follows the &lqrl; signalling system.
+                                        </para>
+                                </refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function-builtin"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-get-energy"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-read"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-read-t"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-radius"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-channels"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+
+			<refentry id="ref-lqr-carver-get-energy">
+				<refmeta>
+					<refentrytitle><function>lqr_carver_get_energy</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_carver_get_energy</refname>
+					<refname>lqr_carver_get_true_energy</refname>
+					<refpurpose>get the energy map for a &carv_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gfloat * <function>lqr_carver_get_energy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint <parameter>orientation</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gfloat * <function>lqr_carver_get_true_energy</function></funcdef>
+							<paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+							<paramdef>gint <parameter>orientation</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_carver_get_energy</function> returns a buffer (an array of
+                                                <type><literal>gfloats</literal></type>) with the energy map of the image, in a format
+                                                suitable for plotting:
+                                                all values are in the range between <literal>0</literal> and <literal>1</literal>,
+                                                and the true values are mapped nonlinearly and stretched on this whole range, so that
+                                                the differences between the middle values are enhanced with respect to very high or
+                                                very low values.
+                                        </para>
+                                        <para>
+                                                The <parameter>orientation</parameter> parameter must be either <literal>0</literal>
+                                                to get the energy map used for horizontal scalings, or <literal>1</literal> to get
+                                                the map for vertical scalings.
+                                        </para>
+                                        <para>
+                                                The resulting buffer size is <literal>&param_w; * &param_h;</literal>, where &param_w; and
+                                                &param_h; are the current width and height of the <parameter>carver</parameter>,
+                                                ordered by row first, then by column. It must be freed manually when it is not needed any more.
+                                        </para>
+                                        <para>
+                                                The outcome will include the effect of the bias added to the <parameter>carver</parameter>,
+                                                if any.
+                                        </para>
+                                        <para>
+                                                This function can be called over non-initialised &carv_obj; objects, e.g. to provide
+                                                previews on the effect of different energy functions, but it can also be invoked at any
+                                                later time. Note, however, that in this latter case the <parameter>carver</parameter>
+                                                could be flattened if necessary, therefore the function invocation is potentially destructive
+                                                of the internal visibiliy map.
+					</para>
+					<para>
+                                                The function <function>lqr_carvet_get_true_energy</function> is identical to the previous one,
+                                                but the resulting buffer contains the true energy, not scaled nor shifted.
+					</para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function-builtin"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+                                                        <member><xref linkend="ref-lqr-carver-bias-add-area"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+
+			<refentry id="ref-lqr-rwindow-read">
+				<refmeta>
+					<refentrytitle><function>lqr_rwindow_read</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_rwindow_read</refname>
+                                        <refpurpose>read the content of a &rwin_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gfloat <function>lqr_rwindow_read</function></funcdef>
+							<paramdef>LqrReadingWindow* <parameter>rwindow</parameter></paramdef>
+							<paramdef>gint <parameter>x</parameter></paramdef>
+							<paramdef>gint <parameter>y</parameter></paramdef>
+							<paramdef>gint <parameter>channel</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_rwindow_read</function> returns the content of
+                                                the reading window <parameter>rwindow</parameter> at point &param_x;, &param_y; and
+                                                at channel <parameter>channel</parameter>.
+                                        </para>
+                                        <para>
+                                                The coordinates &param_x; and &param_y; are relative to the <parameter>rwindow</parameter>
+                                                centre, and they both can range from <parameter>-radius</parameter> to
+                                                <parameter>radius</parameter> (extremes included), where <parameter>radius</parameter>
+                                                can be obtained with the function <xref linkend="ref-lqr-rwindow-get-radius"></xref>.
+                                        </para>
+                                        <para>
+                                                The function returns <literal>0</literal> when the coordinates are out of range; however,
+                                                no check is performed on the image boundary, therefore care must be taken in the readout
+                                                about this.
+                                        </para>
+                                        <para>
+                                                The <parameter>channel</parameter> parameter specifies which channel to read out; depending on
+                                                the <parameter>rwindow</parameter> reader type, the range and meaning of this parameter changes: for
+                                                the cases <literal>LQR_ER_BRIGHT</literal> and <literal>LQR_ER_LUMA</literal> it must be
+                                                <literal>0</literal>, because the readout consists of a single channel,
+                                                for <literal>LQR_ER_RGBA</literal> it must be between <literal>0</literal> and <literal>3</literal>
+                                                (and then the readout will contain the RGBA information), while
+                                                for <literal>LQR_ER_CUSTOM</literal> it must be one of the original image channels.
+                                        </para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-read-t"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-radius"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-channels"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+
+			<refentry id="ref-lqr-rwindow-get-read-t">
+				<refmeta>
+					<refentrytitle><function>lqr_rwindow_get_read_t</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_rwindow_get_read_t</refname>
+                                        <refpurpose>get the reader type of a &rwin_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>LqrEnergyReaderType <function>lqr_rwindow_get_read_t</function></funcdef>
+							<paramdef>LqrReadingWindow* <parameter>rwindow</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_rwindow_get_read_t</function> returns the reader
+                                                type associated with the reading window <parameter>rwindow</parameter>.
+                                        </para>
+                                        <para>
+                                                The reader types are described in the page for
+                                                <xref linkend="ref-lqr-carver-set-energy-function"></xref>.
+                                        </para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-read"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-radius"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-channels"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+
+			<refentry id="ref-lqr-rwindow-get-radius">
+				<refmeta>
+					<refentrytitle><function>lqr_rwindow_get_radius</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_rwindow_get_radius</refname>
+                                        <refpurpose>get the size of the region accessible from a &rwin_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_rwindow_get_radius</function></funcdef>
+							<paramdef>LqrReadingWindow* <parameter>rwindow</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_rwindow_get_radius</function> returns the radius of
+                                                the region accessible through the reading window <parameter>rwindow</parameter>.
+                                        </para>
+                                        <para>
+                                                The region is a square of size <literal>2 * <parameter>radius</parameter> - 1</literal>
+                                                pixels.
+                                        </para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-read"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-read-t"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-channels"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+
+			<refentry id="ref-lqr-rwindow-get-channels">
+				<refmeta>
+					<refentrytitle><function>lqr_rwindow_get_channels</function></refentrytitle>
+					<manvolnum>3</manvolnum>
+				</refmeta>
+
+				<refnamediv>
+					<refname>lqr_rwindow_get_channels</refname>
+                                        <refpurpose>get the number of channels of a &rwin_obj; object</refpurpose>
+				</refnamediv>
+
+				<refsynopsisdiv>
+					<funcsynopsis>
+						<funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+						<funcprototype>
+							<funcdef>gint <function>lqr_rwindow_get_channels</function></funcdef>
+							<paramdef>LqrReadingWindow* <parameter>rwindow</parameter></paramdef>
+						</funcprototype>
+					</funcsynopsis>
+				</refsynopsisdiv>
+
+				<refsect1>
+					<title>Description</title>
+
+					<para>
+                                                The function <function>lqr_rwindow_get_channels</function> returns the number of
+                                                channels of reading window <parameter>rwindow</parameter>.
+                                        </para>
+                                        <para>
+                                                This function is actually only necessary when the <parameter>rwindow</parameter>
+                                                reader type is <literal>LQR_ER_CUSTOM</literal>.
+                                        </para>
+                                        <para>
+                                                The reader types are described in the page for
+                                                <xref linkend="ref-lqr-carver-set-energy-function"></xref>.
+                                        </para>
+				</refsect1>
+
+                                <refsect1>
+                                        <title>See also</title>
+                                        <para>
+                                                <simplelist type="inline">
+                                                        <member><xref linkend="ref-lqr-carver-set-energy-function"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-read"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-read-t"></xref></member>
+                                                        <member><xref linkend="ref-lqr-rwindow-get-radius"></xref></member>
+                                                </simplelist>
+                                        </para>
+                                </refsect1>
+                        </refentry>
+                </sect1>
+
+
 		<sect1 id="ref-bias">
 			<title>Bias</title>
 
@@ -6553,7 +7231,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 		<title>API changes in new versions of the library</title>
 
 		<sect1 id="app-new-LQR_0-4">
-			<title>New symbols in version LQR_0.4</title>
+			<title>New symbols in version 0.4</title>
 			<para>
 				<simplelist>
 					<member><link linkend="ref-lqr-carver-set-preserve-input-image"><function>lqr_carver_set_preserve_input_image</function></link></member>
