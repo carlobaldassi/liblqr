@@ -29,6 +29,14 @@
 /**** LQR_CARVER_BIAS STRUCT FUNTIONS ****/
 
 /* LQR_PUBLIC */
+void
+lqr_carver_bias_clear(LqrCarver *r)
+{
+  g_free(r->bias);
+  r->bias = NULL;
+}
+
+/* LQR_PUBLIC */
 LqrRetVal
 lqr_carver_bias_add_xy(LqrCarver *r, gdouble bias, gint x, gint y)
 {

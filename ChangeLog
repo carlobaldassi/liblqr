@@ -1,3 +1,21 @@
+2009-05-04  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Added lqr_carver_bias/rigmask_clear
+
+2009-05-03  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Changed CATCH* macros to LQR_CATCH*
+	* No alpha by default for LQR_CUSTOM_IMAGE
+	* Improved set alpha/black channel
+	* Bias activates energy (for using with
+	  lqr_carver_get_energy)
+	* Fixes in lqr_carver_bias/rigmask_add_area
+	* Added lqr_carver_rigmask_add_xy
+	* Don't call transpose when adding rigmasks
+	* Rigmask init set to 0 instead of 1
+	* Removed energy previews
+	* Added lqr_carvre_get_true_energy
+
 2009-04-28  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Heavily optimised the update_mmap code

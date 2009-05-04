@@ -28,6 +28,14 @@
 
 /**** LQR_CARVER_RIGMASK STRUCT FUNTIONS ****/
 
+/* LQR_PUBLIC */
+void
+lqr_carver_rigmask_clear(LqrCarver *r)
+{
+  g_free(r->rigidity_mask);
+  r->rigidity_mask = NULL;
+}
+
 LqrRetVal
 lqr_carver_rigmask_init (LqrCarver *r)
 {
