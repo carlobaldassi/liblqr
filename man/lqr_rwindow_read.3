@@ -3,9 +3,9 @@
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
 .\"      Date: 4 Maj 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"    Source: LqR library 0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_RWINDOW_READ\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.TH "\FBLQR_RWINDOW_READ\FR" "3" "4 Maj 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -40,17 +40,19 @@ and
 are relative to the
 \fIrwindow\fR
 centre, and they both can range from
-\fI\-radius\fR
+\-radius
 to
-\fIradius\fR
+radius
 (extremes included), where
-\fIradius\fR
+radius
 can be obtained with the function
 \fBlqr_rwindow_get_radius\fR(3)\&.
 .PP
 The function returns
 0
-when the coordinates are out of range; however, no check is performed on the image boundary, therefore care must be taken in the readout about this\&.
+when the coordinates are out of range, either because they are beyond the
+\fIrwindow\fR
+radius or because they are outside the image boundary\&.
 .PP
 The
 \fIchannel\fR

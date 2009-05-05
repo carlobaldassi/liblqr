@@ -48,7 +48,7 @@
 			<surname>Baldassi</surname>
 		</author>
 		<productname class='copyright'>LqR library</productname>
-		<productnumber>LQR_0.4.0 API (3:0:3)</productnumber>
+		<productnumber>0.4.0 API (3:0:3)</productnumber>
 		<copyright>
 			<year>2007</year>
 			<year>2008</year>
@@ -211,7 +211,7 @@
 			<para>
 				Visibility maps can be stored in objects of type &vmap_obj;.
 				When an &carv_obj; object is created from an input image, the
-				visibility of each pixel is uninitialized. At this point, one could either
+				visibility of each pixel is uninitialised. At this point, one could either
 				import a previously computed &vmap_obj;, or activate the &carv_obj; so
 				that it creates one afresh when asked to.
 			</para>
@@ -419,7 +419,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 			<sect2 id="carver-new">
 				<title>Carver object creation</title>
 				<para>
-					The &carv_obj; objects are initialized from a plain buffer
+					The &carv_obj; objects are initialised from a plain buffer
 					representing an image. The default constructor assumes a colour depth of 8 bits
 					per channel:
 					<funcsynopsis>
@@ -537,13 +537,13 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				<title>Carver activation</title>
 				<para>
 					The newly created &carv_obj; consists only of the image buffer plus
-					an uninitialized visibility map. If one had a previously computed
+					an uninitialised visibility map. If one had a previously computed
 					visibility map, it could be imported into the &carv_obj; and that would be
 					enough (see the <link linkend="import-vmap">Importing a visibility map in a
 					carver</link> section).
 
 					If the visibility map has to be computed, the &carv_obj; needs to be
-					initialized through this function:
+					initialised through this function:
 
 					<funcsynopsis>
 						<funcprototype>
@@ -564,7 +564,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 				</para>
 				<important>
 					<para>
-						It is currently an error to initalize a carver object
+						It is currently an error to initalise a carver object
 						if a visibility map has been imported already.
 					</para>
 				</important>
@@ -686,7 +686,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 			<sect2 id="lqr-resize">
 				<title>The resizing method</title>
 				<para>
-					Once initialized, or if a visibility map has been loaded, the image can be
+					Once initialised, or if a visibility map has been loaded, the image can be
 					resized through this function:
 					<funcsynopsis>
 						<funcprototype>
@@ -704,7 +704,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					resizing and a vertical resize has been requested, or vice versa, and
 					also when the required enlargment is bigger than the enlargement step value
 					(see <link linkend="lqr-enl-step">Setting the enlargement step</link>).
-					Note that only initialized carvers can update or change the visibility
+					Note that only initialised carvers can update or change the visibility
 					map; if this is not the case, an error is returned.
 				</para>
 				<para>
@@ -740,7 +740,7 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 					of insufficient memory, &ret_true; otherwise.
 				</para>
 				<para>
-					This function destroys the current visibility map and reinitializes
+					This function destroys the current visibility map and reinitialises
 					the multi-size image from its current state.
 				</para>
 				<note>
@@ -1125,7 +1125,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                 <title>Custom energy functions</title>
 
                                 <para>
-                                  Custom energy functions for a &carv_obj; object are set using this funciton:
+                                  Custom energy functions for a &carv_obj; object are set using this function:
                                   <funcsynopsis>
                                           <funcprototype>
                                                   <funcdef>LqrRetVal <function>lqr_carver_set_energy_function</function></funcdef>
@@ -1156,7 +1156,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                                   </listitem>
                                           </varlistentry>
                                           <varlistentry>
-                                                  <term><literal>LQR_ER_BRIGHT</literal></term>
+                                                  <term><literal>LQR_ER_LUMA</literal></term>
                                                   <listitem>
                                                           <para>
                                                             luma (1 channel)
@@ -1195,7 +1195,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
                                       </listitem>
                                       <listitem>
                                         <para>
-                                          for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHTNESS</literal>
+                                          for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHT</literal>
                                           readout will return the average pixel value (additive, i.e. if a black channel is present
                                           the channel values will be inverted and multiplied by the black channel inverse), multiplied
                                           by the alpha channel value.
@@ -1264,60 +1264,54 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwi
                                   </funcsynopsis>
                                 </para>
                                 <para>
-                                  Following is an example of how a simple energy function (a very poor one for the purpose of feature
-                                  detection), based on a convolution, can be defined and used:
+                                  Following is an example of how a simple Sobel fliter can be defined and used within this framework:
                                   <example id="ex-custom-en-def">
                                           <title>Custom energy definition and setup</title>
                                           <programlisting>
 /* definition */
 
-gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwindow, gpointer extra_data)
+gfloat sobel(gint x, gint y, gint width, gint height, LqrReadingWindow *rw, gpointer extra_data)
 {
   gint i, j;
-  gdouble f;
-  gdouble e = 0;
-  gdouble n = 0;
+  gdouble ex = 0;
+  gdouble ey = 0;
+  gdouble k[3][3] = { {1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
 
-  gint radius = lqr_read_window_get_radius (rwindow);
-
-  for (i = -radius; i &lt;= radius; i++) {
-    for (j = -radius; j &lt;= radius; j++) {
-      /* boundary check */
-      if (x + i &lt; 0 || x + i >= w || y + j &lt; 0 || y + j >= h) {
-        continue;
-      }
-      f = sin(0.5 * M_PI * i / radius) * sin(0.5 * M_PI * j / radius);
-      n += fabs(f);
-      /* here we assume we will be only using brightness or luma,
-       * therefore we just ask for channel 0 */
-      e += f * lqr_rwindow_read(rwindow, i, j, 0);
+  for (i = -1; i &lt;=1; i++) {
+    for (j = -1; j &lt;=1; j++) {
+      ex += k[i + 1][j + 1] * lqr_rwindow_read(rw, i, j, 0);
+      ey += k[j + 1][i + 1] * lqr_rwindow_read(rw, i, j, 0);
     }
   }
-  e /= n;
-
-  return (gfloat) fabs(e);
+  return (gfloat) sqrt(ex * ex + ey * ey);
 }
 
-/* to use it (e.g. with a radius of 2 and using brightness): */
+/* usage */
 
-lqr_carver_set_energy_function (carver, my_energy, 2, LQR_ER_BRIGHT, NULL);
+lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL);
                                           </programlisting>
                                   </example>
                                 </para>
-                                <important>
+                                <para>
+                                  In the above <function>sobel</function> function it is assumed that the radius is 1 and that the readout
+                                  will consist of a single channel. Furthermore, no boundary checking is performed, and therefore
+                                  the parameters &param_x;, &param_y;, &param_w; and &param_h; are not used. Also, no extra parameters
+                                  are passed to the function.
+                                </para>
+                                <note>
                                   <para>
-                                    There is no internal check for out-of-bounds requests, therefore boundary checking will
-                                    have to be implemented explicitly, as shown in the above example.
+                                    The function <function>lqr_rwindow_read</function> returns <literal>0</literal> when the requested value
+                                    is out of the image boundary or beyond the reading window radius.
                                   </para>
-                                </important>
-                                <important>
+                                </note>
+                                <note>
                                   <para>
                                     The energy functions are called over the transposed image in case of vertical scaling,
                                     therefore, if they are asymmetrical, the result will be different depending on the scaling
                                     orientation (this is the case for example for the <literal>LQR_EF_GRAD_XABS</literal>
                                     builtin function).
                                   </para>
-                                </important>
+                                </note>
                                 <note>
                                         <para>
                                                 In actual code, the call to
@@ -1344,7 +1338,7 @@ lqr_carver_set_energy_function (carver, my_energy, 2, LQR_ER_BRIGHT, NULL);
                                   The buffer must be freed by the user when it is not needed any more.
                                 </para>
                                 <para>
-                                  The <parameter>orientation</parameter> paramter determines which orientation will be used
+                                  The <parameter>orientation</parameter> parameter determines which orientation will be used
                                   when computing the energy: <literal>0</literal> means horizontal, <literal>1</literal> means vertical.
                                 </para>
                                 <para>
@@ -2109,9 +2103,9 @@ width = lqr_vmap_get_width (vmap);
 vis =  buffer[y * width + x];
 						</programlisting>
 						<para>
-							Uninitialized points will yield
+							Uninitialised points will yield
 							<literal><symbol>vis</symbol> = 0</literal>.
-							For initialized points, <symbol>vis</symbol> will store a
+							For initialised points, <symbol>vis</symbol> will store a
 							positive value between <literal>1</literal> (least visible points,
 							the first to be carved away or to be duplicated) and
 							<literal>(&param_depth; + 1)</literal>
@@ -2144,7 +2138,7 @@ vis =  buffer[y * width + x];
 					</funcsynopsis>
 				</para>
 				<para>
-					The carver must not to be initialized, neither before nor after invoking this function.
+					The carver must not to be initialised, neither before nor after invoking this function.
 				</para>
 				<note>
 					<para>
@@ -2928,7 +2922,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 				<refsect1>
 					<title>Description</title>
 					<para>
-						The function <function>lqr_carver_init</function> initializes
+						The function <function>lqr_carver_init</function> initialises
 						the &carv_obj; pointed to by <parameter>carver</parameter>, so
 						that it can compute the visibility maps as
 						needed upon calls of <function>lqr_carver_resize</function>.
@@ -3195,9 +3189,9 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						The function <function>lqr_carver_resize</function> performs the liquid
 						rescaling over the &carv_obj; object pointed to by <parameter>carver</parameter>.
 						If a visibility map was loaded through the function <function>lqr_vmap_load</function>,
-						and the carver was not initialized, the resizing operations must be limited to the direction
+						and the carver was not initialised, the resizing operations must be limited to the direction
 						and the sizes included in the loaded map.
-						If the carver was initialized through the function
+						If the carver was initialised through the function
 						<function>lqr_carver_init</function>, there are no limitations to the final size.
 					</para>
 					<para>
@@ -3289,7 +3283,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						the image was just loaded in the &carv_obj; object.
 					</para>
 					<para>
-						This function must only be invoked over initialized &carv_obj; objects.
+						This function must only be invoked over initialised &carv_obj; objects.
 					</para>
 					<para>
 						This function is called internally each time the rescaling direction changes,
@@ -3305,7 +3299,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<title>Return value</title>
 					<para>
 						The return value follows the &lqrl; signalling system. Errors can occur
-						for non-initialized &carv_obj; objects or in case of insufficient memory.
+						for non-initialised &carv_obj; objects or in case of insufficient memory.
 					</para>
 				</refsect1>
 
@@ -4335,7 +4329,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 						<xref linkend="ref-lqr-vmap-list-next"></xref>.
 					</para>
 					<para>
-						Using this setting is pointless if the &carv_obj; object is not initialized.
+						Using this setting is pointless if the &carv_obj; object is not initialised.
 					</para>
 					<para>
 						The function <function>lqr_carver_set_no_dump_vmaps</function> reverts the effect
@@ -4639,7 +4633,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
 					<para>
 						There is no limitation on the number of &carv_obj; objects which is possible
 						to attach. Nesting is also possible. It is irrelevant if the
-						<parameter>aux</parameter> carver is initialized or not; from
+						<parameter>aux</parameter> carver is initialised or not; from
 						the moment of attachment, it will passively undergo all
 						transformations performed over <parameter>carver</parameter>.
 					</para>
@@ -5384,7 +5378,7 @@ typedef LqrRetVal (*LqrCarverFunc) (LqrCarver *carver, LqrDataTok data);
 						&carv_obj; object pointed to by <parameter>carver</parameter>.
 					</para>
 					<para>
-                                                It can only be called over uninitialized carver objects, therefore care must be taken not
+                                                It can only be called over uninitialised carver objects, therefore care must be taken not
                                                 to exceed the loaded map depth when resizing (see the &vmap_obj; objects format description
                                                 in the page for <xref linkend="ref-lqr-vmap-new"></xref>).
 					</para>
@@ -5867,7 +5861,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                                                   </listitem>
                                                   <listitem>
                                                     <para>
-                                                      for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHTNESS</literal>
+                                                      for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHT</literal>
                                                       readout will return the average pixel value (additive, i.e. if a black channel is present
                                                       the channel values will be inverted and multiplied by the black channel inverse), multiplied
                                                       by the alpha channel value.
@@ -6024,14 +6018,14 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                                         </para>
                                         <para>
                                                 The coordinates &param_x; and &param_y; are relative to the <parameter>rwindow</parameter>
-                                                centre, and they both can range from <parameter>-radius</parameter> to
-                                                <parameter>radius</parameter> (extremes included), where <parameter>radius</parameter>
+                                                centre, and they both can range from <literal>-radius</literal> to
+                                                <literal>radius</literal> (extremes included), where <literal>radius</literal>
                                                 can be obtained with the function <xref linkend="ref-lqr-rwindow-get-radius"></xref>.
                                         </para>
                                         <para>
-                                                The function returns <literal>0</literal> when the coordinates are out of range; however,
-                                                no check is performed on the image boundary, therefore care must be taken in the readout
-                                                about this.
+                                                The function returns <literal>0</literal> when the coordinates are out of range, either
+                                                because they are beyond the <parameter>rwindow</parameter> radius or because they
+                                                are outside the image boundary.
                                         </para>
                                         <para>
                                                 The <parameter>channel</parameter> parameter specifies which channel to read out; depending on
@@ -7340,7 +7334,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
 	<appendix id="app-new">
 		<title>API changes in new versions of the library</title>
 
-		<sect1 id="app-new-LQR_0-4">
+		<sect1 id="app-new-0-4">
 			<title>New symbols in version 0.4</title>
 			<para>
 				<simplelist>

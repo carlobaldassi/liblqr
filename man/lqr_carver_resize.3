@@ -3,9 +3,9 @@
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
 .\"      Date: 4 Maj 2009
 .\"    Manual: LqR library API reference
-.\"    Source: LqR library LQR_0.4.0 API (3:0:3)
+.\"    Source: LqR library 0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_RESIZE\FR" "3" "4 Maj 2009" "LqR library LQR_0.4.0 API (3:0" "LqR library API reference"
+.TH "\FBLQR_CARVER_RESIZE\FR" "3" "4 Maj 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
@@ -29,7 +29,7 @@ performs the liquid rescaling over the
 LqrCarver
 object pointed to by
 \fIcarver\fR\&. If a visibility map was loaded through the function
-\fBlqr_vmap_load\fR, and the carver was not initialized, the resizing operations must be limited to the direction and the sizes included in the loaded map\&. If the carver was initialized through the function
+\fBlqr_vmap_load\fR, and the carver was not initialised, the resizing operations must be limited to the direction and the sizes included in the loaded map\&. If the carver was initialised through the function
 \fBlqr_carver_init\fR, there are no limitations to the final size\&.
 .PP
 The resizing function can be called multiple times, and it will decide automatically whether the computation of the visibility map is necessary or not\&. In case it isn\'t, the function returns almost immediately, otherwise operations will proceed following the order given through the function

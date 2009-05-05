@@ -146,11 +146,12 @@ lqr_rwindow_fill (LqrReadingWindow * rwindow, LqrCarver * r, gint x, gint y)
 {
   LQR_CATCH_CANC (r);
 
+  rwindow->carver = r;
+  rwindow->x = x;
+  rwindow->y = y;
+
   if (rwindow->use_rcache)
     {
-      rwindow->carver = r;
-      rwindow->x = x;
-      rwindow->y = y;
       return LQR_OK;
     }
 
@@ -370,9 +371,19 @@ lqr_rwindow_read_custom (LqrReadingWindow * rwindow, gint x, gint y, gint channe
 gdouble
 lqr_rwindow_read (LqrReadingWindow * rwindow, gint x, gint y, gint channel)
 {
-  if (rwindow == NULL ||
-      x < -rwindow->radius || x > rwindow->radius ||
-      y < -rwindow->radius || y > rwindow->radius)
+  gint x1, y1;
+
+#ifdef __LQR_DEBUG__
+  assert(rwindow != NULL);
+#endif /* __LQR_DEBUG__ */
+
+  x1 = rwindow->x + x;
+  y1 = rwindow->y + y;
+
+  if (x < -rwindow->radius || x > rwindow->radius ||
+      y < -rwindow->radius || y > rwindow->radius ||
+      x1 < 0 || x1 >= rwindow->carver->w ||
+      y1 < 0 || y1 >= rwindow->carver->h)
     {
       return 0;
     }
