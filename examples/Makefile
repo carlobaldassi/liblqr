@@ -34,6 +34,9 @@ PNGWRITER_CFLAGS = `freetype-config --cflags`
 
 PNGWRITER_LIBS = -lpng -lpngwriter -lz -lfreetype 
 
+# collect flags for the compiler for glib thread support
+GTHREAD_LIBS = `pkg-config --libs gthread-2.0`
+
 # join the flags collected above
 INCLUDES = \
 	$(LQR_CFLAGS) \
@@ -44,7 +47,8 @@ LIBDIRS = \
 
 LIBS = \
        $(LQR_LIBS) \
-       $(PNGWRITER_LIBS)
+       $(PNGWRITER_LIBS) \
+       $(GTHREAD_LIBS)
 
 # define the flags to use in the various compilation steps
 BASE_FLAGS = -Winline -O2 -Wall

@@ -1275,7 +1275,7 @@ gfloat sobel(gint x, gint y, gint width, gint height, LqrReadingWindow *rw, gpoi
   gint i, j;
   gdouble ex = 0;
   gdouble ey = 0;
-  gdouble k[3][3] = { {1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
+  gdouble k[3][3] = { {0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125}};
 
   for (i = -1; i &lt;=1; i++) {
     for (j = -1; j &lt;=1; j++) {
@@ -1310,6 +1310,15 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL);
                                     therefore, if they are asymmetrical, the result will be different depending on the scaling
                                     orientation (this is the case for example for the <literal>LQR_EF_GRAD_XABS</literal>
                                     builtin function).
+                                  </para>
+                                </note>
+                                <note>
+                                  <para>
+                                    The energy function output should be normalised in order to be comparable with the builtin
+                                    functions, otherwise the scale of the bias would be different depending on the energy
+                                    function used. This is the reason why in the Sobel filter written above the kernel
+                                    <parameter>k</parameter> is scaled so that the sum of the absolute values of the matrix is equal
+                                    to <literal>1</literal>.
                                   </para>
                                 </note>
                                 <note>

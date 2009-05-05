@@ -67,6 +67,12 @@ LqrRetVal write_carver_to_image (LqrCarver * r, pngwriter * png);
 LqrRetVal save_vmap_to_file (LqrVMap *vmap, gchar * name);
 LqrVMap * load_vmap_from_file (gchar *name);
 
+/*** ENERGY FUNCTIONS ***/
+gfloat sobelx (gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data);
+gfloat sobel (gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data);
+LqrRetVal set_energy (LqrCarver * carver, gchar * energy_function);
+LqrRetVal write_energy (LqrCarver * carver, gchar * energy_outfile, gint orientation);
+
 /*** PROGRESS REPORT FUNCTIONS ***/
 LqrRetVal my_progress_init (const gchar * message);
 LqrRetVal my_progress_update (gdouble percentage);
@@ -75,5 +81,8 @@ void init_progress (LqrProgress * progress);
 
 /*** EXTRA ***/
 void info_msg(const gchar * msg, const gchar *name);
+gpointer cancel_thread(gpointer data);
+void cancel_handler(int signum);
+
 
 #endif /* __LIQUIDRESCALE_H__ */

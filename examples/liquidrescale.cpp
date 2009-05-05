@@ -22,6 +22,8 @@
 
 using namespace std;
 
+LqrCarver *carver;
+
 gchar *infile = NULL;
 gchar *outfile = NULL;
 gchar *pres_infile = NULL;
@@ -32,6 +34,8 @@ gchar *vmap_infile = NULL;
 gchar *vmap_outfile = NULL;
 gchar *rigmask_infile = NULL;
 gchar *rigmask_outfile = NULL;
+gchar *energy_w_outfile = NULL;
+gchar *energy_h_outfile = NULL;
 gint new_width = 0;
 gint new_height = 0;
 gfloat rigidity = 0;
@@ -41,6 +45,7 @@ gint disc_strength = 1000;
 LqrResizeOrder res_order = LQR_RES_ORDER_HOR;
 gint side_switch_frequency = 0;
 gfloat enl_step = 1.5;
+gchar *energy_function = NULL;
 
 gfloat new_width_p = 0;
 gfloat new_height_p = 0;
@@ -55,6 +60,12 @@ clock_t clock_start, clock_now;
 int
 main (int argc, char **argv)
 {/*{{{*/
+
+  /*** init glib multithreading ***/
+  if (!g_thread_supported ())
+    {
+      g_thread_init(NULL);
+    }
 
   /*** read the command line ***/
   TRAP (parse_command_line (argc, argv));
@@ -200,6 +211,15 @@ main (int argc, char **argv)
 	}
     }
 
+  if (energy_w_outfile)
+    {
+      info_msg ("will write horizontal energy to", energy_w_outfile);
+    }
+  if (energy_h_outfile)
+    {
+      info_msg ("will write vertical energy to", energy_h_outfile);
+    }
+
 
   /* convert the images into rgb buffers to use them with the library */
 
@@ -233,7 +253,6 @@ main (int argc, char **argv)
 
   /* (I.1) swallow the buffer in a (minimal) LqrCarver object 
    *       (arguments are width, height and number of colour channels) */
-  LqrCarver *carver;
   TRAP_N (carver = lqr_carver_new (rgb_buffer, old_width, old_height, 3));
 
   /* (I.2) if we have to attach other images, we have to do so
@@ -270,8 +289,9 @@ main (int argc, char **argv)
       /* (I.3a.1) initialize the carver (with default values),
        *          so that we can do the resizing */
       TRAP (lqr_carver_init (carver, max_step, rigidity));
+
       /* (I.3a.2) add the bias (positive to preserve, negative
-       *          to discard) */
+       *          to discard) and the rigidity mask*/
       if (pres_infile)
 	{
 	  TRAP_N (rgb_pres_buffer = rgb_buffer_from_image (&png_pmask));
@@ -287,9 +307,24 @@ main (int argc, char **argv)
 	  TRAP_N (rgb_rigmask_buffer = rgb_buffer_from_image (&png_rigmask));
 	  TRAP (lqr_carver_rigmask_add_rgb (carver, rgb_rigmask_buffer, 3)); 
 	}
-      /* (I.3b.3) set the side switch frequency */
+
+      /* (I.3a.3) set the energy function */
+      TRAP (set_energy (carver, energy_function));
+
+      /* (I.3a.4) output the energy function */
+      if (energy_w_outfile)
+        {
+          TRAP (write_energy (carver, energy_w_outfile, 0));
+        }
+      if (energy_h_outfile)
+        {
+          TRAP (write_energy (carver, energy_h_outfile, 0));
+        }
+
+      /* (I.3b.5) set the side switch frequency */
       lqr_carver_set_side_switch_frequency(carver, side_switch_frequency);
-      /* (I.3b.4) set the enlargement step */
+
+      /* (I.3b.6) set the enlargement step */
       TRAP (lqr_carver_set_enl_step(carver, enl_step));
     }
   else
@@ -302,6 +337,7 @@ main (int argc, char **argv)
 	  cerr << "Unable to load vmap, aborting" << endl;
 	  exit (1);
         }  
+
       /* (I.3b.2) load it in the carver */
       TRAP (lqr_vmap_load (carver, vmap));
     }
@@ -314,7 +350,6 @@ main (int argc, char **argv)
     }
 
 
-
   /**** (II) SET UP THE PROGRESS INDICATOR ****/
 
   if (!quiet)
@@ -322,8 +357,10 @@ main (int argc, char **argv)
       /* (II.1) generate a progress with default values */
       LqrProgress *progress;
       TRAP_N (progress = lqr_progress_new ());
+
       /* (II.2) set up with custom commands */
       init_progress (progress);
+
       /* (II.3) attach the progress to out multisize image */
       lqr_carver_set_progress (carver, progress);
     }
@@ -333,7 +370,11 @@ main (int argc, char **argv)
 
   /* (III.1) set the rescaling order */
   lqr_carver_set_resize_order (carver, res_order);
-  /* (III.2) invoke the rescaling function
+
+  /* (III.2) catch the INT signal */
+  signal(SIGINT, cancel_handler);
+
+  /* (III.3) invoke the rescaling function
    *         this step could be reiterated at wish */
   TRAP (lqr_carver_resize (carver, new_width, new_height));
 
@@ -431,6 +472,9 @@ LqrRetVal parse_command_line (int argc, char **argv)
     {"vertical-first", no_argument, NULL, 't'},
     {"side-switch-frequency", required_argument, NULL, 'n'},
     {"enl-step", required_argument, NULL, 'e'},
+    {"energy-function", required_argument, NULL, 'E'},
+    {"energy-w-out-file", required_argument, NULL, 'W'},
+    {"energy-h-out-file", required_argument, NULL, 'H'},
     {"quiet", no_argument, NULL, 'q'},
     {"help", no_argument, NULL, '#'},
     {NULL,0,NULL,0}
@@ -438,7 +482,7 @@ LqrRetVal parse_command_line (int argc, char **argv)
 
 
 
-  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,k:,K:,v:,V:,t,n:,e:,q", lopts, &i)) != EOF) {
+  while ((c = getopt_long(argc, argv, "f:,o:,w:,h:,r:,s:,p:,P:,z:,d:,D:,x:,k:,K:,v:,V:,t,n:,e:,E:,W:,H:,q", lopts, &i)) != EOF) {
     switch (c)
     {
       case 'f':
@@ -514,6 +558,15 @@ LqrRetVal parse_command_line (int argc, char **argv)
       case 'e':
 	enl_step = atof(optarg);
 	break;
+      case 'E':
+        energy_function = optarg;
+        break;
+      case 'W':
+        energy_w_outfile = optarg;
+        break;
+      case 'H':
+        energy_h_outfile = optarg;
+        break;
       case 'q':
 	quiet = 1;
 	break;
@@ -540,7 +593,7 @@ LqrRetVal parse_command_line (int argc, char **argv)
 
   if (!new_width && !new_height && !new_width_p && !new_height_p)
     {
-      cerr << "At least one of --width or --height has to be specified and be different from 0." << endl;
+      cerr << "At least one of --width or --height has to be specified (and be different from 0)." << endl;
       return LQR_ERROR;
     }
 
@@ -646,6 +699,12 @@ void help(char *command)
   cout << "    -e <step> or --enl-step <step>" << endl;
   cout << "        Set the maximum enlargement in a single step." << endl;
   cout << "        It must be greater than 1 and not greater than 2 (default = 1.5)" << endl;
+  cout << "    -E <energy-function> or --energy-function <energy-function>" << endl;
+  cout << "        Possible values are: xabs, sumabs, norm, xsobel, sobel" << endl;
+  cout << "    -W <energy-w-out-file> or --energy-w-out-file <energy-w-out-file>" << endl;
+  cout << "        Writes the energy map for horizontal scalings in the specified file" << endl;
+  cout << "    -H <energy-h-out-file> or --energy-h-out-file <energy-h-out-file>" << endl;
+  cout << "        Writes the energy map for vertical scalings in the specified file" << endl;
   cout << "    -q or --quiet" << endl;
   cout << "        Quiet mode." << endl;
   cout << "    --help" << endl;
@@ -727,6 +786,106 @@ write_carver_to_image (LqrCarver * r, pngwriter * png)
   return LQR_OK;
 }/*}}}*/
 
+
+/*** ENERGY FUNCTIONS ***/
+
+/* define custom energy function: sobelx */
+gfloat
+sobelx (gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
+{/*{{{*/
+  gint i, j;
+  gdouble e = 0;
+  gdouble k[3][3] = { {0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125} };
+
+  for (i = -1; i <=1; i++) {
+    for (j = -1; j <=1; j++) {
+      e += k[i + 1][j + 1] * lqr_rwindow_read(rw, i, j, 0);
+    }
+  }
+  return (gfloat) fabs(e);
+}/*}}}*/
+
+/* define custom energy function: sobel */
+gfloat
+sobel (gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
+{/*{{{*/
+  gint i, j;
+  gdouble ex = 0;
+  gdouble ey = 0;
+  gdouble k[3][3] = { {0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125} };
+
+  for (i = -1; i <=1; i++) {
+    for (j = -1; j <=1; j++) {
+      ex += k[i + 1][j + 1] * lqr_rwindow_read(rw, i, j, 0);
+      ey += k[j + 1][i + 1] * lqr_rwindow_read(rw, i, j, 0);
+    }
+  }
+  return (gfloat) (sqrt(ex * ex + ey * ey));
+}/*}}}*/
+
+/* set the energy function */
+LqrRetVal
+set_energy (LqrCarver * carver, gchar * energy_function)
+{/*{{{*/
+  if (energy_function == NULL) {
+    return LQR_OK;
+  } else if (g_strcmp0(energy_function, "xabs") == 0) {
+    LQR_CATCH (lqr_carver_set_energy_function_builtin (carver, LQR_EF_GRAD_XABS));
+  } else if (g_strcmp0(energy_function, "sumabs") == 0) {
+    LQR_CATCH (lqr_carver_set_energy_function_builtin (carver, LQR_EF_GRAD_SUMABS));
+  } else if (g_strcmp0(energy_function, "norm") == 0) {
+    LQR_CATCH (lqr_carver_set_energy_function_builtin (carver, LQR_EF_GRAD_NORM));
+  } else if (g_strcmp0(energy_function, "sobelx") == 0) {
+    LQR_CATCH (lqr_carver_set_energy_function (carver, sobelx, 1, LQR_ER_BRIGHT, NULL));
+  } else if (g_strcmp0(energy_function, "sobel") == 0) {
+    LQR_CATCH (lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL));
+  } else {
+    cerr << "Unknown energy function: " << energy_function << endl;
+    exit (1);
+  }
+  return LQR_OK;
+}/*}}}*/
+
+/* write out the energy */
+LqrRetVal
+write_energy (LqrCarver * carver, gchar * energy_outfile, gint orientation)
+{/*{{{*/
+  gfloat * nrg_buffer;
+
+  CATCH_MEM (nrg_buffer = lqr_carver_get_energy (carver, orientation));
+
+  pngwriter png_nrg;
+
+  png_nrg.pngwriter_rename (energy_outfile);
+
+  gint x, y;
+  gfloat en;
+  gdouble red, green, blue;
+
+  gint w = lqr_carver_get_width (carver);
+  gint h = lqr_carver_get_height (carver);
+
+
+  png_nrg.resize (w, h);
+
+  for (y = 0; y < h; y++) {
+    for (x = 0; x < w; x++) {
+      en = nrg_buffer[y * w + x];
+      red = (gdouble) en;
+      green = (gdouble) en;
+      blue = (gdouble) en;
+
+      /* plot (pngwriter's coordinates start from 1,1) */
+      png_nrg.plot (x + 1, y + 1, red, green, blue);
+    }
+  }
+
+  g_free (nrg_buffer);
+
+  png_nrg.close();
+
+  return LQR_OK;
+}/*}}}*/
 
 /*** PROGRESS INDICATOR ***/
 
@@ -1036,3 +1195,16 @@ void info_msg(const gchar * msg, const gchar *name)
       cout << "  + " << msg << " " << name << endl << flush;
     }
 }/*}}}*/
+
+gpointer cancel_thread(gpointer data)
+{/*{{{*/
+  lqr_carver_cancel ((LqrCarver*) data);
+  return NULL;
+}/*}}}*/
+
+void cancel_handler(int signum)
+{/*{{{*/
+  printf("\n"); fflush(stdout);
+  g_thread_create (cancel_thread, (gpointer) carver, FALSE, NULL);
+}/*}}}*/
+
