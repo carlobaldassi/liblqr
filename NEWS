@@ -1,3 +1,25 @@
+Version 0.4:
+
+* New features:
+  * Support for image types (color models):
+    GREY, GREYA, RGB, RGBA, CMY, CMYK, CMYKA
+    and custom
+  * Additional builtin energy functions based on
+    luma instead of brightness
+  * Support for custom energy functions
+  * Functions to read out the energy map
+  * Cancel function to interrupt computations
+  * Additional methods for bias and rigidity masks
+  * Use a single progress instead of several
+    ones when the update is performed in steps
+  * Can handle input buffers non-destructively
+
+* Performace related:
+  * Faster rescaling thanks to optimisations in
+    the code
+  * Save memory when not using features (e.g. the
+    bias)
+
 Version 0.3:
 
 * New features:
