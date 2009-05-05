@@ -110,13 +110,24 @@ lqr-1.pc
 ])
 
 AC_ARG_ENABLE([install-man],
-     [  --enable-install-man    Install man pages],
+     [AS_HELP_STRING([--enable-install-man], [Install man pages])],
      [case "${enableval}" in
        yes) install_man=true ;;
        no)  install_man=false ;;
        *) AC_MSG_ERROR([bad value ${enableval} for --enable-install-man]) ;;
      esac],[install_man=false])
 AM_CONDITIONAL([INSTMAN], [test x$install_man = xtrue])
+
+AC_ARG_ENABLE([legacy-macros],
+     [AS_HELP_STRING([--disable-legacy-macros], [Disable legacy macros])],
+     [case "${enableval}" in
+       yes) legavy_macros=true ;;
+       no)  legacy_macros=false ;;
+       *) AC_MSG_ERROR([bad value ${enableval} for --disable-legacy-macros]) ;;
+     esac],[legacy_macros=true])
+
+AS_IF([test "x$legacy_macros" = "xfalse"], [AC_DEFINE([LQR_DISABLE_LEGACY_MACROS],[],[Disable legacy macros])], [])
+AM_CONDITIONAL([LEGACY_MACROS], [test x$legacy_macros = xtrue])
 
 
 AC_OUTPUT

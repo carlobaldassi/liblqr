@@ -36,6 +36,9 @@
 /* Library name */
 #undef LIBRARY_NAME
 
+/* Disable legacy macros */
+#undef LQR_DISABLE_LEGACY_MACROS
+
 /* Library age */
 #undef LTVERSION_AGE
 
