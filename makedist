@@ -1,7 +1,21 @@
 #! /bin/bash
 
+set -e
+
 [ -f "Makefile" ] || { echo "error: makefile not found"; exit 1; }
 [ -f "configure.ac" ] || { echo "error: configure.ac not found"; exit 1; }
+
+LZMA=0
+if [ -n "$1" ]
+then
+	if [ "$1" == lzma ]
+	then
+		LZMA=1
+	else
+		echo "error: unknown arg $1" > /dev/stderr;
+		exit 1;
+	fi
+fi
 
 BASE_NAME=$(head -n 50 configure.ac | grep "m4_define(\[library_base_name\], \[.*\])" | sed "s/m4_define(\[library_base_name\], \[\(.*\)\])/\1/")
 API_VERSION=$(head -n 50 configure.ac | grep "m4_define(\[api_version\], \[.*\])" | sed "s/m4_define(\[api_version\], \[\(.*\)\])/\1/")
@@ -12,23 +26,19 @@ MAJOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_major_version\],
 MINOR_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_minor_version\], \[.*\])" | sed "s/m4_define(\[package_minor_version\], \[\(.*\)\])/\1/")
 MICRO_VER=$(head -n 50 configure.ac | grep "m4_define(\[package_micro_version\], \[.*\])" | sed "s/m4_define(\[package_micro_version\], \[\(.*\)\])/\1/")
 
-#[ -f "release_subv_src" ] || { echo "error: release_subv_src not found"; exit 1; }
-
-#REL_SUB_VER="$(cat release_subv_src)";
-#echo "$REL_SUB_VER" | grep -q "[[:digit:]]\+" || { echo "error: invalid release subversion: $REL_SUB_VER"; exit 1;}
-#REL_SUB_VER=$[ $REL_SUB_VER + 1 ] || exit 1;
-
 PACKAGE_NAME="${NAME}-${MAJOR_VER}.${MINOR_VER}.${MICRO_VER}"
-#NEW_PACKAGE_NAME="${PACKAGE_NAME}-${REL_SUB_VER}"
-TGZ_NAME="${PACKAGE_NAME}.tar.gz"
-TBZ2_NAME="${PACKAGE_NAME}.tar.bz2"
+TAR_NAME="${PACKAGE_NAME}.tar"
+TGZ_NAME="${TAR_NAME}.gz"
+TBZ2_NAME="${TAR_NAME}.bz2"
+TLZMA_NAME="${TAR_NAME}.lzma"
 
-#NEW_TBZ2_NAME="${NEW_PACKAGE_NAME}.tar.bz2"
+make distcheck
 
-make distcheck || exit 1
-rm -f "${TGZ_NAME}" || exit 1
-make dist-bzip2 || exit 1
+gunzip "${TGZ_NAME}"
+if [[ $LZMA == 1 ]]
+then
+	lzma "${TAR_NAME}"
+else
+	bzip2 "${TAR_NAME}"
+fi
 
-#mv "${TBZ2_NAME}" "${NEW_TBZ2_NAME}" || exit 1
-
-#echo $REL_SUB_VER > release_subv_src;
