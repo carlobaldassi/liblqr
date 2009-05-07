@@ -1,0 +1,326 @@
+#!/bin/bash
+
+# LiquidRescaling Library
+# Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+# All Rights Reserved.
+#
+# This library implements the algorithm described in the paper
+# "Seam Carving for Content-Aware Image Resizing"
+# by Shai Avidan and Ariel Shamir
+# which can be found at http://www.faculty.idc.ac.il/arik/imret.pdf
+#
+# This script is used to generate the file lqr/lqr_carver_macros_priv.h
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; version 3 dated June, 2007.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>
+
+NMAX=5
+OUTFILE="lqr/lqr_carver_macros_priv.h"
+
+
+if [ "$1" == "--help" ]
+then
+	echo "Usage: $(basename $0) N_MAX"
+	echo "  default N_MAX = $NMAX"
+	exit 0
+fi
+
+[ -n "$1" ] && { NMAX=$1; shift; }
+
+function fixed1
+{
+	cat <<- EOF
+	/* LiquidRescaling Library
+	 * Copyright (C) 2007-2009 Carlo Baldassi (the "Author") <carlobaldassi@gmail.com>.
+	 * All Rights Reserved.
+	 *
+	 * This library implements the algorithm described in the paper
+	 * "Seam Carving for Content-Aware Image Resizing"
+	 * by Shai Avidan and Ariel Shamir
+	 * which can be found at http://www.faculty.idc.ac.il/arik/imret.pdf
+	 *
+	 * This file was automatically generated.
+	 *
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU Lesser General Public License as published by
+	 * the Free Software Foundation; version 3 dated June, 2007.
+
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU Lesser General Public License for more details.
+
+	 * You should have received a copy of the GNU Lesser General Public License
+	 * along with this program; if not, see <http://www.gnu.org/licenses/>
+	 */
+
+	/* Macros for update_mmap speedup : without rigidity */
+
+	#define DATADOWN(y, x) (r->raw[(y) - 1][(x)])
+	#define MDOWN(y, x) (r->m[DATADOWN((y), (x))])
+
+	#define MMIN01G(y, x) (least = DATADOWN((y), (x)), MDOWN((y), (x)))
+	#define MMINTESTL(y, x1, x2) (MDOWN((y), (x1)) <= MDOWN((y), (x2)))
+	#define MMINTESTR(y, x1, x2) (MDOWN((y), (x1)) <  MDOWN((y), (x2)))
+
+	EOF
+}
+
+
+function pars
+{
+	local A;
+	for A in $(seq 3 $1) 
+	do
+		printf ", x%.2i" $A
+	done
+}
+
+function ppars
+{
+	local A;
+	for A in $(seq 3 $1) 
+	do
+		#echo -n ", (x${A})"
+		printf ", (x%.2i)" $A
+	done
+}
+
+function space
+{
+	local A;
+	for A in $(seq $1 $2)
+	do
+		echo -n "     "	
+	done
+}
+
+function mming
+{
+	local N N1
+	local TAG="$1"
+	echo -n "#define MMIN${TAG}01G(y, x01)";
+	space 1 $[NMAX - 1]
+	echo " MMIN01G((y), (x01))"
+	for N in $(seq 2 $NMAX)
+	do
+		N1=$[N - 1]
+		printf "#define MMIN${TAG}%.2iG(y, x01, x02" $N
+		#echo -n "#define MMIN${TAG}${N}G(y, x1, x2"
+		pars $N
+		echo -n ")"
+		space $N $[NMAX - 1]
+		printf " MMINTEST${TAG}((y), (x01), (x02)) ? MMIN${TAG}%.2iG((y), (x01)" $N1
+		ppars $N
+		printf ") : MMIN${TAG}%.2iG((y), (x02)" $N1
+		ppars $N
+		echo ")"
+	done
+	echo
+}
+
+function seqpars
+{
+	local A
+	for A in $(seq 1 $1)
+	do
+		echo -n ", (x) + "
+		[ $NMAX -gt 10 -a $A -lt 10 ] && echo -n " "
+		echo -n "$A"
+	done
+}
+
+function mmin
+{
+	local N
+	local TAG="$1"
+	for N in $(seq 1 $NMAX)
+	do
+		printf "#define MMIN${TAG}%.2i(y, x) MMIN${TAG}%.2iG((y), (x)" $N $N
+		seqpars $[N - 1]
+		echo ")"
+	done
+	echo
+}
+
+function fixed2
+{
+	cat <<- EOF
+	/* Macros for update_mmap speedup : with rigidity */
+
+	#define MRDOWN(y, x, dx) (r->m[DATADOWN((y), (x))] + r_fact * r->rigidity_map[(dx)])
+
+	#define MRSET01(y, x, dx) (mc[(dx)] = MRDOWN((y), (x), (dx)))
+	EOF
+}
+
+function mrset
+{
+	local N N1;
+	for N in $(seq 2 $NMAX)
+	do
+		N1=$[N - 1]
+		printf "#define MRSET%.2i(y, x, dx) (MRSET%.2i((y), (x), (dx)), MRSET01((y), (x) + " $N $N1
+		[ $NMAX -gt 10 -a $N1 -lt 10 ] && echo -n " "
+		echo -n "${N1}, (dx) + "
+		[ $NMAX -gt 10 -a $N1 -lt 10 ] && echo -n " "
+		echo "${N1}))"
+	done
+	echo
+}
+
+function fixed3
+{
+	cat <<- EOF
+	#define MRMIN01G(y, x, dx) (least = DATADOWN((y), (x)), mc[(dx)])
+	#define MRMINTESTL(dx1, dx2) (mc[(dx1)] <= mc[(dx2)])
+	#define MRMINTESTR(dx1, dx2) (mc[(dx1)] < mc[(dx2)])
+
+	EOF
+}
+
+function rpars
+{
+	local A;
+	for A in $(seq 3 $1) 
+	do
+		printf ", x%.2i, dx%.2i" $A $A
+	done
+}
+
+function rppars
+{
+	local A;
+	for A in $(seq 3 $1) 
+	do
+		printf ", (x%.2i), (dx%.2i)" $A $A
+	done
+}
+
+function rspace
+{
+	local A;
+	for A in $(seq $1 $2)
+	do
+		echo -n "           "
+	done
+}
+
+
+function mrming
+{
+	local N
+	local TAG="$1"
+	echo -n "#define MRMIN${TAG}01G(y, x01, dx01)";
+	rspace 1 $[NMAX - 1]
+	echo " MRMIN01G((y), (x01), (dx01))"
+	for N in $(seq 2 $NMAX)
+	do
+		N1=$[N - 1]
+		printf "#define MRMIN${TAG}%.2iG(y, x01, dx01, x02, dx02" $N
+		rpars $N
+		echo -n ")"
+		rspace $N $[NMAX - 1]
+		printf " MRMINTEST${TAG}((dx01), (dx02)) ? MRMIN${TAG}%.2iG((y), (x01), (dx01)" $N1
+		rppars $N
+		printf ") : MRMIN${TAG}%.2iG((y), (x02), (dx02)" $N1
+		rppars $N
+		echo ")"
+	done
+	echo
+}
+
+function rseqpars
+{
+	local A
+	for A in $(seq 1 $1)
+	do
+		echo -n ", (x) + "
+		[ $NMAX -gt 10 -a $A -lt 10 ] && echo -n " "
+		echo -n "$A, (dx) + "
+		[ $NMAX -gt 10 -a $A -lt 10 ] && echo -n " "
+		echo -n "$A"
+	done
+}
+
+
+function mrmin
+{
+	local N
+	local TAG="$1"
+	for N in $(seq 1 $NMAX)
+	do
+		printf "#define MRMIN${TAG}%.2i(y, x, dx) MRMIN${TAG}%.2iG((y), (x), (dx)" $N $N
+		rseqpars $[N - 1]
+		echo ")"
+	done
+	echo
+}
+
+function mcases
+{
+	local N
+	echo  "#define UPDATE_MMAP_OPTIMISED_CASES \\"
+	for N in $(seq 1 $NMAX)
+	do
+		echo   "     case $N: \\"
+                printf "       m = r->leftright ? MMINR%.2i(y, x1_min) : MMINL%.2i(y, x1_min); \\\\\n" $N $N
+		printf "       break;"
+		[ $N -lt $NMAX ] && echo -n " \\"
+		echo
+	done
+	echo
+}
+
+function mrcases
+{
+	local N
+	echo  "#define UPDATE_MMAP_OPTIMISED_CASES_RIG \\"
+	for N in $(seq 1 $NMAX)
+	do
+		echo   "     case $N: \\"
+                printf "       MRSET%.2i(y, x1_min, dx); \\\\\n" $N
+                printf "       m = r->leftright ? MRMINR%.2i(y, x1_min, dx) : MRMINL%.2i(y, x1_min, dx); \\\\\n" $N $N
+		printf "       break;"
+		[ $N -lt $NMAX ] && echo -n " \\"
+		echo
+	done
+	echo
+}
+
+function print_all
+{
+	fixed1
+
+	mming L
+	mming R
+
+	mmin L
+	mmin R
+
+	fixed2
+
+	mrset
+
+	fixed3
+
+	mrming L
+	mrming R
+
+	mrmin L
+	mrmin R
+
+	mcases
+	mrcases
+}
+
+print_all > $OUTFILE

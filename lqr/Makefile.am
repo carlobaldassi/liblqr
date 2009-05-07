@@ -28,6 +28,7 @@ liblqr_1_la_SOURCES = \
 	lqr_carver.h    \
 	lqr_carver_pub.h    \
 	lqr_carver_priv.h    \
+	lqr_carver_macros_priv.h    \
 	lqr_carver_list.c    \
 	lqr_carver_list.h    \
 	lqr_carver_list_pub.h    \
