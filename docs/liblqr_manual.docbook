@@ -55,7 +55,7 @@
             <year>2009</year>
             <holder>Carlo Baldassi</holder>
         </copyright>
-        <date>4 Maj 2009</date>
+        <date>7 Maj 2009</date>
     </bookinfo>
 
     <chapter id="Introduction">
@@ -1268,7 +1268,8 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL);
                     </funcsynopsis>
                     This function returns a buffer containing the energy values at the time of calling, ordered by row
                     and then by column. All values range between <literal>0</literal> and <literal>1</literal>. The
-                    buffer must be freed by the user when it is not needed any more.
+                    buffer must be freed by the user, using the function <function>g_free</function>, when it is not
+                    needed any more.
                 </para>
                 <para>
                     The <parameter>orientation</parameter> parameter determines which orientation will be used when
@@ -2944,7 +2945,7 @@ LqrRetVal <function>lqr_progress_set_end_height_message</function> (&prog_obj; *
                     <para>
                         Calling this function sets the image time of the <parameter>carver</parameter> to
                         &img_type_custom;. Furthermore, the image color model will be assumed to be subtractive by the
-                        reader functions. <!--TODO: what are the reader functions?-->
+                        function <xref linkend="ref-lqr-rwindow-read"></xref> when it computes the brightness or the luma.
                     </para>
                 </refsect1>
 
@@ -5700,7 +5701,8 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                     <para>
                         The resulting buffer size is <literal>&param_w; * &param_h;</literal>, where &param_w; and
                         &param_h; are the current width and height of the <parameter>carver</parameter>, ordered by row
-                        first, then by column. It must be freed manually when it is not needed any more.
+                        first, then by column. It must be freed manually with <function>g_free</function> when it is not
+                        needed any more.
                     </para>
                     <para>
                         The outcome will include the effect of the bias added to the <parameter>carver</parameter>, if
@@ -7051,7 +7053,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
         <para>
             The library implements the algorithm described in the paper "Seam Carving for Content-Aware Image Resizing"
             by Shai Avidan and Ariel Shamir, which can be found at
-            <ulink url="http://www.faculty.idc.ac.il/arik/imret.pdf">here</ulink> <!--FIXME-->
+            <ulink url="http://www.faculty.idc.ac.il/arik/imret.pdf">http://www.faculty.idc.ac.il/arik/imret.pdf</ulink>
         </para>
     </chapter>
 
