@@ -1,0 +1,30 @@
+-linux
+-i 4
+-cli 4
+-cp 0
+-ppi 0
+--no-tabs
+-c 41
+-cd 41
+-l 120
+-T LqrRetVal
+-T LqrColDepth
+-T LqrResizeOrder
+-T LqrImageType
+-T LqrCarver
+-T LqrDataTok
+-T LqrCarverFunc
+-T LqrCarverList
+-T LqrEnergyFuncBuiltinType
+-T LqrEnergyFunc
+-T LqrProgressFuncInit
+-T LqrProgressFuncUpdate
+-T LqrProgressFuncEnd
+-T LqrEnergyReaderType
+-T LqrVMapList
+-T LqrVMap
+-T LqrVMapFunc
+-T lqr_t_8i
+-T lqr_t_16i
+-T lqr_t_32f
+-T lqr_t_64f

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+PROTECT_MACROS_WSC="
+	G_BEGIN_DECLS 
+	G_END_DECLS 
+
+	"
+PROTECT_MACROS_WC="
+	UPDATE_MMAP_OPTIMISED_CASES_RIG
+	UPDATE_MMAP_OPTIMISED_CASES
+	"
+
+cd lqr
+for M in $PROTECT_MACROS_WSC
+do
+	sed -i "s/\<${M}\>/${M};/g" *.{c,h}
+done
+for M in $PROTECT_MACROS_WC
+do
+	sed -i "s/\<${M}\>/case ${M}:/g" *.{c,h}
+done
+
+indent *.{c,h}
+
+for M in $PROTECT_MACROS_WSC
+do
+	sed -i "s/\<${M};/${M}/g" *.{c,h}
+done
+for M in $PROTECT_MACROS_WC
+do
+	sed -i "s/\<case ${M}:/${M}/g" *.{c,h}
+done
+
+rm *~
+cd ..
+
+

@@ -28,80 +28,65 @@
 #include <assert.h>
 #endif /* __LQR_DEBUG__ */
 
-
 /**** VMAP LIST FUNCTIONS ****/
 
-LqrVMapList *
-lqr_vmap_list_append (LqrVMapList * list, LqrVMap * buffer)
+LqrVMapList *lqr_vmap_list_append(LqrVMapList *list, LqrVMap *buffer)
 {
-  LqrVMapList * prev = NULL;
-  LqrVMapList * now = list;
-  while (now != NULL)
-    {
-      prev = now;
-      now = now->next;
+    LqrVMapList *prev = NULL;
+    LqrVMapList *now = list;
+    while (now != NULL) {
+        prev = now;
+        now = now->next;
     }
-  TRY_N_N (now = g_try_new(LqrVMapList, 1));
-  now->next = NULL;
-  now->current = buffer;
-  if (prev)
-    {
-      prev->next = now;
+    TRY_N_N(now = g_try_new(LqrVMapList, 1));
+    now->next = NULL;
+    now->current = buffer;
+    if (prev) {
+        prev->next = now;
     }
-  if (list == NULL)
-    {
-      return now;
-    }
-  else
-    {
-      return list;
+    if (list == NULL) {
+        return now;
+    } else {
+        return list;
     }
 }
 
-void
-lqr_vmap_list_destroy(LqrVMapList * list)
+void lqr_vmap_list_destroy(LqrVMapList *list)
 {
-  LqrVMapList * now = list;
-  if (now != NULL)
-    {
-      lqr_vmap_list_destroy(now->next);
-      lqr_vmap_destroy(now->current);
+    LqrVMapList *now = list;
+    if (now != NULL) {
+        lqr_vmap_list_destroy(now->next);
+        lqr_vmap_destroy(now->current);
     }
 }
 
 /* LQR_PUBLIC */
-LqrVMapList *
-lqr_vmap_list_start (LqrCarver *r)
+LqrVMapList *lqr_vmap_list_start(LqrCarver *r)
 {
-  return r->flushed_vs;
+    return r->flushed_vs;
 }
 
 /* LQR_PUBLIC */
-LqrVMapList *
-lqr_vmap_list_next (LqrVMapList * list)
+LqrVMapList *lqr_vmap_list_next(LqrVMapList *list)
 {
-  TRY_N_N (list);
-  return list->next;
+    TRY_N_N(list);
+    return list->next;
 }
 
 /* LQR_PUBLIC */
-LqrVMap *
-lqr_vmap_list_current (LqrVMapList * list)
+LqrVMap *lqr_vmap_list_current(LqrVMapList *list)
 {
-  TRY_N_N (list);
-  return list->current;
+    TRY_N_N(list);
+    return list->current;
 }
 
 /* LQR_PUBLIC */
-LqrRetVal
-lqr_vmap_list_foreach (LqrVMapList * list, LqrVMapFunc func, gpointer data)
+LqrRetVal lqr_vmap_list_foreach(LqrVMapList *list, LqrVMapFunc func, gpointer data)
 {
-  LqrVMapList * now = list;
-  if (now != NULL)
-    {
-      LQR_CATCH (func(now->current, data));
-      return lqr_vmap_list_foreach (now->next, func, data);
+    LqrVMapList *now = list;
+    if (now != NULL) {
+        LQR_CATCH(func(now->current, data));
+        return lqr_vmap_list_foreach(now->next, func, data);
     }
-  return LQR_OK;
+    return LQR_OK;
 }
-

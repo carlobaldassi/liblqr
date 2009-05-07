@@ -856,10 +856,9 @@ LqrColDepth lqr_carver_get_col_depth (LqrCarver *carver);
 gint x, y;
 guchar *rgb;
 
-while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
-  {
+while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb) {
     my_plot (x, y, rgb[0], rgb[1], rgb[2]);
-  }
+}
 						</programlisting>
 					</example>
 
@@ -876,11 +875,10 @@ gint x, y;
 void *rgb;
 gdouble *rgb_out;
 
-while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb)
-  {
+while (lqr_carver_scan (carver, &amp;x, &amp;y, &amp;rgb) {
     rgb_out = (gdouble*) rgb;
     my_plot (x, y, rgb_out[0], rgb_out[1], rgb_out[2]);
-  }
+}
 						</programlisting>
 					</example>
 
@@ -958,10 +956,9 @@ gboolean by_row;
 
 by_row = lqr_carver_scan_by_row (carver);
 
-while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb)
-  {
+while (lqr_carver_scan_line (carver, &amp;n, &amp;rgb) {
     by_row ? my_plot_row (n, rgb) : my_plot_col (n, rgb);
-  }
+}
 						</programlisting>
 					</example>
 
@@ -983,11 +980,10 @@ gboolean by_row;
 
 by_row = lqr_carver_scan_by_row (carver);
 
-while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb)
-  {
+while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb) {
     rgb_out = (gboolean*) rgb;
     by_row ? my_plot_row (n, rgb_out) : my_plot_col (n, rgb_out);
-  }
+}
 						</programlisting>
 					</example>
 				</para>
@@ -1272,18 +1268,18 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwi
 
 gfloat sobel(gint x, gint y, gint width, gint height, LqrReadingWindow *rw, gpointer extra_data)
 {
-  gint i, j;
-  gdouble ex = 0;
-  gdouble ey = 0;
-  gdouble k[3][3] = { {0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125}};
+    gint i, j;
+    gdouble ex = 0;
+    gdouble ey = 0;
+    gdouble k[3][3] = {{0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125}};
 
-  for (i = -1; i &lt;=1; i++) {
-    for (j = -1; j &lt;=1; j++) {
-      ex += k[i + 1][j + 1] * lqr_rwindow_read(rw, i, j, 0);
-      ey += k[j + 1][i + 1] * lqr_rwindow_read(rw, i, j, 0);
+    for (i = -1; i &lt;=1; i++) {
+        for (j = -1; j &lt;=1; j++) {
+            ex += k[i + 1][j + 1] * lqr_rwindow_read(rw, i, j, 0);
+            ey += k[j + 1][i + 1] * lqr_rwindow_read(rw, i, j, 0);
+        }
     }
-  }
-  return (gfloat) sqrt(ex * ex + ey * ey);
+    return (gfloat) sqrt(ex * ex + ey * ey);
 }
 
 /* usage */
@@ -2003,12 +1999,11 @@ LqrVMap *vmap;
 LqrVMapList *list;
 
 list = lqr_vmap_list_start (carver);
-while (list)
-  {
+while (list) {
     vmap = lqr_vmap_list_current (list);
     [ ... do something on vmap ... ]
     list = lqr_vmap_list_next (list);
-  }
+}
 						</programlisting>
 					</example>
 				</para>
@@ -2274,12 +2269,11 @@ LqrCarver *aux;
 LqrCarverList *list;
 
 list = lqr_carver_list_start (carver);
-while (list)
-  {
+while (list) {
     aux = lqr_carver_list_current (list);
     [ ... do something on aux ... ]
     list = lqr_carver_list_next (list);
-  }
+}
 						</programlisting>
 					</example>
 				</para>
@@ -2306,10 +2300,10 @@ while (list)
 						<title>Accessing attached carvers #2</title>
 						<programlisting>
 LqrRetVal my_func (LqrCarver *aux, LqrDataTok data)
-  {
+{
     [... do something on aux ... ]
     return LQR_OK;
-  }
+}
 
 LqrCarverList *list;
 LqrDataTok data_tok;
