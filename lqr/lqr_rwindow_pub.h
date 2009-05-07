@@ -40,10 +40,10 @@ struct _LqrReadingWindow;
 
 typedef struct _LqrReadingWindow LqrReadingWindow;
 
-gdouble lqr_rwindow_read(LqrReadingWindow * rwindow, gint x, gint y, gint channel) LQR_PUBLIC;
+LQR_PUBLIC gdouble lqr_rwindow_read(LqrReadingWindow * rwindow, gint x, gint y, gint channel);
 
-LqrEnergyReaderType lqr_rwindow_get_read_t(LqrReadingWindow * rwindow) LQR_PUBLIC;
-gint lqr_rwindow_get_radius(LqrReadingWindow * rwindow) LQR_PUBLIC;
-gint lqr_rwindow_get_channels(LqrReadingWindow * rwindow) LQR_PUBLIC;
+LQR_PUBLIC LqrEnergyReaderType lqr_rwindow_get_read_t(LqrReadingWindow * rwindow);
+LQR_PUBLIC gint lqr_rwindow_get_radius(LqrReadingWindow * rwindow);
+LQR_PUBLIC gint lqr_rwindow_get_channels(LqrReadingWindow * rwindow);
 
 #endif /* __LQR_READER_WINDOW_PUB_H__ */

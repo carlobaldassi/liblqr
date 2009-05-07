@@ -129,5 +129,7 @@ AC_ARG_ENABLE([legacy-macros],
 AS_IF([test "x$legacy_macros" = "xfalse"], [AC_DEFINE([LQR_DISABLE_LEGACY_MACROS],[],[Disable legacy macros])], [])
 AM_CONDITIONAL([LEGACY_MACROS], [test x$legacy_macros = xtrue])
 
+AC_DEFINE([LQR_EXPORTS],[],[Flag for Windows DLL creation])
+
 
 AC_OUTPUT

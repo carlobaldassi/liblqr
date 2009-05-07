@@ -39,6 +39,9 @@
 /* Disable legacy macros */
 #undef LQR_DISABLE_LEGACY_MACROS
 
+/* Flag for Windows DLL creation */
+#undef LQR_EXPORTS
+
 /* Library age */
 #undef LTVERSION_AGE
 
