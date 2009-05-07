@@ -1642,6 +1642,7 @@ lqr_carver_flatten (LqrCarver * r)
     }
 
   /* first iterate on attached carvers */
+  data_tok.data = NULL;
   LQR_CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_flatten_attached, data_tok));
 
   /* free non needed maps first */
