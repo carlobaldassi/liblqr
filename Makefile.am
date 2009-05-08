@@ -15,6 +15,7 @@ EXTRA_DIST = \
 	examples/Makefile \
 	examples/README \
 	BUGS		\
+	README.Windows	\
 	autogen.sh	
 
 DISTCLEANFILES = \

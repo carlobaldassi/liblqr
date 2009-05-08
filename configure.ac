@@ -64,7 +64,7 @@ AM_PROG_CC_STDC
 AC_HEADER_STDC
 
 AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
 
@@ -127,7 +127,25 @@ AC_ARG_ENABLE([legacy-macros],
      esac],[legacy_macros=true])
 
 AS_IF([test "x$legacy_macros" = "xfalse"], [AC_DEFINE([LQR_DISABLE_LEGACY_MACROS],[],[Disable legacy macros])], [])
-AM_CONDITIONAL([LEGACY_MACROS], [test x$legacy_macros = xtrue])
+
+AC_MSG_CHECKING([if we are on Win32])
+AC_LANG([C])
+AC_PREPROC_IFELSE([[
+		   #ifndef WIN32
+		   #error
+		   #endif
+		   ]], is_win32=true, is_win32=false)
+AS_IF([test "x$is_win32" = "xtrue"],
+      [AC_MSG_RESULT([yes]);
+      LT_NOUNDEF_FLAG="-no-undefined";
+      FVISIBILITY_FLAG="";],
+      [AC_MSG_RESULT([no]);
+      LT_NOUNDEF_FLAG="";
+      FVISIBILITY_FLAG="-fvisibility=\"hidden\"";],
+      )
+
+AC_SUBST(LT_NOUNDEF_FLAG)
+AC_SUBST(FVISIBILITY_FLAG)
 
 AC_DEFINE([LQR_EXPORTS],[],[Flag for Windows DLL creation])
 

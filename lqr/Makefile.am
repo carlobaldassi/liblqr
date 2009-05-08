@@ -54,7 +54,8 @@ liblqr_1_la_SOURCES = \
 	lqr_progress_pub.h  \
 	lqr_progress_priv.h
 
-liblqr_1_la_LDFLAGS = -version-info @LTVERSION@
+liblqr_1_la_LDFLAGS = -version-info @LTVERSION@ @LT_NOUNDEF_FLAG@
+
 liblqr_1_la_LIBADD = $(GLIB_LIBS) -lm
 
 AM_CPPFLAGS = \
@@ -62,7 +63,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)		\
 	@GLIB_CFLAGS@		\
 	-I$(includedir)		\
-	-fvisibility=hidden
+	@FVISIBILITY_FLAG@
 
 lqr_include0_HEADERS = lqr.h
 
