@@ -1,0 +1,47 @@
+Compiling the library in Windows
+================================
+
+DISCLAIMER: these notes are not very reliable, as they're
+based on some very simple trials, without much knowledge of
+the Windows operating system.
+
+1) Using MinGW/MSYS
+
+Under MinGW/MSYS the compilation goes much like under any
+*nix system, but with the current MinGW version (5.1.4 at
+the time of writing) one must remove the option
+`-fvisibility="hidden"' from the file `lqr/Makefile.in'
+(line 264 at the time of writing) before running
+`./configure'. Then, everything goes as usual.
+
+2) Using MS Visual C++
+
+The library compiles under `Microsoft Visual C++ 2008
+Express edition'. You can create an empty DLL project with
+the default setup (choose Console Application then Advanced
+Settings -> DLL + Empty Project), then put the `lqr'
+directory in the project directory and add all of the files
+within that dir to the project with `Add Exisitng Item'.
+Then, you must modify the project properties like this:
+
+  a) C/C++ -> General -> Additional Include Directories: add
+  the directory `lqr' and its parent, and also the directory
+  where all the necessary glib-2.0 headers are found.
+
+  b) C/C++ -> Preprocessor -> Preprocessor Definitions: add
+  LQR_EXPORT to the list
+
+  c) C/C++ -> Advanced -> Compile As: Compile as C Code
+
+  d) Linker -> General -> Version: set version (don't know
+  if this is really needed or has any purpose at all though)
+
+  e) Linker -> Additional Library Directories: add the
+  directory where glib-2.0.lib is found
+
+  f) Linker -> Input -> Additional Dependencies: add
+  glib-2.0.lib
+
+When you build the project, it should produce the library
+liblqr.lib and liblqr.dll files (assuming your project is
+called `liblqr').

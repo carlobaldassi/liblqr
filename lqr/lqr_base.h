@@ -25,7 +25,7 @@
 
 #define LQR_MAX_NAME_LENGTH (1024)
 
-#if defined(_MSC_VER) || defined(_WIN32) || defined(__WIN32__)
+#ifdef _MSC_VER
 #  ifdef LQR_EXPORTS
 #    define LQR_PUBLIC __declspec(dllexport)
 #  else
@@ -35,14 +35,14 @@
 #  ifndef GCC_HASCLASSVISIBILITY
 #    define GCC_HASCLASSVISIBILITY
 #  endif /* !GCC_HASCLASSVISIBILITY */
-#  if defined(GCC_HASCLASSVISIBILITY)
+#  ifdef GCC_HASCLASSVISIBILITY
 #    define LQR_PUBLIC __attribute__((visibility("default")))
 #  else
 #    define LQR_PUBLIC
 #  endif /* GCC_HASCLASSVISIBILITY */
 #else
 #  define LQR_PUBLIC
-#endif /* _MSC_VER || _WIN32 || __WIN32__ */
+#endif /* _MSC_VER */
 
 #if 0
 #define __LQR_DEBUG__
