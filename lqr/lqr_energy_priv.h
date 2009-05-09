@@ -35,6 +35,9 @@
 #error "lqr_rwindow_pub.h must be included prior to lqr_energy_priv.h"
 #endif /* __LQR_READER_WINDOW_PUB_H__ */
 
+#define LQR_SATURATE_(x) (1 / (1 + (1 / (x))))
+#define LQR_SATURATE(x) ((x) >= 0 ? LQR_SATURATE_(x) : -LQR_SATURATE_(-x))
+
 inline gdouble lqr_pixel_get_norm(void *src, gint src_ind, LqrColDepth col_depth);
 inline gdouble lqr_pixel_get_rgbcol(void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type,
                                     gint channel);

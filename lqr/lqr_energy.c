@@ -509,20 +509,6 @@ gdouble *lqr_carver_generate_rcache(LqrCarver *r)
 }
 
 /* LQR_PUBLIC */
-/*
-LqrCarver *
-lqr_energy_preview_new (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth)
-{
-  LqrCarver * r;
-  TRY_N_N (r = lqr_carver_new_ext (buffer, width, height, channels, colour_depth));
-  lqr_carver_set_preserve_input_image (r);
-  TRY_E_N (lqr_carver_init_energy_related (r));
-  lqr_carver_set_use_cache (r, TRUE);
-  return r;
-}
-*/
-
-/* LQR_PUBLIC */
 gfloat *lqr_carver_get_energy(LqrCarver *r, gint orientation)
 {
     gint x, y;
@@ -563,7 +549,8 @@ gfloat *lqr_carver_get_energy(LqrCarver *r, gint orientation)
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             data = orientation == 0 ? r->raw[y][x] : r->raw[x][y];
-            nrg = tanhf(r->en[data]);
+            /* nrg = tanhf(r->en[data]); */
+            nrg = LQR_SATURATE (r->en[data]);
             nrg_max = MAX(nrg_max, nrg);
             nrg_min = MIN(nrg_min, nrg);
             nrg_buffer[z0++] = nrg;
@@ -579,6 +566,7 @@ gfloat *lqr_carver_get_energy(LqrCarver *r, gint orientation)
     return nrg_buffer;
 }
 
+/* LQR_PUBLIC */
 gfloat *lqr_carver_get_true_energy(LqrCarver *r, gint orientation)
 {
     gint x, y;
