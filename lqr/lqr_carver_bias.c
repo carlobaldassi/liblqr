@@ -185,7 +185,7 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar * rgb, gint bias_factor, gint 
 
             bias = ((gdouble) bias_factor * sum / (2 * 255 * c_channels));
             if (has_alpha) {
-                bias *= rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
+                bias *= (gdouble) rgb[((y - y0) * width + (x - x0) + 1) * channels - 1] / 255;
             }
 
             xt = r->transposed ? y : x;
