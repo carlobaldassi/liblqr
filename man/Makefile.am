@@ -17,6 +17,7 @@ dist_man_MANS = \
 	lqr_carver_get_col_depth.3 \
 	lqr_carver_get_depth.3 \
 	lqr_carver_get_energy.3 \
+	lqr_carver_get_energy_image.3 \
 	lqr_carver_get_enl_step.3 \
 	lqr_carver_get_height.3 \
 	lqr_carver_get_image_type.3 \

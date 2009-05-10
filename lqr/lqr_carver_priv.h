@@ -53,30 +53,35 @@
 
 /* Macros for internal use */
 
-#define AS_8I(x) ((lqr_t_8i*)x)
-#define AS_16I(x) ((lqr_t_16i*)x)
-#define AS_32F(x) ((lqr_t_32f*)x)
-#define AS_64F(x) ((lqr_t_64f*)x)
+#define AS0_8I(x) ((lqr_t_8i)(x))
+#define AS0_16I(x) ((lqr_t_16i)(x))
+#define AS0_32F(x) ((lqr_t_32f)(x))
+#define AS0_64F(x) ((lqr_t_64f)(x))
 
-#define AS2_8I(x) ((lqr_t_8i**)x)
-#define AS2_16I(x) ((lqr_t_16i**)x)
-#define AS2_32F(x) ((lqr_t_32f**)x)
-#define AS2_64F(x) ((lqr_t_64f**)x)
+#define AS_8I(x) ((lqr_t_8i*)(x))
+#define AS_16I(x) ((lqr_t_16i*)(x))
+#define AS_32F(x) ((lqr_t_32f*)(x))
+#define AS_64F(x) ((lqr_t_64f*)(x))
+
+#define AS2_8I(x) ((lqr_t_8i**)(x))
+#define AS2_16I(x) ((lqr_t_16i**)(x))
+#define AS2_32F(x) ((lqr_t_32f**)(x))
+#define AS2_64F(x) ((lqr_t_64f**)(x))
 
 #define PXL_COPY(dest, dest_ind, src, src_ind, col_depth) G_STMT_START { \
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        AS_8I(dest)[dest_ind] = AS_8I(src)[src_ind]; \
+        AS_8I((dest))[(dest_ind)] = AS_8I((src))[(src_ind)]; \
         break; \
       case LQR_COLDEPTH_16I: \
-        AS_16I(dest)[dest_ind] = AS_16I(src)[src_ind]; \
+        AS_16I((dest))[(dest_ind)] = AS_16I((src))[(src_ind)]; \
         break; \
       case LQR_COLDEPTH_32F: \
-        AS_32F(dest)[dest_ind] = AS_32F(src)[src_ind]; \
+        AS_32F((dest))[(dest_ind)] = AS_32F((src))[(src_ind)]; \
         break; \
       case LQR_COLDEPTH_64F: \
-        AS_64F(dest)[dest_ind] = AS_64F(src)[src_ind]; \
+        AS_64F((dest))[(dest_ind)] = AS_64F((src))[(src_ind)]; \
         break; \
     } \
 } G_STMT_END
@@ -85,16 +90,16 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        *AS2_8I(dest) = AS_8I(src); \
+        *AS2_8I((dest)) = AS_8I((src)); \
         break; \
       case LQR_COLDEPTH_16I: \
-        *AS2_16I(dest) = AS_16I(src); \
+        *AS2_16I((dest)) = AS_16I((src)); \
         break; \
       case LQR_COLDEPTH_32F: \
-        *AS2_32F(dest) = AS_32F(src); \
+        *AS2_32F((dest)) = AS_32F((src)); \
         break; \
       case LQR_COLDEPTH_64F: \
-        *AS2_64F(dest) = AS_64F(src); \
+        *AS2_64F((dest)) = AS_64F((src)); \
         break; \
     } \
 } G_STMT_END
@@ -103,16 +108,16 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        TRY_N_N (dest = g_try_new (lqr_t_8i, size)); \
+        TRY_N_N ((dest) = g_try_new (lqr_t_8i, (size))); \
         break; \
       case LQR_COLDEPTH_16I: \
-        TRY_N_N (dest = g_try_new (lqr_t_16i, size)); \
+        TRY_N_N ((dest) = g_try_new (lqr_t_16i, (size))); \
         break; \
       case LQR_COLDEPTH_32F: \
-        TRY_N_N (dest = g_try_new (lqr_t_32f, size)); \
+        TRY_N_N ((dest) = g_try_new (lqr_t_32f, (size))); \
         break; \
       case LQR_COLDEPTH_64F: \
-        TRY_N_N (dest = g_try_new (lqr_t_64f, size)); \
+        TRY_N_N ((dest) = g_try_new (lqr_t_64f, (size))); \
         break; \
     } \
 } G_STMT_END
@@ -121,16 +126,16 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        TRY_N_N (dest = g_try_new0 (lqr_t_8i, size)); \
+        TRY_N_N ((dest) = g_try_new0 (lqr_t_8i, (size))); \
         break; \
       case LQR_COLDEPTH_16I: \
-        TRY_N_N (dest = g_try_new0 (lqr_t_16i, size)); \
+        TRY_N_N ((dest) = g_try_new0 (lqr_t_16i, (size))); \
         break; \
       case LQR_COLDEPTH_32F: \
-        TRY_N_N (dest = g_try_new0 (lqr_t_32f, size)); \
+        TRY_N_N ((dest) = g_try_new0 (lqr_t_32f, (size))); \
         break; \
       case LQR_COLDEPTH_64F: \
-        TRY_N_N (dest = g_try_new0 (lqr_t_64f, size)); \
+        TRY_N_N ((dest) = g_try_new0 (lqr_t_64f, (size))); \
         break; \
     } \
 } G_STMT_END
@@ -139,29 +144,29 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_8i, size)); \
+        LQR_CATCH_MEM ((dest) = g_try_new0 (lqr_t_8i, (size))); \
         break; \
       case LQR_COLDEPTH_16I: \
-        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_16i, size)); \
+        LQR_CATCH_MEM ((dest) = g_try_new0 (lqr_t_16i, (size))); \
         break; \
       case LQR_COLDEPTH_32F: \
-        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_32f, size)); \
+        LQR_CATCH_MEM ((dest) = g_try_new0 (lqr_t_32f, (size))); \
         break; \
       case LQR_COLDEPTH_64F: \
-        LQR_CATCH_MEM (dest = g_try_new0 (lqr_t_64f, size)); \
+        LQR_CATCH_MEM ((dest) = g_try_new0 (lqr_t_64f, (size))); \
         break; \
     } \
 } G_STMT_END
 
 #define LQR_CATCH_CANC(carver) G_STMT_START { \
-  if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \
+  if (g_atomic_int_get(&((carver)->state)) == LQR_CARVER_STATE_CANCELLED) \
     { \
       return LQR_USRCANCEL; \
     } \
 } G_STMT_END
 
 #define LQR_CATCH_CANC_N(carver) G_STMT_START { \
-  if (g_atomic_int_get(&carver->state) == LQR_CARVER_STATE_CANCELLED) \
+  if (g_atomic_int_get(&((carver)->state)) == LQR_CARVER_STATE_CANCELLED) \
     { \
       return NULL; \
     } \

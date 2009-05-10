@@ -50,8 +50,9 @@ LQR_PUBLIC LqrRetVal lqr_carver_set_energy_function_builtin(LqrCarver *r, LqrEne
 LQR_PUBLIC LqrRetVal lqr_carver_set_energy_function(LqrCarver *r, LqrEnergyFunc en_func, gint radius,
                                                     LqrEnergyReaderType reader_type, gpointer extra_data);
 
-/* LqrCarver * lqr_energy_preview_new (void * buffer, gint width, gint height, gint channels, LqrColDepth colour_depth) LQR_PUBLIC; */
-LQR_PUBLIC gfloat *lqr_carver_get_energy(LqrCarver *r, gint orientation);
-LQR_PUBLIC gfloat *lqr_carver_get_true_energy(LqrCarver *r, gint orientation);
+LQR_PUBLIC LqrRetVal lqr_carver_get_energy(LqrCarver *r, gfloat * buffer, gint orientation);
+LQR_PUBLIC LqrRetVal lqr_carver_get_true_energy(LqrCarver *r, gfloat * buffer, gint orientation);
+LQR_PUBLIC LqrRetVal lqr_carver_get_energy_image(LqrCarver *r, void *buffer, gint orientation, LqrColDepth col_depth,
+                                               LqrImageType image_type);
 
 #endif /* __LQR_ENERGY_PUB_H__ */

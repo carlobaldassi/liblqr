@@ -1,17 +1,17 @@
 .\"     Title: \fBlqr_carver_get_energy\fR
 .\"    Author: Carlo Baldassi
 .\" Generator: DocBook XSL Stylesheets v1.73.2 <http://docbook.sf.net/>
-.\"      Date: 7 Maj 2009
+.\"      Date: 10 Maj 2009
 .\"    Manual: LqR library API reference
 .\"    Source: LqR library 0.4.0 API (3:0:3)
 .\"
-.TH "\FBLQR_CARVER_GET_ENERGY\FR" "3" "7 Maj 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
+.TH "\FBLQR_CARVER_GET_ENERGY\FR" "3" "10 Maj 2009" "LqR library 0.4.0 API (3:0:3)" "LqR library API reference"
 .\" disable hyphenation
 .nh
 .\" disable justification (adjust text to left margin only)
 .ad l
 .SH "NAME"
-lqr_carver_get_energy, lqr_carver_get_true_energy \- get the energy map for a LqrCarver object
+lqr_carver_get_energy, lqr_carver_get_true_energy, lqr_carver_get_energy_image \- get the energy map for a LqrCarver object
 .SH "SYNOPSIS"
 .sp
 .ft B
@@ -19,8 +19,8 @@ lqr_carver_get_energy, lqr_carver_get_true_energy \- get the energy map for a Lq
 #include <lqr\&.h>
 .fi
 .ft
-.HP 31
-.BI "gfloat * lqr_carver_get_energy(LqrCarver*\ " "carver" ", gint\ " "orientation" ");"
+.HP 32
+.BI "LqrRetVal lqr_carver_get_energy(LqrCarver*\ " "carver" ", gfloat\ *\ " "buffer" ", gint\ " "orientation" ");"
 .SH "SYNOPSIS"
 .sp
 .ft B
@@ -28,14 +28,27 @@ lqr_carver_get_energy, lqr_carver_get_true_energy \- get the energy map for a Lq
 #include <lqr\&.h>
 .fi
 .ft
-.HP 36
-.BI "gfloat * lqr_carver_get_true_energy(LqrCarver*\ " "carver" ", gint\ " "orientation" ");"
+.HP 37
+.BI "LqrRetVal lqr_carver_get_true_energy(LqrCarver*\ " "carver" ", gfloat\ *\ " "buffer" ", gint\ " "orientation" ");"
+.SH "SYNOPSIS"
+.sp
+.ft B
+.nf
+#include <lqr\&.h>
+.fi
+.ft
+.HP 32
+.BI "LqrRetVal lqr_carver_get_energy(LqrCarver*\ " "carver" ", void\ *\ " "buffer" ", gint\ " "orientation" ", LqrColDepth\ " "col_depth" ", LqrImageType\ " "image_type" ");"
 .SH "DESCRIPTION"
 .PP
 The function
 \fBlqr_carver_get_energy\fR
-returns a buffer (an array of
-\fBgfloats\fR) with the energy map of the image, in a format suitable for plotting: all values are in the range between
+writes the energy map of the
+LqrCarver
+object pointed to by
+\fIcarver\fR
+to the given
+\fIbuffer\fR, in a format suitable for plotting: all values are in the range between
 0
 and
 1, and the true values are mapped nonlinearly and stretched on this whole range, so that the differences between the middle values are enhanced with respect to very high or very low values\&.
@@ -48,15 +61,13 @@ to get the energy map used for horizontal scalings, or
 1
 to get the map for vertical scalings\&.
 .PP
-The resulting buffer size is
+The buffer must be allocated by the user before calling this function, and its size must be at least
 \fIwidth\fR * \fIheight\fR, where
 \fIwidth\fR
 and
 \fIheight\fR
 are the current width and height of the
-\fIcarver\fR, ordered by row first, then by column\&. It must be freed manually with
-\fBg_free\fR
-when it is not needed any more\&.
+\fIcarver\fR\&. The energy values are ordered by row first, then by column\&.
 .PP
 The outcome will include the effect of the bias added to the
 \fIcarver\fR, if any\&.
@@ -69,7 +80,40 @@ could be flattened if necessary, therefore the function invocation is potentiall
 .PP
 The function
 \fBlqr_carvet_get_true_energy\fR
-is identical to the previous one, but the resulting buffer contains the true energy, not scaled nor shifted\&.
+is identical to the previous one, but the resulting buffer will contain the true energy, not scaled nor shifted\&.
+.PP
+The function
+\fBlqr_carver_get_energy_image\fR
+is very similar to the function
+\fBlqr_carveR_get_energy\fR, but it can be used to fill directly an image buffer of the format specified through the additional parameters
+\fIcol_depth\fR
+and
+\fIimage_type\fR
+(see
+\fBLqrColDepth\fR(3)
+and
+\fBLqrImageType\fR(3))\&. The
+\fIbuffer\fR
+must be passed as
+\fBvoid*\fR, but it must point to a memory area with sufficient allocated space for the chosen image type and colour depth\&. The image type cannot be
+LQR_CUSTOM_IMAGE\&.
+.PP
+For any choice of the parameters describing the image, the resulting
+\fIbuffer\fR
+will hold a greyscale image, ranging from black (lowest energy) to white (highest energy)\&. The opacity (alpha) will be set to
+1, if present\&. All the information will be stored in the black channel in
+LQR_CMYK_IMAGE
+and
+LQR_CMYKA_IMAGE
+image types\&.
+.SH "RETURN VALUES"
+.PP
+The return values follow the Liquid Rescale library signalling system\&. The function
+\fBlqr_carver_get_energy_image\fR
+will return an error if
+\fIimage_type\fR
+is
+LQR_CUSTOM_IMAGE\&.
 .SH "SEE ALSO"
 .PP
 

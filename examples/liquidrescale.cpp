@@ -753,8 +753,6 @@ LqrRetVal write_energy(LqrCarver *carver, gchar * energy_outfile, gint orientati
 {/*{{{ */
     gfloat *nrg_buffer;
 
-    CATCH_MEM(nrg_buffer = lqr_carver_get_energy(carver, orientation));
-
     pngwriter png_nrg;
 
     png_nrg.pngwriter_rename(energy_outfile);
@@ -767,6 +765,9 @@ LqrRetVal write_energy(LqrCarver *carver, gchar * energy_outfile, gint orientati
     gint h = lqr_carver_get_height(carver);
 
     png_nrg.resize(w, h);
+
+    LQR_CATCH_MEM(nrg_buffer = g_try_new0 (gfloat, w * h));
+    LQR_CATCH(lqr_carver_get_energy(carver, nrg_buffer, orientation));
 
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {

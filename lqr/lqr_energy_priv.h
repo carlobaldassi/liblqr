@@ -39,6 +39,7 @@
 #define LQR_SATURATE(x) ((x) >= 0 ? LQR_SATURATE_(x) : -LQR_SATURATE_(-x))
 
 inline gdouble lqr_pixel_get_norm(void *src, gint src_ind, LqrColDepth col_depth);
+inline void lqr_pixel_set_norm(gdouble val, void *rgb, gint rgb_ind, LqrColDepth col_depth);
 inline gdouble lqr_pixel_get_rgbcol(void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type,
                                     gint channel);
 inline gdouble lqr_carver_read_brightness_grey(LqrCarver *r, gint x, gint y);

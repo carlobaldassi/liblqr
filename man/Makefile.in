@@ -199,6 +199,7 @@ target_alias = @target_alias@
 @INSTMAN_TRUE@	lqr_carver_get_col_depth.3 \
 @INSTMAN_TRUE@	lqr_carver_get_depth.3 \
 @INSTMAN_TRUE@	lqr_carver_get_energy.3 \
+@INSTMAN_TRUE@	lqr_carver_get_energy_image.3 \
 @INSTMAN_TRUE@	lqr_carver_get_enl_step.3 \
 @INSTMAN_TRUE@	lqr_carver_get_height.3 \
 @INSTMAN_TRUE@	lqr_carver_get_image_type.3 \

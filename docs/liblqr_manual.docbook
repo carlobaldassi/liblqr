@@ -55,7 +55,7 @@
             <year>2009</year>
             <holder>Carlo Baldassi</holder>
         </copyright>
-        <date>7 Maj 2009</date>
+        <date>10 Maj 2009</date>
     </bookinfo>
 
     <chapter id="Introduction">
@@ -1258,18 +1258,24 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL);
                 <title>Reading out the energy</title>
 
                 <para>
-                    The energy can be read out in a format suitable for plotting it, using this function:
+                    The energy can be read out with three similar functions, all of which fill a buffer provided by
+                    the user, but in different ways: two of them are suitable for plotting, while the third one can be
+                    used to retreive the true values of the energy, as used internally.
+                </para>
+                <para>
+                    The first function can be used to get a buffer of normalised values, and it has a simple syntax:
                     <funcsynopsis>
                         <funcprototype>
-                            <funcdef>gfloat * <function>lqr_carver_get_energy</function></funcdef>
+                            <funcdef>LqrRetVal <function>lqr_carver_get_energy</function></funcdef>
                             <paramdef>LqrCarver * <parameter>carver</parameter></paramdef>
+                            <paramdef>gfloat * <parameter>buffer</parameter></paramdef>
                             <paramdef>gint <parameter>orientation</parameter></paramdef>
                         </funcprototype>
                     </funcsynopsis>
-                    This function returns a buffer containing the energy values at the time of calling, ordered by row
-                    and then by column. All values range between <literal>0</literal> and <literal>1</literal>. The
-                    buffer must be freed by the user, using the function <function>g_free</function>, when it is not
-                    needed any more.
+                    This function writes the the energy values at the time of calling to the given
+                    <parameter>buffer</parameter>, ordered by row and then by column. All values range between
+                    <literal>0</literal> and <literal>1</literal>. The buffer must be allocated by the user before
+                    calling it.
                 </para>
                 <para>
                     The <parameter>orientation</parameter> parameter determines which orientation will be used when
@@ -1281,15 +1287,50 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL);
                 </para>
                 <para>
                     The above function does not return the true energy which is used internally, because that would not
-                    be suitable for plotting. If the true energy value is desired, this function must be used instead:
+                    be suitable for plotting, since the energy range is arbitrary (only the energy differences are
+                    meaningful, and there is no upper nor lower bound to the values). In order to get the true energy
+                    values used internally, this function must be used instead (with the same syntax):
                     <funcsynopsis>
                         <funcprototype>
-                            <funcdef>gfloat * <function>lqr_carver_get_true_energy</function></funcdef>
+                            <funcdef>LqrRetVal <function>lqr_carver_get_true_energy</function></funcdef>
                             <paramdef>LqrCarver * <parameter>carver</parameter></paramdef>
+                            <paramdef>gfloat * <parameter>buffer</parameter></paramdef>
                             <paramdef>gint <parameter>orientation</parameter></paramdef>
                         </funcprototype>
                     </funcsynopsis>
                 </para>
+                <para>
+                    The last function can be used to fill directly an image buffer:
+                    <funcsynopsis>
+                        <funcprototype>
+                            <funcdef>LqrRetVal <function>lqr_carver_get_energy_image</function></funcdef>
+                            <paramdef>LqrCarver * <parameter>carver</parameter></paramdef>
+                            <paramdef>void * <parameter>buffer</parameter></paramdef>
+                            <paramdef>gint <parameter>orientation</parameter></paramdef>
+                            <paramdef>LqrColDepth <parameter>col_depth</parameter></paramdef>
+                            <paramdef>LqrImageType <parameter>image_type</parameter></paramdef>
+                        </funcprototype>
+                    </funcsynopsis>
+                    In this case, the buffer must be passed as <type>void*</type>, while the
+                    <parameter>col_depth</parameter> and <parameter>image_type</parameter> are used to specify the
+                    colour depth and the image type, in the same way as is done when creating an &carv_obj; object (see
+                    <link linkend="carver-new">Carver objcet creation</link> and the
+                    <link linkend="image-type">Choosing the image type</link> sections). The only restriction is that it
+                    is not possible to ask for &img_type_custom; image types.
+                </para>
+                <para>
+                    For any choice of the parameters, the <parameter>buffer</parameter> will hold a greyscale image,
+                    ranging from black (lowest energy) to white (highest energy). The opacity (alpha) will be set to
+                    <literal>1</literal>, if present. All the information will be stored in the black channel in
+                    &img_type_cmyk; and &img_type_cmyka; image types.
+                </para>
+                <note>
+                    <para>
+                        Calling the function <function>lqr_carver_get_energy_image</function> with &col_depth_32f; and
+                        &img_type_grey; arguments will yield the same result as calling the function
+                        <function>lqr_carver_get_image</function>, but the latter is slightly more efficient.
+                    </para>
+                </note>
             </sect2>
         </sect1>
         <sect1 id="bias">
@@ -5658,6 +5699,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                 <refnamediv>
                     <refname>lqr_carver_get_energy</refname>
                     <refname>lqr_carver_get_true_energy</refname>
+                    <refname>lqr_carver_get_energy_image</refname>
                     <refpurpose>get the energy map for a &carv_obj; object</refpurpose>
                 </refnamediv>
 
@@ -5665,8 +5707,9 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                     <funcsynopsis>
                         <funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
                         <funcprototype>
-                            <funcdef>gfloat * <function>lqr_carver_get_energy</function></funcdef>
+                            <funcdef>LqrRetVal <function>lqr_carver_get_energy</function></funcdef>
                             <paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+                            <paramdef>gfloat * <parameter>buffer</parameter></paramdef>
                             <paramdef>gint <parameter>orientation</parameter></paramdef>
                         </funcprototype>
                     </funcsynopsis>
@@ -5676,9 +5719,24 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                     <funcsynopsis>
                         <funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
                         <funcprototype>
-                            <funcdef>gfloat * <function>lqr_carver_get_true_energy</function></funcdef>
+                            <funcdef>LqrRetVal <function>lqr_carver_get_true_energy</function></funcdef>
                             <paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+                            <paramdef>gfloat * <parameter>buffer</parameter></paramdef>
                             <paramdef>gint <parameter>orientation</parameter></paramdef>
+                        </funcprototype>
+                    </funcsynopsis>
+                </refsynopsisdiv>
+
+                <refsynopsisdiv>
+                    <funcsynopsis>
+                        <funcsynopsisinfo>#include &lt;lqr.h></funcsynopsisinfo>
+                        <funcprototype>
+                            <funcdef>LqrRetVal <function>lqr_carver_get_energy</function></funcdef>
+                            <paramdef>LqrCarver* <parameter>carver</parameter></paramdef>
+                            <paramdef>void * <parameter>buffer</parameter></paramdef>
+                            <paramdef>gint <parameter>orientation</parameter></paramdef>
+                            <paramdef>LqrColDepth <parameter>col_depth</parameter></paramdef>
+                            <paramdef>LqrImageType <parameter>image_type</parameter></paramdef>
                         </funcprototype>
                     </funcsynopsis>
                 </refsynopsisdiv>
@@ -5687,11 +5745,12 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                     <title>Description</title>
 
                     <para>
-                        The function <function>lqr_carver_get_energy</function> returns a buffer (an array of
-                        <type><literal>gfloats</literal></type>) with the energy map of the image, in a format suitable
-                        for plotting: all values are in the range between <literal>0</literal> and <literal>1</literal>,
-                        and the true values are mapped nonlinearly and stretched on this whole range, so that the
-                        differences between the middle values are enhanced with respect to very high or very low values.
+                        The function <function>lqr_carver_get_energy</function> writes the energy map of the &carv_obj;
+                        object pointed to by <parameter>carver</parameter> to the given <parameter>buffer</parameter>,
+                        in a format suitable for plotting: all values are in the range between <literal>0</literal> and
+                        <literal>1</literal>, and the true values are mapped nonlinearly and stretched on this whole
+                        range, so that the differences between the middle values are enhanced with respect to very high
+                        or very low values.
                     </para>
                     <para>
                         The <parameter>orientation</parameter> parameter must be either <literal>0</literal> to get the
@@ -5699,10 +5758,10 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                         scalings.
                     </para>
                     <para>
-                        The resulting buffer size is <literal>&param_w; * &param_h;</literal>, where &param_w; and
-                        &param_h; are the current width and height of the <parameter>carver</parameter>, ordered by row
-                        first, then by column. It must be freed manually with <function>g_free</function> when it is not
-                        needed any more.
+                        The buffer must be allocated by the user before calling this function, and its size must be at
+                        least <literal>&param_w; * &param_h;</literal>, where &param_w; and &param_h; are the current
+                        width and height of the <parameter>carver</parameter>. The energy values are ordered by row
+                        first, then by column.
                     </para>
                     <para>
                         The outcome will include the effect of the bias added to the <parameter>carver</parameter>, if
@@ -5717,7 +5776,33 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                     </para>
                     <para>
                         The function <function>lqr_carvet_get_true_energy</function> is identical to the previous one,
-                        but the resulting buffer contains the true energy, not scaled nor shifted.
+                        but the resulting buffer will contain the true energy, not scaled nor shifted.
+                    </para>
+                    <para>
+                        The function <function>lqr_carver_get_energy_image</function> is very similar to the function
+                        <function>lqr_carveR_get_energy</function>, but it can be used to fill directly an image buffer
+                        of the format specified through the additional parameters <parameter>col_depth</parameter> and
+                        <parameter>image_type</parameter> (see <xref linkend="ref-lqr-col-depth"></xref> and
+                        <xref linkend="ref-lqr-image-type"></xref>). The <parameter>buffer</parameter> must be passed as
+                        <type>void*</type>, but it must point to a memory area with sufficient allocated space for the
+                        chosen image type and colour depth. The image type cannot be &img_type_custom;.
+                    </para>
+                    <para>
+                        For any choice of the parameters describing the image, the resulting
+                        <parameter>buffer</parameter> will hold a greyscale image, ranging from black (lowest energy) to
+                        white (highest energy). The opacity (alpha) will be set to <literal>1</literal>, if present. All
+                        the information will be stored in the black channel in &img_type_cmyk; and &img_type_cmyka;
+                        image types.
+                    </para>
+
+                </refsect1>
+
+                <refsect1>
+                    <title>Return values</title>
+                    <para>
+                        The return values follow the &lqrl; signalling system. The function
+                        <function>lqr_carver_get_energy_image</function> will return an error if
+                        <parameter>image_type</parameter> is &img_type_custom;.
                     </para>
                 </refsect1>
 
@@ -7076,6 +7161,7 @@ typedef LqrRetVal (*LqrProgressFuncEnd) (const gchar* end_message);
                     <member><link linkend="ref-lqr-carver-set-energy-function"><function>lqr_carver_set_energy_function</function></link></member>
                     <member><link linkend="ref-lqr-carver-get-energy"><function>lqr_carver_get_energy</function></link></member>
                     <member><link linkend="ref-lqr-carver-get-energy"><function>lqr_carver_get_true_energy</function></link></member>
+                    <member><link linkend="ref-lqr-carver-get-energy"><function>lqr_carver_get_energy_image</function></link></member>
                     <member><link linkend="ref-lqr-rwindow-read"><function>lqr_rwindow_read</function></link></member>
                     <member><link linkend="ref-lqr-rwindow-get-read-t"><function>lqr_rwindow_get_read_t</function></link></member>
                     <member><link linkend="ref-lqr-rwindow-get-radius"><function>lqr_rwindow_get_radius</function></link></member>

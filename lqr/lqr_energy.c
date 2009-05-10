@@ -42,6 +42,7 @@
 #include <assert.h>
 #endif /* __LQR_DEBUG__ */
 
+
 /* read normalised pixel value from
  * rgb buffer at the given index */
 inline gdouble lqr_pixel_get_norm(void *rgb, gint rgb_ind, LqrColDepth col_depth)
@@ -60,6 +61,31 @@ inline gdouble lqr_pixel_get_norm(void *rgb, gint rgb_ind, LqrColDepth col_depth
             assert(0);
 #endif /* __LQR_DEBUG__ */
             return 0;
+    }
+}
+
+/* write pixel from normalised value
+ * in rgb buffer at the given index */
+inline void lqr_pixel_set_norm(gdouble val, void *rgb, gint rgb_ind, LqrColDepth col_depth)
+{
+    switch (col_depth) {
+        case LQR_COLDEPTH_8I:
+            AS_8I(rgb)[rgb_ind] = AS0_8I(val * 0xFF);
+            return;
+        case LQR_COLDEPTH_16I:
+            AS_16I(rgb)[rgb_ind] = AS0_16I(val * 0xFFFF);
+            return;
+        case LQR_COLDEPTH_32F:
+            AS_32F(rgb)[rgb_ind] = AS0_32F(val);
+            return;
+        case LQR_COLDEPTH_64F:
+            AS_64F(rgb)[rgb_ind] = AS0_64F(val);
+            return;
+        default:
+#ifdef __LQR_DEBUG__
+            assert(0);
+#endif /* __LQR_DEBUG__ */
+            return;
     }
 }
 
@@ -111,8 +137,8 @@ gdouble lqr_carver_read_brightness_custom(LqrCarver *r, gint x, gint y)
 {
     gdouble sum = 0;
     gint k;
-    gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
-    gchar has_black = (r->black_channel >= 0 ? 1 : 0);
+    gint has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+    gint has_black = (r->black_channel >= 0 ? 1 : 0);
     guint col_channels = r->channels - has_alpha - has_black;
 
     gdouble black_fact = 0;
@@ -142,7 +168,7 @@ gdouble lqr_carver_read_brightness_custom(LqrCarver *r, gint x, gint y)
  * for energy computation */
 gdouble lqr_carver_read_brightness(LqrCarver *r, gint x, gint y)
 {
-    gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+    gint has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
     gdouble alpha_fact = 1;
 
     gint now = r->raw[y][x];
@@ -187,7 +213,7 @@ inline gdouble lqr_carver_read_luma_std(LqrCarver *r, gint x, gint y)
 
 gdouble lqr_carver_read_luma(LqrCarver *r, gint x, gint y)
 {
-    gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+    gint has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
     gdouble alpha_fact = 1;
 
     gint now = r->raw[y][x];
@@ -220,7 +246,7 @@ gdouble lqr_carver_read_luma(LqrCarver *r, gint x, gint y)
 
 gdouble lqr_carver_read_rgba(LqrCarver *r, gint x, gint y, gint channel)
 {
-    gchar has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
+    gint has_alpha = (r->alpha_channel >= 0 ? 1 : 0);
 
     gint now = r->raw[y][x];
 
@@ -509,39 +535,38 @@ gdouble *lqr_carver_generate_rcache(LqrCarver *r)
 }
 
 /* LQR_PUBLIC */
-gfloat *lqr_carver_get_energy(LqrCarver *r, gint orientation)
+LqrRetVal lqr_carver_get_energy(LqrCarver *r, gfloat * buffer, gint orientation)
 {
     gint x, y;
     gint z0 = 0;
     gint w, h;
     gint buf_size;
     gint data;
-    gfloat *nrg_buffer;
     gfloat nrg;
     gfloat nrg_min = G_MAXFLOAT;
     gfloat nrg_max = 0;
 
-    TRY_E_N(orientation == 0 || orientation == 1);
-    LQR_CATCH_CANC_N(r);
+    LQR_CATCH_F (orientation == 0 || orientation == 1);
+    LQR_CATCH_CANC(r);
+    LQR_CATCH_F (buffer != NULL);
 
     if (r->nrg_active == FALSE) {
-        TRY_E_N(lqr_carver_init_energy_related(r));
+        LQR_CATCH(lqr_carver_init_energy_related(r));
     }
 
     if (r->w != r->w_start - r->max_level + 1) {
 #ifdef __LQR_DEBUG__
         assert(r->active);
 #endif /* __LQR_DEBUG__ */
-        TRY_E_N(lqr_carver_flatten(r));
+        LQR_CATCH (lqr_carver_flatten(r));
     }
 
     buf_size = r->w * r->h;
-    TRY_N_N(nrg_buffer = g_try_new(gfloat, buf_size));
 
     if (orientation != lqr_carver_get_orientation(r)) {
-        TRY_E_N(lqr_carver_transpose(r));
+        LQR_CATCH(lqr_carver_transpose(r));
     }
-    TRY_E_N(lqr_carver_build_emap(r));
+    LQR_CATCH(lqr_carver_build_emap(r));
 
     w = lqr_carver_get_width(r);
     h = lqr_carver_get_height(r);
@@ -553,50 +578,49 @@ gfloat *lqr_carver_get_energy(LqrCarver *r, gint orientation)
             nrg = LQR_SATURATE (r->en[data]);
             nrg_max = MAX(nrg_max, nrg);
             nrg_min = MIN(nrg_min, nrg);
-            nrg_buffer[z0++] = nrg;
+            buffer[z0++] = nrg;
         }
     }
 
     if (nrg_max > nrg_min) {
         for (z0 = 0; z0 < buf_size; z0++) {
-            nrg_buffer[z0] = (nrg_buffer[z0] - nrg_min) / (nrg_max - nrg_min);
+            buffer[z0] = (buffer[z0] - nrg_min) / (nrg_max - nrg_min);
         }
     }
 
-    return nrg_buffer;
+    return LQR_OK;
 }
 
 /* LQR_PUBLIC */
-gfloat *lqr_carver_get_true_energy(LqrCarver *r, gint orientation)
+LqrRetVal lqr_carver_get_true_energy(LqrCarver *r, gfloat * buffer, gint orientation)
 {
     gint x, y;
     gint z0 = 0;
     gint w, h;
     gint buf_size;
     gint data;
-    gfloat *nrg_buffer;
 
-    TRY_E_N(orientation == 0 || orientation == 1);
-    LQR_CATCH_CANC_N(r);
+    LQR_CATCH_F (orientation == 0 || orientation == 1);
+    LQR_CATCH_CANC(r);
+    LQR_CATCH_F (buffer != NULL);
 
     if (r->nrg_active == FALSE) {
-        TRY_E_N(lqr_carver_init_energy_related(r));
+        LQR_CATCH(lqr_carver_init_energy_related(r));
     }
 
     if (r->w != r->w_start - r->max_level + 1) {
 #ifdef __LQR_DEBUG__
         assert(r->active);
 #endif /* __LQR_DEBUG__ */
-        TRY_E_N(lqr_carver_flatten(r));
+        LQR_CATCH(lqr_carver_flatten(r));
     }
 
     buf_size = r->w * r->h;
-    TRY_N_N(nrg_buffer = g_try_new(gfloat, buf_size));
 
     if (orientation != lqr_carver_get_orientation(r)) {
-        TRY_E_N(lqr_carver_transpose(r));
+        LQR_CATCH(lqr_carver_transpose(r));
     }
-    TRY_E_N(lqr_carver_build_emap(r));
+    LQR_CATCH(lqr_carver_build_emap(r));
 
     w = lqr_carver_get_width(r);
     h = lqr_carver_get_height(r);
@@ -604,9 +628,149 @@ gfloat *lqr_carver_get_true_energy(LqrCarver *r, gint orientation)
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             data = orientation == 0 ? r->raw[y][x] : r->raw[x][y];
-            nrg_buffer[z0++] = r->en[data];
+            /* nrg = tanhf(r->en[data]); */
+            buffer[z0++] = r->en[data];
         }
     }
 
-    return nrg_buffer;
+    return LQR_OK;
+}
+
+/* LQR_PUBLIC */
+LqrRetVal lqr_carver_get_energy_image(LqrCarver *r, void * buffer, gint orientation, LqrColDepth col_depth, LqrImageType image_type)
+{
+    gint x, y;
+    gint z0 = 0;
+    gint w, h;
+    gint buf_size;
+    gint data;
+    gfloat nrg;
+    gfloat nrg_min = G_MAXFLOAT;
+    gfloat nrg_max = 0;
+    gfloat * aux_buffer;
+    gint k;
+    gint channels;
+    gint alpha_channel, black_channel;
+    gboolean has_alpha, has_black, col_model_is_additive;
+
+    LQR_CATCH_F (orientation == 0 || orientation == 1);
+    LQR_CATCH_CANC(r);
+    LQR_CATCH_F (buffer != NULL);
+
+    switch (image_type) {
+        case LQR_GREY_IMAGE:
+            channels = 1;
+            alpha_channel = -1;
+            black_channel = -1;
+            col_model_is_additive = TRUE;
+            break;
+        case LQR_GREYA_IMAGE:
+            channels = 2;
+            alpha_channel = 1;
+            black_channel = -1;
+            col_model_is_additive = TRUE;
+            break;
+        case LQR_RGB_IMAGE:
+            channels = 3;
+            alpha_channel = -1;
+            black_channel = -1;
+            col_model_is_additive = TRUE;
+            break;
+        case LQR_RGBA_IMAGE:
+            channels = 4;
+            alpha_channel = 3;
+            black_channel = -1;
+            col_model_is_additive = TRUE;
+            break;
+        case LQR_CMY_IMAGE:
+            channels = 3;
+            alpha_channel = -1;
+            black_channel = -1;
+            col_model_is_additive = FALSE;
+            break;
+        case LQR_CMYK_IMAGE:
+            channels = 4;
+            alpha_channel = -1;
+            black_channel = 3;
+            col_model_is_additive = FALSE;
+            break;
+        case LQR_CMYKA_IMAGE:
+            channels = 5;
+            alpha_channel = 4;
+            black_channel = 3;
+            col_model_is_additive = FALSE;
+            break;
+        case LQR_CUSTOM_IMAGE:
+        default:
+            return LQR_ERROR;
+    }
+
+    has_alpha = (alpha_channel >= 0 ? TRUE : FALSE);
+    has_black = (black_channel >= 0 ? TRUE : FALSE);
+
+    if (r->nrg_active == FALSE) {
+        LQR_CATCH(lqr_carver_init_energy_related(r));
+    }
+
+    if (r->w != r->w_start - r->max_level + 1) {
+#ifdef __LQR_DEBUG__
+        assert(r->active);
+#endif /* __LQR_DEBUG__ */
+        LQR_CATCH (lqr_carver_flatten(r));
+    }
+
+    buf_size = r->w * r->h;
+
+    LQR_CATCH_MEM (aux_buffer = g_try_new(gfloat, buf_size));
+
+    if (orientation != lqr_carver_get_orientation(r)) {
+        LQR_CATCH(lqr_carver_transpose(r));
+    }
+    LQR_CATCH(lqr_carver_build_emap(r));
+
+    w = lqr_carver_get_width(r);
+    h = lqr_carver_get_height(r);
+
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            data = orientation == 0 ? r->raw[y][x] : r->raw[x][y];
+            /* nrg = tanhf(r->en[data]); */
+            nrg = LQR_SATURATE (r->en[data]);
+            nrg_max = MAX(nrg_max, nrg);
+            nrg_min = MIN(nrg_min, nrg);
+            aux_buffer[z0++] = nrg;
+        }
+    }
+
+    for (z0 = 0; z0 < buf_size; z0++) {
+        if (nrg_max > nrg_min) {
+            nrg = (aux_buffer[z0] - nrg_min) / (nrg_max - nrg_min);
+        } else {
+            nrg = 0;
+        }
+        if (col_model_is_additive) {
+            for (k = 0; k < channels; k++) if (k != alpha_channel) {
+                lqr_pixel_set_norm(nrg, buffer, z0 * channels + k, col_depth);
+            }
+        } else {
+            nrg = 1 - nrg;
+            if (has_black) {
+                lqr_pixel_set_norm(nrg, buffer, z0 * channels + black_channel, col_depth);
+                for (k = 0; k < channels; k++) if ((k != alpha_channel) && (k != black_channel)) {
+                    lqr_pixel_set_norm(0.0, buffer, z0 * channels + k, col_depth);
+                }
+            } else {
+                for (k = 0; k < channels; k++) if ((k != alpha_channel) && (k != black_channel)) {
+                    lqr_pixel_set_norm(nrg, buffer, z0 * channels + k, col_depth);
+                }
+            }
+        }
+        if (has_alpha) {
+            lqr_pixel_set_norm(1.0, buffer, z0 * channels + alpha_channel, col_depth);
+        }
+    }
+
+    g_free(aux_buffer);
+
+    return LQR_OK;
 }
