@@ -33,7 +33,8 @@
 /**** LQR_CARVER_BIAS STRUCT FUNTIONS ****/
 
 /* LQR_PUBLIC */
-void lqr_carver_bias_clear(LqrCarver *r)
+void
+lqr_carver_bias_clear(LqrCarver *r)
 {
     g_free(r->bias);
     r->bias = NULL;
@@ -41,7 +42,8 @@ void lqr_carver_bias_clear(LqrCarver *r)
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_bias_add_xy(LqrCarver *r, gdouble bias, gint x, gint y)
+LqrRetVal
+lqr_carver_bias_add_xy(LqrCarver *r, gdouble bias, gint x, gint y)
 {
     gint xt, yt;
 
@@ -73,7 +75,7 @@ LqrRetVal lqr_carver_bias_add_xy(LqrCarver *r, gdouble bias, gint x, gint y)
 
 /* LQR_PUBLIC */
 LqrRetVal
-lqr_carver_bias_add_area(LqrCarver *r, gdouble * buffer, gint bias_factor, gint width, gint height, gint x_off,
+lqr_carver_bias_add_area(LqrCarver *r, gdouble *buffer, gint bias_factor, gint width, gint height, gint x_off,
                          gint y_off)
 {
     gint x, y;
@@ -127,14 +129,15 @@ lqr_carver_bias_add_area(LqrCarver *r, gdouble * buffer, gint bias_factor, gint 
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_bias_add(LqrCarver *r, gdouble * buffer, gint bias_factor)
+LqrRetVal
+lqr_carver_bias_add(LqrCarver *r, gdouble *buffer, gint bias_factor)
 {
     return lqr_carver_bias_add_area(r, buffer, bias_factor, lqr_carver_get_width(r), lqr_carver_get_height(r), 0, 0);
 }
 
 /* LQR_PUBLIC */
 LqrRetVal
-lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar * rgb, gint bias_factor, gint channels, gint width, gint height,
+lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar *rgb, gint bias_factor, gint channels, gint width, gint height,
                              gint x_off, gint y_off)
 {
     gint x, y, k, c_channels;
@@ -201,7 +204,8 @@ lqr_carver_bias_add_rgb_area(LqrCarver *r, guchar * rgb, gint bias_factor, gint 
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_bias_add_rgb(LqrCarver *r, guchar * rgb, gint bias_factor, gint channels)
+LqrRetVal
+lqr_carver_bias_add_rgb(LqrCarver *r, guchar *rgb, gint bias_factor, gint channels)
 {
     return lqr_carver_bias_add_rgb_area(r, rgb, bias_factor, channels, lqr_carver_get_width(r),
                                         lqr_carver_get_height(r), 0, 0);

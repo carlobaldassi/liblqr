@@ -33,7 +33,8 @@
 /**** SEAMS BUFFER FUNCTIONS ****/
 
 /* LQR_PUBLIC */
-LqrVMap *lqr_vmap_new(gint * buffer, gint width, gint height, gint depth, gint orientation)
+LqrVMap *
+lqr_vmap_new(gint *buffer, gint width, gint height, gint depth, gint orientation)
 {
     LqrVMap *vmap;
 
@@ -47,45 +48,52 @@ LqrVMap *lqr_vmap_new(gint * buffer, gint width, gint height, gint depth, gint o
 }
 
 /* LQR_PUBLIC */
-void lqr_vmap_destroy(LqrVMap *vmap)
+void
+lqr_vmap_destroy(LqrVMap *vmap)
 {
     g_free(vmap->buffer);
     g_free(vmap);
 }
 
 /* LQR_PUBLIC */
-gint *lqr_vmap_get_data(LqrVMap *vmap)
+gint *
+lqr_vmap_get_data(LqrVMap *vmap)
 {
     return vmap->buffer;
 }
 
 /* LQR_PUBLIC */
-gint lqr_vmap_get_width(LqrVMap *vmap)
+gint
+lqr_vmap_get_width(LqrVMap *vmap)
 {
     return vmap->width;
 }
 
 /* LQR_PUBLIC */
-gint lqr_vmap_get_height(LqrVMap *vmap)
+gint
+lqr_vmap_get_height(LqrVMap *vmap)
 {
     return vmap->height;
 }
 
 /* LQR_PUBLIC */
-gint lqr_vmap_get_depth(LqrVMap *vmap)
+gint
+lqr_vmap_get_depth(LqrVMap *vmap)
 {
     return vmap->depth;
 }
 
 /* LQR_PUBLIC */
-gint lqr_vmap_get_orientation(LqrVMap *vmap)
+gint
+lqr_vmap_get_orientation(LqrVMap *vmap)
 {
     return vmap->orientation;
 }
 
 /* dump the visibility level of the image */
 /* LQR_PUBLIC */
-LqrVMap *lqr_vmap_dump(LqrCarver *r)
+LqrVMap *
+lqr_vmap_dump(LqrCarver *r)
 {
     LqrVMap *vmap;
     gint w, h, w1, x, y, z0, vs;
@@ -133,7 +141,8 @@ LqrVMap *lqr_vmap_dump(LqrCarver *r)
 
 /* dump the visibility level of the image */
 /* LQR_PUBLIC */
-LqrRetVal lqr_vmap_internal_dump(LqrCarver *r)
+LqrRetVal
+lqr_vmap_internal_dump(LqrCarver *r)
 {
     LqrVMap *vmap;
     gint w, h, w1, x, y, z0, vs;
@@ -184,7 +193,8 @@ LqrRetVal lqr_vmap_internal_dump(LqrCarver *r)
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_vmap_load(LqrCarver *r, LqrVMap *vmap)
+LqrRetVal
+lqr_vmap_load(LqrCarver *r, LqrVMap *vmap)
 {
     gint w, h;
     gint x, y, z0, z1;

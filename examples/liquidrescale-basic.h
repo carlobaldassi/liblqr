@@ -53,14 +53,14 @@
       default: \
 	break; \
     } \
-}G_STMT_END 
+}G_STMT_END
 
 /*** PARSE COMMAND LINE ***/
-LqrRetVal parse_command_line (int argc, char **argv);
+LqrRetVal parse_command_line(int argc, char **argv);
 void help(char *command);
 
 /*** RGB FILE I/O ***/
-guchar *rgb_buffer_from_image (pngwriter * png);
-LqrRetVal write_carver_to_image (LqrCarver * r, pngwriter * png);
+guchar *rgb_buffer_from_image(pngwriter *png);
+LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter *png);
 
 #endif /* __LIQUIDRESCALE_BASIC_H__ */

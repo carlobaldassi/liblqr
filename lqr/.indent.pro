@@ -7,6 +7,9 @@
 -c 41
 -cd 41
 -l 120
+-blf
+-psl
+-cs
 -T LqrRetVal
 -T LqrColDepth
 -T LqrResizeOrder
@@ -25,6 +28,7 @@
 -T LqrReadFunc
 -T LqrReadFuncWithCh
 -T LqrEnergyReaderType
+-T LqrReadingWindow
 -T LqrVMapList
 -T LqrVMap
 -T LqrVMapFunc
@@ -32,3 +36,13 @@
 -T lqr_t_16i
 -T lqr_t_32f
 -T lqr_t_64f
+-T gpointer
+-T gboolean
+-T gchar
+-T guchar
+-T gint
+-T guint
+-T gint16
+-T guint16
+-T gfloat
+-T gdouble

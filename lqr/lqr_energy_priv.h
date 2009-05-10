@@ -62,15 +62,15 @@ gdouble *lqr_carver_generate_rcache_rgba();
 gdouble *lqr_carver_generate_rcache_custom();
 gdouble *lqr_carver_generate_rcache();
 
-gfloat lqr_energy_builtin_grad_all(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow,
+gfloat lqr_energy_builtin_grad_all(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow *rwindow,
                                    LqrGradFunc gf);
-gfloat lqr_energy_builtin_grad_norm(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow,
+gfloat lqr_energy_builtin_grad_norm(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow *rwindow,
                                     gpointer extra_data);
-gfloat lqr_energy_builtin_grad_sumabs(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow,
+gfloat lqr_energy_builtin_grad_sumabs(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow *rwindow,
                                       gpointer extra_data);
-gfloat lqr_energy_builtin_grad_xabs(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow,
+gfloat lqr_energy_builtin_grad_xabs(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow *rwindow,
                                     gpointer extra_data);
-gfloat lqr_energy_builtin_null(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow * rwindow,
+gfloat lqr_energy_builtin_null(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow *rwindow,
                                gpointer extra_data);
 
 #endif /* __LQR_ENERGY_PRIV_H__ */

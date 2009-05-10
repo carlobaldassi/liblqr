@@ -37,7 +37,7 @@ typedef LqrRetVal (*LqrVMapFunc) (LqrVMap *vmap, gpointer data);
 
 /* LQR_VMAP PUBLIC FUNCTIONS */
 
-LQR_PUBLIC LqrVMap *lqr_vmap_new(gint * buffer, gint width, gint heigth, gint depth, gint orientation);
+LQR_PUBLIC LqrVMap *lqr_vmap_new(gint *buffer, gint width, gint heigth, gint depth, gint orientation);
 LQR_PUBLIC void lqr_vmap_destroy(LqrVMap *vmap);
 
 LQR_PUBLIC gint *lqr_vmap_get_data(LqrVMap *vmap);

@@ -34,4 +34,12 @@ done
 rm *~
 cd ..
 
+cd examples
 
+indent *.{cpp,h}
+
+sed -i "s@^{[[:space:]]*/\*[[:space:]]*{{{[[:space:]]*\*/@{/*{{{*/@;
+        s@^}[[:space:]]*/\*[[:space:]]*}}}[[:space:]]*\*/@}/*}}}*/@;" *.{cpp,h}
+
+rm *~
+cd ..

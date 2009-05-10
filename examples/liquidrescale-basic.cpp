@@ -31,8 +31,9 @@ gint max_step = 1;
 
 /*** MAIN ***/
 
-int main(int argc, char **argv)
-{/*{{{ */
+int
+main(int argc, char **argv)
+{/*{{{*/
 
     /*** read the command line ***/
     TRAP(parse_command_line(argc, argv));
@@ -96,12 +97,13 @@ int main(int argc, char **argv)
     png.close();
 
     return 0;
-}/*}}} */
+}/*}}}*/
 
 /*** PARSE COMMAND LINE ***/
 
-LqrRetVal parse_command_line(int argc, char **argv)
-{/*{{{ */
+LqrRetVal
+parse_command_line(int argc, char **argv)
+{/*{{{*/
     int i;
     int c;
     struct option lopts[] = {
@@ -170,10 +172,11 @@ LqrRetVal parse_command_line(int argc, char **argv)
     }
 
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
-void help(char *command)
-{/*{{{ */
+void
+help(char *command)
+{/*{{{*/
     cout << "Usage: " << command << " -f <file> -o <out-file> [ -w <width> | -h <height> ] [ ... ]" << endl;
     cout << "  Options:" << endl;
     cout << "    -f <file> or --file <file>" << endl;
@@ -191,13 +194,14 @@ void help(char *command)
     cout << "        Maximum seam transversal step. Default value is 1." << endl;
     cout << "    --help" << endl;
     cout << "        This help." << endl;
-}/*}}} */
+}/*}}}*/
 
 /*** AUXILIARY I/O FUNCTIONS ***/
 
 /* convert the image in the right format */
-guchar *rgb_buffer_from_image(pngwriter * png)
-{/*{{{ */
+guchar *
+rgb_buffer_from_image(pngwriter *png)
+{/*{{{*/
     gint x, y, k, channels;
     gint w, h;
     guchar *buffer;
@@ -224,11 +228,12 @@ guchar *rgb_buffer_from_image(pngwriter * png)
     }
 
     return buffer;
-}/*}}} */
+}/*}}}*/
 
 /* readout the multizie image */
-LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter * png)
-{/*{{{ */
+LqrRetVal
+write_carver_to_image(LqrCarver *r, pngwriter *png)
+{/*{{{*/
     gint x, y;
     guchar *rgb;
     gdouble red, green, blue;
@@ -258,4 +263,4 @@ LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter * png)
     }
 
     return LQR_OK;
-}/*}}} */
+}/*}}}*/

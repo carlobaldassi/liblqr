@@ -62,7 +62,7 @@
 /* LQR_CARVER CLASS PUBLIC FUNCTIONS */
 
 /* constructor & destructor */
-LQR_PUBLIC LqrCarver *lqr_carver_new(guchar * buffer, gint width, gint height, gint channels);
+LQR_PUBLIC LqrCarver *lqr_carver_new(guchar *buffer, gint width, gint height, gint channels);
 LQR_PUBLIC LqrCarver *lqr_carver_new_ext(void *buffer, gint width, gint height, gint channels,
                                          LqrColDepth colour_depth);
 LQR_PUBLIC void lqr_carver_destroy(LqrCarver *r);
@@ -94,10 +94,10 @@ LQR_PUBLIC LqrRetVal lqr_carver_cancel(LqrCarver *r);   /* cancel the current ac
 
 /* readout */
 LQR_PUBLIC void lqr_carver_scan_reset(LqrCarver *r);
-LQR_PUBLIC gboolean lqr_carver_scan(LqrCarver *r, gint * x, gint * y, guchar ** rgb);
-LQR_PUBLIC gboolean lqr_carver_scan_ext(LqrCarver *r, gint * x, gint * y, void **rgb);
-LQR_PUBLIC gboolean lqr_carver_scan_line(LqrCarver *r, gint * n, guchar ** rgb);
-LQR_PUBLIC gboolean lqr_carver_scan_line_ext(LqrCarver *r, gint * n, void **rgb);
+LQR_PUBLIC gboolean lqr_carver_scan(LqrCarver *r, gint *x, gint *y, guchar **rgb);
+LQR_PUBLIC gboolean lqr_carver_scan_ext(LqrCarver *r, gint *x, gint *y, void **rgb);
+LQR_PUBLIC gboolean lqr_carver_scan_line(LqrCarver *r, gint *n, guchar **rgb);
+LQR_PUBLIC gboolean lqr_carver_scan_line_ext(LqrCarver *r, gint *n, void **rgb);
 LQR_PUBLIC gboolean lqr_carver_scan_by_row(LqrCarver *r);
 LQR_PUBLIC gint lqr_carver_get_bpp(LqrCarver *r);
 LQR_PUBLIC gint lqr_carver_get_channels(LqrCarver *r);

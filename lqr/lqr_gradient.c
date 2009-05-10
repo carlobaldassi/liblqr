@@ -30,17 +30,20 @@
 
 /**** GRADIENT FUNCTIONS ****/
 
-gfloat lqr_grad_norm(gdouble x, gdouble y)
+gfloat
+lqr_grad_norm(gdouble x, gdouble y)
 {
     return (gfloat) sqrt(x * x + y * y);
 }
 
-gfloat lqr_grad_sumabs(gdouble x, gdouble y)
+gfloat
+lqr_grad_sumabs(gdouble x, gdouble y)
 {
     return (gfloat) ((fabs(x) + fabs(y)) / 2);
 }
 
-gfloat lqr_grad_xabs(gdouble x, gdouble y)
+gfloat
+lqr_grad_xabs(gdouble x, gdouble y)
 {
     return (gfloat) fabs(x);
 }

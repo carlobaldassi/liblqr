@@ -34,7 +34,8 @@
 
 /*** constructor and destructor ***/
 
-LqrCursor *lqr_cursor_create(LqrCarver *owner)
+LqrCursor *
+lqr_cursor_create(LqrCarver *owner)
 {
     LqrCursor *c;
 
@@ -49,7 +50,8 @@ LqrCursor *lqr_cursor_create(LqrCarver *owner)
     return c;
 }
 
-void lqr_cursor_destroy(LqrCursor *c)
+void
+lqr_cursor_destroy(LqrCursor *c)
 {
     g_free(c);
 }
@@ -57,7 +59,8 @@ void lqr_cursor_destroy(LqrCursor *c)
 /*** functions for moving around ***/
 
 /* resets to starting point */
-void lqr_cursor_reset(LqrCursor *c)
+void
+lqr_cursor_reset(LqrCursor *c)
 {
     /* make sure the pointers are initialized */
 #ifdef __LQR_DEBUG__
@@ -85,7 +88,8 @@ void lqr_cursor_reset(LqrCursor *c)
 
 /* go to next data (first rows, then columns;
  * does nothing if we are already at the top-right corner) */
-void lqr_cursor_next(LqrCursor *c)
+void
+lqr_cursor_next(LqrCursor *c)
 {
 #ifdef __LQR_DEBUG__
     assert(c->initialized);
@@ -127,7 +131,8 @@ void lqr_cursor_next(LqrCursor *c)
 }
 
 /* go to previous data (behaves opposite to next) */
-void lqr_cursor_prev(LqrCursor *c)
+void
+lqr_cursor_prev(LqrCursor *c)
 {
 
     /* are we at the end of carver ? */
@@ -169,7 +174,8 @@ void lqr_cursor_prev(LqrCursor *c)
 /* these return pointers to neighboring data
  * it is an error to ask for out-of-bounds data */
 
-gint lqr_cursor_left(LqrCursor *c)
+gint
+lqr_cursor_left(LqrCursor *c)
 {
     /* create an auxiliary pointer */
     gint ret = c->now;

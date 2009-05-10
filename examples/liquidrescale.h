@@ -53,36 +53,35 @@
       default: \
 	break; \
     } \
-}G_STMT_END 
+}G_STMT_END
 
 /*** PARSE COMMAND LINE ***/
-LqrRetVal parse_command_line (int argc, char **argv);
+LqrRetVal parse_command_line(int argc, char **argv);
 void help(char *command);
 
 /*** RGB FILE I/O ***/
-guchar *rgb_buffer_from_image (pngwriter * png);
-LqrRetVal write_carver_to_image (LqrCarver * r, pngwriter * png);
+guchar *rgb_buffer_from_image(pngwriter *png);
+LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter *png);
 
 /*** VMAP FILES I/O ***/
-LqrRetVal save_vmap_to_file (LqrVMap *vmap, gchar * name);
-LqrVMap * load_vmap_from_file (gchar *name);
+LqrRetVal save_vmap_to_file(LqrVMap *vmap, gchar *name);
+LqrVMap *load_vmap_from_file(gchar *name);
 
 /*** ENERGY FUNCTIONS ***/
-gfloat sobelx (gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data);
-gfloat sobel (gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data);
-LqrRetVal set_energy (LqrCarver * carver, gchar * energy_function);
-LqrRetVal write_energy (LqrCarver * carver, gchar * energy_outfile, gint orientation);
+gfloat sobelx(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data);
+gfloat sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data);
+LqrRetVal set_energy(LqrCarver *carver, gchar *energy_function);
+LqrRetVal write_energy(LqrCarver *carver, gchar *energy_outfile, gint orientation);
 
 /*** PROGRESS REPORT FUNCTIONS ***/
-LqrRetVal my_progress_init (const gchar * message);
-LqrRetVal my_progress_update (gdouble percentage);
-LqrRetVal my_progress_end (const gchar * message);
-void init_progress (LqrProgress * progress);
+LqrRetVal my_progress_init(const gchar *message);
+LqrRetVal my_progress_update(gdouble percentage);
+LqrRetVal my_progress_end(const gchar *message);
+void init_progress(LqrProgress * progress);
 
 /*** EXTRA ***/
-void info_msg(const gchar * msg, const gchar *name);
+void info_msg(const gchar *msg, const gchar *name);
 gpointer cancel_thread(gpointer data);
 void cancel_handler(int signum);
-
 
 #endif /* __LIQUIDRESCALE_H__ */

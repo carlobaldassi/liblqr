@@ -33,13 +33,15 @@
 /**** LQR_CARVER_RIGMASK STRUCT FUNTIONS ****/
 
 /* LQR_PUBLIC */
-void lqr_carver_rigmask_clear(LqrCarver *r)
+void
+lqr_carver_rigmask_clear(LqrCarver *r)
 {
     g_free(r->rigidity_mask);
     r->rigidity_mask = NULL;
 }
 
-LqrRetVal lqr_carver_rigmask_init(LqrCarver *r)
+LqrRetVal
+lqr_carver_rigmask_init(LqrCarver *r)
 {
     /* gint y, x; */
 
@@ -61,7 +63,8 @@ LqrRetVal lqr_carver_rigmask_init(LqrCarver *r)
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_rigmask_add_xy(LqrCarver *r, gdouble rigidity, gint x, gint y)
+LqrRetVal
+lqr_carver_rigmask_add_xy(LqrCarver *r, gdouble rigidity, gint x, gint y)
 {
     gint xt, yt;
 
@@ -91,7 +94,8 @@ LqrRetVal lqr_carver_rigmask_add_xy(LqrCarver *r, gdouble rigidity, gint x, gint
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_rigmask_add_area(LqrCarver *r, gdouble * buffer, gint width, gint height, gint x_off, gint y_off)
+LqrRetVal
+lqr_carver_rigmask_add_area(LqrCarver *r, gdouble *buffer, gint width, gint height, gint x_off, gint y_off)
 {
     gint x, y;
     gint xt, yt;
@@ -139,14 +143,15 @@ LqrRetVal lqr_carver_rigmask_add_area(LqrCarver *r, gdouble * buffer, gint width
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_rigmask_add(LqrCarver *r, gdouble * buffer)
+LqrRetVal
+lqr_carver_rigmask_add(LqrCarver *r, gdouble *buffer)
 {
     return lqr_carver_rigmask_add_area(r, buffer, r->w0, r->h0, 0, 0);
 }
 
 /* LQR_PUBLIC */
 LqrRetVal
-lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar * rgb, gint channels, gint width, gint height, gint x_off,
+lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar *rgb, gint channels, gint width, gint height, gint x_off,
                                 gint y_off)
 {
     gint x, y, k, c_channels;
@@ -212,7 +217,8 @@ lqr_carver_rigmask_add_rgb_area(LqrCarver *r, guchar * rgb, gint channels, gint 
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar * rgb, gint channels)
+LqrRetVal
+lqr_carver_rigmask_add_rgb(LqrCarver *r, guchar *rgb, gint channels)
 {
     return lqr_carver_rigmask_add_rgb_area(r, rgb, channels, r->w0, r->h0, 0, 0);
 }

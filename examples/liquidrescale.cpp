@@ -56,8 +56,9 @@ clock_t clock_start, clock_now;
 
 /*** MAIN ***/
 
-int main(int argc, char **argv)
-{/*{{{ */
+int
+main(int argc, char **argv)
+{/*{{{*/
 
     /*** init glib multithreading ***/
     /* (currently only used for
@@ -378,12 +379,13 @@ int main(int argc, char **argv)
     }
 
     return 0;
-}/*}}} */
+}/*}}}*/
 
 /*** PARSE COMMAND LINE ***/
 
-LqrRetVal parse_command_line(int argc, char **argv)
-{/*{{{ */
+LqrRetVal
+parse_command_line(int argc, char **argv)
+{/*{{{*/
     int i;
     int c;
     struct option lopts[] = {
@@ -562,10 +564,11 @@ LqrRetVal parse_command_line(int argc, char **argv)
     }
 
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
-void help(char *command)
-{/*{{{ */
+void
+help(char *command)
+{/*{{{*/
     cout << "Usage: " << command << " -f <file> -o <out-file> [ -w <width> | -h <height> ] [ ... ]" << endl;
     cout << "  Options:" << endl;
     cout << "    -f <file> or --file <file>" << endl;
@@ -623,13 +626,14 @@ void help(char *command)
     cout << "        Quiet mode." << endl;
     cout << "    --help" << endl;
     cout << "        This help." << endl;
-}/*}}} */
+}/*}}}*/
 
 /*** AUXILIARY I/O FUNCTIONS ***/
 
 /* convert the image in the right format */
-guchar *rgb_buffer_from_image(pngwriter * png)
-{/*{{{ */
+guchar *
+rgb_buffer_from_image(pngwriter *png)
+{/*{{{*/
     gint x, y, k, channels;
     gint w, h;
     guchar *buffer;
@@ -656,11 +660,12 @@ guchar *rgb_buffer_from_image(pngwriter * png)
     }
 
     return buffer;
-}/*}}} */
+}/*}}}*/
 
 /* readout the multizie image */
-LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter * png)
-{/*{{{ */
+LqrRetVal
+write_carver_to_image(LqrCarver *r, pngwriter *png)
+{/*{{{*/
     gint x, y;
     guchar *rgb;
     gdouble red, green, blue;
@@ -690,13 +695,14 @@ LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter * png)
     }
 
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
 /*** ENERGY FUNCTIONS ***/
 
 /* define custom energy function: sobelx */
-gfloat sobelx(gint x, gint y, gint w, gint h, LqrReadingWindow * rw, gpointer extra_data)
-{/*{{{ */
+gfloat
+sobelx(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
+{/*{{{*/
     gint i, j;
     gdouble e = 0;
     gdouble k[3][3] = { {0.125, 0.25, 0.125}, {0, 0, 0}, {-0.125, -0.25, -0.125} };
@@ -707,11 +713,12 @@ gfloat sobelx(gint x, gint y, gint w, gint h, LqrReadingWindow * rw, gpointer ex
         }
     }
     return (gfloat) fabs(e);
-}/*}}} */
+}/*}}}*/
 
 /* define custom energy function: sobel */
-gfloat sobel(gint x, gint y, gint w, gint h, LqrReadingWindow * rw, gpointer extra_data)
-{/*{{{ */
+gfloat
+sobel(gint x, gint y, gint w, gint h, LqrReadingWindow *rw, gpointer extra_data)
+{/*{{{*/
     gint i, j;
     gdouble ex = 0;
     gdouble ey = 0;
@@ -724,11 +731,12 @@ gfloat sobel(gint x, gint y, gint w, gint h, LqrReadingWindow * rw, gpointer ext
         }
     }
     return (gfloat) (sqrt(ex * ex + ey * ey));
-}/*}}} */
+}/*}}}*/
 
 /* set the energy function */
-LqrRetVal set_energy(LqrCarver *carver, gchar * energy_function)
-{/*{{{ */
+LqrRetVal
+set_energy(LqrCarver *carver, gchar *energy_function)
+{/*{{{*/
     if (energy_function == NULL) {
         return LQR_OK;
     } else if (g_strcmp0(energy_function, "xabs") == 0) {
@@ -746,11 +754,12 @@ LqrRetVal set_energy(LqrCarver *carver, gchar * energy_function)
         exit(1);
     }
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
 /* write out the energy */
-LqrRetVal write_energy(LqrCarver *carver, gchar * energy_outfile, gint orientation)
-{/*{{{ */
+LqrRetVal
+write_energy(LqrCarver *carver, gchar *energy_outfile, gint orientation)
+{/*{{{*/
     gfloat *nrg_buffer;
 
     pngwriter png_nrg;
@@ -766,7 +775,7 @@ LqrRetVal write_energy(LqrCarver *carver, gchar * energy_outfile, gint orientati
 
     png_nrg.resize(w, h);
 
-    LQR_CATCH_MEM(nrg_buffer = g_try_new0 (gfloat, w * h));
+    LQR_CATCH_MEM(nrg_buffer = g_try_new0(gfloat, w * h));
     LQR_CATCH(lqr_carver_get_energy(carver, nrg_buffer, orientation));
 
     for (y = 0; y < h; y++) {
@@ -786,21 +795,23 @@ LqrRetVal write_energy(LqrCarver *carver, gchar * energy_outfile, gint orientati
     png_nrg.close();
 
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
 /*** PROGRESS INDICATOR ***/
 
 /* set up the progress functions */
-LqrRetVal my_progress_init(const gchar * message)
-{/*{{{ */
+LqrRetVal
+my_progress_init(const gchar *message)
+{/*{{{*/
     printf("%s --------------------  0.00%% (00:00.00)", message);
     fflush(stdout);
     clock_start = clock();
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
-LqrRetVal my_progress_update(gdouble percentage)
-{/*{{{ */
+LqrRetVal
+my_progress_update(gdouble percentage)
+{/*{{{*/
     gint i;
     gfloat p;
     for (i = 0; i < 38; i++) {
@@ -829,10 +840,11 @@ LqrRetVal my_progress_update(gdouble percentage)
     printf(" (%.2i:%.2i.%.2i)", min, sec, cent);
     fflush(stdout);
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
-LqrRetVal my_progress_end(const gchar * message)
-{/*{{{ */
+LqrRetVal
+my_progress_end(const gchar *message)
+{/*{{{*/
     gint i;
     for (i = 0; i < 38; i++) {
         printf("\b");
@@ -854,11 +866,12 @@ LqrRetVal my_progress_end(const gchar * message)
 
     fflush(stdout);
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
 /* setup the progress machinery */
-void init_progress(LqrProgress * progress)
-{/*{{{ */
+void
+init_progress(LqrProgress * progress)
+{/*{{{*/
     lqr_progress_set_init(progress, my_progress_init);
     lqr_progress_set_update(progress, my_progress_update);
     lqr_progress_set_end(progress, my_progress_end);
@@ -867,13 +880,14 @@ void init_progress(LqrProgress * progress)
     lqr_progress_set_end_width_message(progress, "done");
     lqr_progress_set_end_height_message(progress, "done");
     lqr_progress_set_update_step(progress, 0.01);
-}/*}}} */
+}/*}}}*/
 
 /*** VISIBILTY MAPS ***/
 
 /* convert a visibility map in binary and stores it in a file */
-LqrRetVal save_vmap_to_file(LqrVMap *vmap, gchar * name)
-{/*{{{ */
+LqrRetVal
+save_vmap_to_file(LqrVMap *vmap, gchar *name)
+{/*{{{*/
     FILE *sink;
     gint *buffer;
     gint width, height, depth, orientation;
@@ -927,11 +941,12 @@ LqrRetVal save_vmap_to_file(LqrVMap *vmap, gchar * name)
     fclose(sink);
 
     return LQR_OK;
-}/*}}} */
+}/*}}}*/
 
 /* reads a binary file and converts it into a visibility map */
-LqrVMap *load_vmap_from_file(gchar * name)
-{/*{{{ */
+LqrVMap *
+load_vmap_from_file(gchar *name)
+{/*{{{*/
     FILE *input;
     gint x, y, z0;
     gint w, h, depth, orientation;
@@ -1058,28 +1073,31 @@ LqrVMap *load_vmap_from_file(gchar * name)
     TRY_N_N(vmap = lqr_vmap_new(buffer, w, h, depth, orientation));
 
     return vmap;
-}/*}}} */
+}/*}}}*/
 
 /*** EXTRA ***/
 
-void info_msg(const gchar * msg, const gchar * name)
-{/*{{{ */
+void
+info_msg(const gchar *msg, const gchar *name)
+{/*{{{*/
     if (!quiet) {
         cout << "  + " << msg << " " << name << endl << flush;
     }
-}/*}}} */
+}/*}}}*/
 
-void cancel_handler(int signum)
-{/*{{{ */
+void
+cancel_handler(int signum)
+{/*{{{*/
     printf("\n");
     fflush(stdout);
     /* We must cancel the computation
      * from a different thread */
     g_thread_create(cancel_thread, (gpointer) carver, FALSE, NULL);
-}/*}}} */
+}/*}}}*/
 
-gpointer cancel_thread(gpointer data)
-{/*{{{ */
-    lqr_carver_cancel((LqrCarver *)data);
+gpointer
+cancel_thread(gpointer data)
+{/*{{{*/
+    lqr_carver_cancel((LqrCarver *) data);
     return NULL;
-}/*}}} */
+}/*}}}*/

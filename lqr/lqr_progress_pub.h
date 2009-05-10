@@ -45,9 +45,9 @@ LQR_PUBLIC LqrRetVal lqr_progress_set_init(LqrProgress * p, LqrProgressFuncInit 
 LQR_PUBLIC LqrRetVal lqr_progress_set_update(LqrProgress * p, LqrProgressFuncUpdate update_func);
 LQR_PUBLIC LqrRetVal lqr_progress_set_end(LqrProgress * p, LqrProgressFuncEnd end_func);
 
-LQR_PUBLIC LqrRetVal lqr_progress_set_init_width_message(LqrProgress * p, const gchar * message);
-LQR_PUBLIC LqrRetVal lqr_progress_set_init_height_message(LqrProgress * p, const gchar * message);
-LQR_PUBLIC LqrRetVal lqr_progress_set_end_width_message(LqrProgress * p, const gchar * message);
-LQR_PUBLIC LqrRetVal lqr_progress_set_end_height_message(LqrProgress * p, const gchar * message);
+LQR_PUBLIC LqrRetVal lqr_progress_set_init_width_message(LqrProgress * p, const gchar *message);
+LQR_PUBLIC LqrRetVal lqr_progress_set_init_height_message(LqrProgress * p, const gchar *message);
+LQR_PUBLIC LqrRetVal lqr_progress_set_end_width_message(LqrProgress * p, const gchar *message);
+LQR_PUBLIC LqrRetVal lqr_progress_set_end_height_message(LqrProgress * p, const gchar *message);
 
 #endif /* __LQR_PROGRESS_PUB_H__ */

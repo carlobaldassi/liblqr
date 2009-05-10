@@ -34,7 +34,8 @@
 
 /**** VMAP LIST FUNCTIONS ****/
 
-LqrVMapList *lqr_vmap_list_append(LqrVMapList *list, LqrVMap *buffer)
+LqrVMapList *
+lqr_vmap_list_append(LqrVMapList *list, LqrVMap *buffer)
 {
     LqrVMapList *prev = NULL;
     LqrVMapList *now = list;
@@ -55,7 +56,8 @@ LqrVMapList *lqr_vmap_list_append(LqrVMapList *list, LqrVMap *buffer)
     }
 }
 
-void lqr_vmap_list_destroy(LqrVMapList *list)
+void
+lqr_vmap_list_destroy(LqrVMapList *list)
 {
     LqrVMapList *now = list;
     if (now != NULL) {
@@ -65,27 +67,31 @@ void lqr_vmap_list_destroy(LqrVMapList *list)
 }
 
 /* LQR_PUBLIC */
-LqrVMapList *lqr_vmap_list_start(LqrCarver *r)
+LqrVMapList *
+lqr_vmap_list_start(LqrCarver *r)
 {
     return r->flushed_vs;
 }
 
 /* LQR_PUBLIC */
-LqrVMapList *lqr_vmap_list_next(LqrVMapList *list)
+LqrVMapList *
+lqr_vmap_list_next(LqrVMapList *list)
 {
     TRY_N_N(list);
     return list->next;
 }
 
 /* LQR_PUBLIC */
-LqrVMap *lqr_vmap_list_current(LqrVMapList *list)
+LqrVMap *
+lqr_vmap_list_current(LqrVMapList *list)
 {
     TRY_N_N(list);
     return list->current;
 }
 
 /* LQR_PUBLIC */
-LqrRetVal lqr_vmap_list_foreach(LqrVMapList *list, LqrVMapFunc func, gpointer data)
+LqrRetVal
+lqr_vmap_list_foreach(LqrVMapList *list, LqrVMapFunc func, gpointer data)
 {
     LqrVMapList *now = list;
     if (now != NULL) {
