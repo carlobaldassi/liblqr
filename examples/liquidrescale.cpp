@@ -746,9 +746,9 @@ set_energy(LqrCarver *carver, gchar *energy_function)
     } else if (g_strcmp0(energy_function, "norm") == 0) {
         LQR_CATCH(lqr_carver_set_energy_function_builtin(carver, LQR_EF_GRAD_NORM));
     } else if (g_strcmp0(energy_function, "sobelx") == 0) {
-        LQR_CATCH(lqr_carver_set_energy_function(carver, sobelx, 1, LQR_ER_BRIGHT, NULL));
+        LQR_CATCH(lqr_carver_set_energy_function(carver, sobelx, 1, LQR_ER_BRIGHTNESS, NULL));
     } else if (g_strcmp0(energy_function, "sobel") == 0) {
-        LQR_CATCH(lqr_carver_set_energy_function(carver, sobel, 1, LQR_ER_BRIGHT, NULL));
+        LQR_CATCH(lqr_carver_set_energy_function(carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL));
     } else {
         cerr << "Unknown energy function: " << energy_function << endl;
         exit(1);

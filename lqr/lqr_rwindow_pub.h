@@ -28,7 +28,7 @@
 #endif /* __LQR_BASE_H__ */
 
 enum _LqrEnergyReaderType {
-    LQR_ER_BRIGHT,                      /* read brightness */
+    LQR_ER_BRIGHTNESS,                  /* read brightness */
     LQR_ER_LUMA,                        /* read luma */
     LQR_ER_RGBA,                        /* read RGBA */
     LQR_ER_CUSTOM                       /* read the buffer as-is */

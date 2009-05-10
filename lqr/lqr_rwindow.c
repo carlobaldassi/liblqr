@@ -43,7 +43,7 @@ lqr_rwindow_fill_std(LqrReadingWindow *rwindow, LqrCarver *r, gint x, gint y)
     buffer = rwindow->buffer;
 
     switch (rwindow->read_t) {
-        case LQR_ER_BRIGHT:
+        case LQR_ER_BRIGHTNESS:
             read_float = lqr_carver_read_brightness;
             break;
         case LQR_ER_LUMA:
@@ -137,7 +137,7 @@ lqr_rwindow_fill(LqrReadingWindow *rwindow, LqrCarver *r, gint x, gint y)
     }
 
     switch (rwindow->read_t) {
-        case LQR_ER_BRIGHT:
+        case LQR_ER_BRIGHTNESS:
         case LQR_ER_LUMA:
             LQR_CATCH(lqr_rwindow_fill_std(rwindow, r, x, y));
             break;
@@ -262,7 +262,7 @@ LqrReadingWindow *
 lqr_rwindow_new(gint radius, LqrEnergyReaderType read_func_type, gboolean use_rcache)
 {
     switch (read_func_type) {
-        case LQR_ER_BRIGHT:
+        case LQR_ER_BRIGHTNESS:
         case LQR_ER_LUMA:
             return lqr_rwindow_new_std(radius, read_func_type, use_rcache);
         case LQR_ER_RGBA:
@@ -356,7 +356,7 @@ lqr_rwindow_read(LqrReadingWindow *rwindow, gint x, gint y, gint channel)
     }
 
     switch (rwindow->read_t) {
-        case LQR_ER_BRIGHT:
+        case LQR_ER_BRIGHTNESS:
             return lqr_rwindow_read_bright(rwindow, x, y);
         case LQR_ER_LUMA:
             return lqr_rwindow_read_luma(rwindow, x, y);

@@ -1071,7 +1071,7 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb) {
                     noted is the number of channels of the corresponging output):
                     <variablelist>
                         <varlistentry>
-                            <term><literal>LQR_ER_BRIGHT</literal></term>
+                            <term><literal>LQR_ER_BRIGHTNESS</literal></term>
                             <listitem>
                                 <para>
                                     brightness (1 channel)
@@ -1113,12 +1113,12 @@ while (lqr_carver_scan_line_ext (carver, &amp;n, &amp;rgb) {
                                 <para>
                                     for <literal>LQR_GREY_IMAGE</literal>, <literal>LQR_GREYA_IMAGE</literal> and
                                     <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_LUMA</literal>
-                                    readout will yield the same result as <literal>LQR_ER_BRIGHT</literal>
+                                    readout will yield the same result as <literal>LQR_ER_BRIGHTNESS</literal>
                                 </para>
                             </listitem>
                             <listitem>
                                 <para>
-                                    for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHT</literal>
+                                    for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHTNESS</literal>
                                     readout will return the average pixel value (additive, i.e. if a black channel is
                                     present the channel values will be inverted and multiplied by the black channel
                                     inverse), multiplied by the alpha channel value.
@@ -1164,7 +1164,7 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwi
                     one which is used in <function>lqr_carver_set_energy_function</function>). The parameter
                     <parameter>channel</parameter> specifies which channel to read out; depending on the
                     <parameter>read_type</parameter> passed to <function>lqr_carver_set_energy_function</function> the
-                    range and meaning of this parameter will change: for the cases <literal>LQR_ER_BRIGHT</literal> and
+                    range and meaning of this parameter will change: for the cases <literal>LQR_ER_BRIGHTNESS</literal> and
                     <literal>LQR_ER_LUMA</literal> it must be <literal>0</literal>, because the readout consists of a
                     single channel, for <literal>LQR_ER_RGBA</literal> it must be between <literal>0</literal> and
                     <literal>3</literal> (and then the readout will contain the RGBA information), while for
@@ -1213,7 +1213,7 @@ gfloat sobel(gint x, gint y, gint width, gint height, LqrReadingWindow *rw, gpoi
 
 /* usage */
 
-lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHT, NULL);
+lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL);
                         </programlisting>
                     </example>
                 </para>
@@ -5605,7 +5605,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                         (also noted is the number of channels of the corresponging reading window):
                         <variablelist>
                             <varlistentry>
-                                <term><literal>LQR_ER_BRIGHT</literal></term>
+                                <term><literal>LQR_ER_BRIGHTNESS</literal></term>
                                 <listitem>
                                     <para>
                                         brightness (1 channel)
@@ -5613,7 +5613,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
-                                <term><literal>LQR_ER_BRIGHT</literal></term>
+                                <term><literal>LQR_ER_BRIGHTNESS</literal></term>
                                 <listitem>
                                     <para>
                                         luma (1 channel)
@@ -5646,12 +5646,12 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                                 <para>
                                     for <literal>LQR_GREY_IMAGE</literal>, <literal>LQR_GREYA_IMAGE</literal> and
                                     <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_LUMA</literal>
-                                    readout will yield the same result as <literal>LQR_ER_BRIGHT</literal>
+                                    readout will yield the same result as <literal>LQR_ER_BRIGHTNESS</literal>
                                 </para>
                             </listitem>
                             <listitem>
                                 <para>
-                                    for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHT</literal>
+                                    for <literal>LQR_CUSTOM_IMAGE</literal> images, the <literal>LQR_ER_BRIGHTNESS</literal>
                                     readout will return the average pixel value (additive, i.e. if a black channel is
                                     present the channel values will be inverted and multiplied by the black channel
                                     inverse), multiplied by the alpha channel value.
@@ -5864,7 +5864,7 @@ typedef gfloat (*LqrEnergyFunc) (gint x, gint y, gint img_width, gint img_height
                     <para>
                         The <parameter>channel</parameter> parameter specifies which channel to read out; depending on
                         the <parameter>rwindow</parameter> reader type, the range and meaning of this parameter changes:
-                        for the cases <literal>LQR_ER_BRIGHT</literal> and <literal>LQR_ER_LUMA</literal> it must be
+                        for the cases <literal>LQR_ER_BRIGHTNESS</literal> and <literal>LQR_ER_LUMA</literal> it must be
                         <literal>0</literal>, because the readout consists of a single channel, for
                         <literal>LQR_ER_RGBA</literal> it must be between <literal>0</literal> and <literal>3</literal>
                         (and then the readout will contain the RGBA information), while for

@@ -329,7 +329,7 @@ lqr_energy_builtin_grad_all(gint x, gint y, gint img_width, gint img_height, Lqr
     gdouble (*bread_func) (LqrReadingWindow *, gint, gint);
 
     switch (lqr_rwindow_get_read_t(rwindow)) {
-        case LQR_ER_BRIGHT:
+        case LQR_ER_BRIGHTNESS:
             bread_func = lqr_rwindow_read_bright;
             break;
         case LQR_ER_LUMA:
@@ -394,13 +394,13 @@ lqr_carver_set_energy_function_builtin(LqrCarver *r, LqrEnergyFuncBuiltinType ef
 {
     switch (ef_ind) {
         case LQR_EF_GRAD_NORM:
-            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHT, NULL));
+            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_norm, 1, LQR_ER_BRIGHTNESS, NULL));
             break;
         case LQR_EF_GRAD_SUMABS:
-            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHT, NULL));
+            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_sumabs, 1, LQR_ER_BRIGHTNESS, NULL));
             break;
         case LQR_EF_GRAD_XABS:
-            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHT, NULL));
+            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_BRIGHTNESS, NULL));
             break;
         case LQR_EF_LUMA_GRAD_NORM:
             LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_norm, 1, LQR_ER_LUMA, NULL));
@@ -412,7 +412,7 @@ lqr_carver_set_energy_function_builtin(LqrCarver *r, LqrEnergyFuncBuiltinType ef
             LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_grad_xabs, 1, LQR_ER_LUMA, NULL));
             break;
         case LQR_EF_NULL:
-            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_null, 0, LQR_ER_BRIGHT, NULL));
+            LQR_CATCH(lqr_carver_set_energy_function(r, lqr_energy_builtin_null, 0, LQR_ER_BRIGHTNESS, NULL));
             break;
         default:
             return LQR_ERROR;
@@ -536,7 +536,7 @@ lqr_carver_generate_rcache(LqrCarver *r)
 #endif /* __LQR_DEBUG__ */
 
     switch (r->nrg_read_t) {
-        case LQR_ER_BRIGHT:
+        case LQR_ER_BRIGHTNESS:
             return lqr_carver_generate_rcache_bright(r);
         case LQR_ER_LUMA:
             return lqr_carver_generate_rcache_luma(r);

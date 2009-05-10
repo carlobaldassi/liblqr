@@ -91,12 +91,12 @@ The
 \fBLqrEnergyReaderType\fR
 is an enum which can take these values (also noted is the number of channels of the corresponging reading window):
 .PP
-LQR_ER_BRIGHT
+LQR_ER_BRIGHTNESS
 .RS 4
 brightness (1 channel)
 .RE
 .PP
-LQR_ER_BRIGHT
+LQR_ER_BRIGHTNESS
 .RS 4
 luma (1 channel)
 .RE
@@ -126,14 +126,14 @@ LQR_CUSTOM_IMAGE
 images, the
 LQR_ER_LUMA
 readout will yield the same result as
-LQR_ER_BRIGHT
+LQR_ER_BRIGHTNESS
 .RE
 .sp
 .RS 4
 \h'-04'\(bu\h'+03'for
 LQR_CUSTOM_IMAGE
 images, the
-LQR_ER_BRIGHT
+LQR_ER_BRIGHTNESS
 readout will return the average pixel value (additive, i\&.e\&. if a black channel is present the channel values will be inverted and multiplied by the black channel inverse), multiplied by the alpha channel value\&.
 .RE
 .sp
