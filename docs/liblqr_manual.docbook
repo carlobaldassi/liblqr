@@ -1143,7 +1143,7 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwi
                         </programlisting>
                     </example>
                     This function should return the energy at pixel <parameter>x</parameter>, <parameter>y</parameter>,
-                    based on the knowledge of the current image size (obtained from <parameter>weight</parameter> and
+                    based on the knowledge of the current image size (obtained from <parameter>width</parameter> and
                     <parameter>height</parameter>) and the content of the image in a square around that pixel, which is
                     passed through the <parameter>rwindow</parameter> reading window: in order to access this content,
                     this function must be used:
@@ -1156,7 +1156,7 @@ gfloat my_energy (gint x, gint y, gint width, gint height, LqrReadingWindow *rwi
                             <paramdef>channel <parameter>channel</parameter></paramdef>
                         </funcprototype>
                     </funcsynopsis>
-                    When reading out the content from a a window, the <parameter>x</parameter> and
+                    When reading out the content from a window, the <parameter>x</parameter> and
                     <parameter>y</parameter> parameters are relative to the window centre (which instead is given by the
                     <parameter>x</parameter>, <parameter>y</parameter> parameters passed to the custom energy function),
                     and they both range between <literal><symbol>-radius</symbol></literal> and
