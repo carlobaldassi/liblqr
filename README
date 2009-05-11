@@ -27,10 +27,10 @@ The library takes images in plain array format as input
 and converts them to a multi-size representation.
 Following is a list of features:
 
-  * Easy to use API
+  * Easy to use and fully documented API
   * Currently supports 8 bit to 64 bit per channel images
   * Support for different color models: grayscale, RGB, CMY
-    and even custom ones
+    and their variants, and even custom ones
   * Areas in the image can be marked for preservation or
     discard, or for additional seam rigidity
   * Once the image has been fully processed, the scaling can
@@ -49,9 +49,10 @@ Following is a list of features:
     process as the parent image 
   * The automatic feature detection algorithm can be tuned
     by selecting among different energy gradient functions,
-    and even defining custom ones
+    and easily defining custom ones
   * Reports progress through a customisable interface
   * A signalling system permits to cleanly handle errors
+  * Portable to all major OS's
 
 
 
@@ -75,7 +76,7 @@ The last step requires administrative privileges.
 If you want to also install the man pages for the library functions,
 add the option `--enable-install-man' in the call to ./configure.
 
-If you wand to disable legacy macro names which do not begin with
+If you want to disable legacy macro names which do not begin with
 LQR_ then add the option `--diable-legacy-macros'
 
 See the INSTALL file for a full description.
