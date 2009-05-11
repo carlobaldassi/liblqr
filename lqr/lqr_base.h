@@ -99,6 +99,7 @@ typedef enum _LqrRetVal LqrRetVal;
 #  define CATCH(expr) LQR_CATCH(expr)
 #  define CATCH_MEM(expr) LQR_CATCH_MEM(expr)
 #  define CATCH_F(expr) LQR_CATCH_F(expr)
+#  define TRY_N_N(expr) LQR_TRY_N_N(expr)
 #endif /* LQR_DISABLE_LEGACY_MACROS */
 
 /**** IMAGE DEPTH ****/
