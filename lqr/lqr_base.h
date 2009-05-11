@@ -62,11 +62,11 @@ enum _LqrRetVal {
 
 typedef enum _LqrRetVal LqrRetVal;
 
-#define TRY_N_N(assign) if ((assign) == NULL) { return NULL; }
+#define LQR_TRY_N_N(assign) if ((assign) == NULL) { return NULL; }
 /*
-#define TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
-#define TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
-#define TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
+#define LQR_TRY_F_N(assign) if ((assign) == FALSE) { return NULL; }
+#define LQR_TRY_N_F(assign) if ((assign) == NULL) { return FALSE; }
+#define LQR_TRY_F_F(assign) if ((assign) == FALSE) { return FALSE; }
 */
 
 /* generic signal processing macros */

@@ -34,7 +34,7 @@ LqrProgress *
 lqr_progress_new(void)
 {
     LqrProgress *progress;
-    TRY_N_N(progress = g_try_new0(LqrProgress, 1));
+    LQR_TRY_N_N(progress = g_try_new0(LqrProgress, 1));
 
     lqr_progress_set_init_width_message(progress, "Resizing width...");
     lqr_progress_set_init_height_message(progress, "Resizing height...");

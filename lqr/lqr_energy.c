@@ -455,7 +455,7 @@ lqr_carver_generate_rcache_bright(LqrCarver *r)
     gint x, y;
     gint z0;
 
-    TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0));
+    LQR_TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0));
 
     for (y = 0; y < r->h; y++) {
         for (x = 0; x < r->w; x++) {
@@ -474,7 +474,7 @@ lqr_carver_generate_rcache_luma(LqrCarver *r)
     gint x, y;
     gint z0;
 
-    TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0));
+    LQR_TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0));
 
     for (y = 0; y < r->h; y++) {
         for (x = 0; x < r->w; x++) {
@@ -493,7 +493,7 @@ lqr_carver_generate_rcache_rgba(LqrCarver *r)
     gint x, y, k;
     gint z0;
 
-    TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0 * 4));
+    LQR_TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0 * 4));
 
     for (y = 0; y < r->h; y++) {
         for (x = 0; x < r->w; x++) {
@@ -514,7 +514,7 @@ lqr_carver_generate_rcache_custom(LqrCarver *r)
     gint x, y, k;
     gint z0;
 
-    TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0 * r->channels));
+    LQR_TRY_N_N(buffer = g_try_new(gdouble, r->w0 * r->h0 * r->channels));
 
     for (y = 0; y < r->h; y++) {
         for (x = 0; x < r->w; x++) {

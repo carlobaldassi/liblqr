@@ -47,7 +47,7 @@ lqr_carver_new_common(gint width, gint height, gint channels)
 {
     LqrCarver *r;
 
-    TRY_N_N(r = g_try_new(LqrCarver, 1));
+    LQR_TRY_N_N(r = g_try_new(LqrCarver, 1));
 
     g_atomic_int_set(&r->state, LQR_CARVER_STATE_STD);
     g_atomic_int_set(&r->state_lock, 0);
@@ -66,7 +66,7 @@ lqr_carver_new_common(gint width, gint height, gint channels)
     r->attached_list = NULL;
     r->flushed_vs = NULL;
     r->preserve_in_buffer = FALSE;
-    TRY_N_N(r->progress = lqr_progress_new());
+    LQR_TRY_N_N(r->progress = lqr_progress_new());
     r->session_update_step = 1;
     r->session_rescale_total = 0;
     r->session_rescale_current = 0;
@@ -106,11 +106,11 @@ lqr_carver_new_common(gint width, gint height, gint channels)
 
     r->enl_step = 2.0;
 
-    TRY_N_N(r->vs = g_try_new0(gint, r->w * r->h));
+    LQR_TRY_N_N(r->vs = g_try_new0(gint, r->w * r->h));
 
     /* initialize cursor */
 
-    TRY_N_N(r->c = lqr_cursor_create(r));
+    LQR_TRY_N_N(r->c = lqr_cursor_create(r));
 
     switch (channels) {
         case 1:
@@ -149,7 +149,7 @@ lqr_carver_new_ext(void *buffer, gint width, gint height, gint channels, LqrColD
 {
     LqrCarver *r;
 
-    TRY_N_N(r = lqr_carver_new_common(width, height, channels));
+    LQR_TRY_N_N(r = lqr_carver_new_common(width, height, channels));
 
     r->rgb = (void *) buffer;
 

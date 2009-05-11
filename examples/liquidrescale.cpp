@@ -1037,7 +1037,10 @@ load_vmap_from_file(gchar *name)
     CHECK_OR_N(fscanf(input, "BODY[") != EOF, "missing vmap body");
 
     /* allocate memory for the vmap buffer */
-    TRY_N_N(buffer = g_try_new0(gint, w * h));
+    buffer = g_try_new0(gint, w * h);
+    if (buffer == NULL) {
+        return NULL;
+    }
 
     /* scan the data */
     y = x = 0;
@@ -1070,7 +1073,10 @@ load_vmap_from_file(gchar *name)
     CHECK_OR_N(fscanf(input, "]") != EOF, "unterminated vmap file");
 
     /* create the vmap object with all the data aquired */
-    TRY_N_N(vmap = lqr_vmap_new(buffer, w, h, depth, orientation));
+    vmap = lqr_vmap_new(buffer, w, h, depth, orientation);
+    if (vmap == NULL) {
+        return NULL;
+    }
 
     return vmap;
 }/*}}}*/

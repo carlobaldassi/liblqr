@@ -43,3 +43,16 @@ sed -i "s@^{[[:space:]]*/\*[[:space:]]*{{{[[:space:]]*\*/@{/*{{{*/@;
 
 rm *~
 cd ..
+
+if [ -d experiments ]
+then
+	cd experiments
+
+	indent *.{cpp,h}
+
+	sed -i "s@^{[[:space:]]*/\*[[:space:]]*{{{[[:space:]]*\*/@{/*{{{*/@;
+		s@^}[[:space:]]*/\*[[:space:]]*}}}[[:space:]]*\*/@}/*}}}*/@;" *.{cpp,h}
+
+	rm *~
+	cd ..
+fi

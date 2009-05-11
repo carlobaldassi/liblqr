@@ -17,8 +17,18 @@ Version 0.4:
 * Performace related:
   * Faster rescaling thanks to optimisations in
     the code
-  * Save memory when not using features (e.g. the
+  * Spare memory when not using features (e.g. the
     bias)
+
+* Configuration
+  * The default installation directory is now /usr
+    instead of /usr/local
+  * Compiling under MinGW now correctly produces a
+    DLL with the default settings
+  * Now it also compiles under MS Visual C++
+  * All public macro names start with LQR_* (old
+    versions are still available but can be disabled
+    at configure time)
 
 Version 0.3:
 

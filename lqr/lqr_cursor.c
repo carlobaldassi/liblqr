@@ -39,7 +39,7 @@ lqr_cursor_create(LqrCarver *owner)
 {
     LqrCursor *c;
 
-    TRY_N_N(c = g_try_new(LqrCursor, 1));
+    LQR_TRY_N_N(c = g_try_new(LqrCursor, 1));
     c->o = owner;
     c->eoc = 0;
 #ifdef __LQR_DEBUG__

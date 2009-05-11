@@ -43,7 +43,7 @@ lqr_carver_list_append(LqrCarverList *list, LqrCarver *r)
         prev = now;
         now = now->next;
     }
-    TRY_N_N(now = g_try_new(LqrCarverList, 1));
+    LQR_TRY_N_N(now = g_try_new(LqrCarverList, 1));
     now->next = NULL;
     now->current = r;
     if (prev) {
@@ -78,7 +78,7 @@ lqr_carver_list_start(LqrCarver *r)
 LqrCarverList *
 lqr_carver_list_next(LqrCarverList *list)
 {
-    TRY_N_N(list);
+    LQR_TRY_N_N(list);
     return list->next;
 }
 
@@ -86,7 +86,7 @@ lqr_carver_list_next(LqrCarverList *list)
 LqrCarver *
 lqr_carver_list_current(LqrCarverList *list)
 {
-    TRY_N_N(list);
+    LQR_TRY_N_N(list);
     return list->current;
 }
 

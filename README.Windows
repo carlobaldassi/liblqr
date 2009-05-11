@@ -7,8 +7,15 @@ the Windows operating system.
 
 1) Using MinGW/MSYS
 
-Everything goes as in standard *nix systems. With the
-default options, the `configure' sctipt produces a DLL.
+Everything goes as in standard *nix systems (you should
+probably change the default installation location with the
+--prefix option in `configure').
+With the default options, the `configure' sctipt produces a
+DLL.  If you want to build a static library, you should pass the
+options --disable-shared and --disable-declspec to
+`configure', and make sure you define the preprocessor
+LQR_DISABLE_DECLSPEC whenever you want to compile/link
+against the static library.
 
 2) Using MS Visual C++
 

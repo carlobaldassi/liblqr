@@ -163,13 +163,13 @@ lqr_rwindow_new_std(gint radius, LqrEnergyReaderType read_func_type, gboolean us
     gint buf_size1, buf_size2;
     gint i;
 
-    TRY_N_N(out_rwindow = g_try_new0(LqrReadingWindow, 1));
+    LQR_TRY_N_N(out_rwindow = g_try_new0(LqrReadingWindow, 1));
 
     buf_size1 = (2 * radius + 1);
     buf_size2 = buf_size1 * buf_size1;
 
-    TRY_N_N(out_buffer_aux = g_try_new0(gdouble, buf_size2));
-    TRY_N_N(out_buffer = g_try_new0(gdouble *, buf_size1));
+    LQR_TRY_N_N(out_buffer_aux = g_try_new0(gdouble, buf_size2));
+    LQR_TRY_N_N(out_buffer = g_try_new0(gdouble *, buf_size1));
     for (i = 0; i < buf_size1; i++) {
         out_buffer[i] = out_buffer_aux + radius;
         out_buffer_aux += buf_size1;
@@ -198,13 +198,13 @@ lqr_rwindow_new_rgba(gint radius, gboolean use_rcache)
     gint buf_size1, buf_size2;
     gint i;
 
-    TRY_N_N(out_rwindow = g_try_new0(LqrReadingWindow, 1));
+    LQR_TRY_N_N(out_rwindow = g_try_new0(LqrReadingWindow, 1));
 
     buf_size1 = (2 * radius + 1);
     buf_size2 = buf_size1 * buf_size1 * 4;
 
-    TRY_N_N(out_buffer_aux = g_try_new0(gdouble, buf_size2));
-    TRY_N_N(out_buffer = g_try_new0(gdouble *, buf_size1));
+    LQR_TRY_N_N(out_buffer_aux = g_try_new0(gdouble, buf_size2));
+    LQR_TRY_N_N(out_buffer = g_try_new0(gdouble *, buf_size1));
     for (i = 0; i < buf_size1; i++) {
         out_buffer[i] = out_buffer_aux + radius * 4;
         out_buffer_aux += buf_size1 * 4;
@@ -233,13 +233,13 @@ lqr_rwindow_new_custom(gint radius, gboolean use_rcache, gint channels)
     gint buf_size1, buf_size2;
     gint i;
 
-    TRY_N_N(out_rwindow = g_try_new0(LqrReadingWindow, 1));
+    LQR_TRY_N_N(out_rwindow = g_try_new0(LqrReadingWindow, 1));
 
     buf_size1 = (2 * radius + 1);
     buf_size2 = buf_size1 * buf_size1 * channels;
 
-    TRY_N_N(out_buffer_aux = g_try_new0(gdouble, buf_size2));
-    TRY_N_N(out_buffer = g_try_new0(gdouble *, buf_size1));
+    LQR_TRY_N_N(out_buffer_aux = g_try_new0(gdouble, buf_size2));
+    LQR_TRY_N_N(out_buffer = g_try_new0(gdouble *, buf_size1));
     for (i = 0; i < buf_size1; i++) {
         out_buffer[i] = out_buffer_aux + radius * channels;
         out_buffer_aux += buf_size1 * channels;

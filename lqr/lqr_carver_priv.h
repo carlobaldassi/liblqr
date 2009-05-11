@@ -108,16 +108,16 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        TRY_N_N ((dest) = g_try_new (lqr_t_8i, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new (lqr_t_8i, (size))); \
         break; \
       case LQR_COLDEPTH_16I: \
-        TRY_N_N ((dest) = g_try_new (lqr_t_16i, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new (lqr_t_16i, (size))); \
         break; \
       case LQR_COLDEPTH_32F: \
-        TRY_N_N ((dest) = g_try_new (lqr_t_32f, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new (lqr_t_32f, (size))); \
         break; \
       case LQR_COLDEPTH_64F: \
-        TRY_N_N ((dest) = g_try_new (lqr_t_64f, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new (lqr_t_64f, (size))); \
         break; \
     } \
 } G_STMT_END
@@ -126,16 +126,16 @@
   switch (col_depth) \
     { \
       case LQR_COLDEPTH_8I: \
-        TRY_N_N ((dest) = g_try_new0 (lqr_t_8i, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new0 (lqr_t_8i, (size))); \
         break; \
       case LQR_COLDEPTH_16I: \
-        TRY_N_N ((dest) = g_try_new0 (lqr_t_16i, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new0 (lqr_t_16i, (size))); \
         break; \
       case LQR_COLDEPTH_32F: \
-        TRY_N_N ((dest) = g_try_new0 (lqr_t_32f, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new0 (lqr_t_32f, (size))); \
         break; \
       case LQR_COLDEPTH_64F: \
-        TRY_N_N ((dest) = g_try_new0 (lqr_t_64f, (size))); \
+        LQR_TRY_N_N ((dest) = g_try_new0 (lqr_t_64f, (size))); \
         break; \
     } \
 } G_STMT_END

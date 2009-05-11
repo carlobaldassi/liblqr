@@ -67,14 +67,16 @@ The lqr library depends on the glib-2.0 libraries
 The build package uses autotools and libtool, so the installation
 commands on Unix systems are simply
 
-./configure --prefix=/usr && make && sudo make install
+./configure && make && sudo make install
 
 The last step requires administrative privileges.
-(If the dynamic linker path includes /usr/local/lib, the `--prefix'
-option is not needed.)
+(Note: the default installation path is /usr since version 0.4)
 
 If you want to also install the man pages for the library functions,
 add the option `--enable-install-man' in the call to ./configure.
+
+If you wand to disable legacy macro names which do not begin with
+LQR_ then add the option `--diable-legacy-macros'
 
 See the INSTALL file for a full description.
 

@@ -38,7 +38,7 @@ lqr_vmap_new(gint *buffer, gint width, gint height, gint depth, gint orientation
 {
     LqrVMap *vmap;
 
-    TRY_N_N(vmap = g_try_new(LqrVMap, 1));
+    LQR_TRY_N_N(vmap = g_try_new(LqrVMap, 1));
     vmap->buffer = buffer;
     vmap->width = width;
     vmap->height = height;
@@ -110,7 +110,7 @@ lqr_vmap_dump(LqrCarver *r)
     h = lqr_carver_get_height(r);
     depth = r->w0 - r->w_start;
 
-    TRY_N_N(buffer = g_try_new(gint, w * h));
+    LQR_TRY_N_N(buffer = g_try_new(gint, w * h));
 
     lqr_cursor_reset(r->c);
     for (y = 0; y < r->h; y++) {
@@ -134,7 +134,7 @@ lqr_vmap_dump(LqrCarver *r)
     lqr_carver_set_width(r, w1);
     lqr_cursor_reset(r->c);
 
-    TRY_N_N(vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
+    LQR_TRY_N_N(vmap = lqr_vmap_new(buffer, w, h, depth, r->transposed));
 
     return vmap;
 }

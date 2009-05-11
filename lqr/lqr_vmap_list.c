@@ -43,7 +43,7 @@ lqr_vmap_list_append(LqrVMapList *list, LqrVMap *buffer)
         prev = now;
         now = now->next;
     }
-    TRY_N_N(now = g_try_new(LqrVMapList, 1));
+    LQR_TRY_N_N(now = g_try_new(LqrVMapList, 1));
     now->next = NULL;
     now->current = buffer;
     if (prev) {
@@ -77,7 +77,7 @@ lqr_vmap_list_start(LqrCarver *r)
 LqrVMapList *
 lqr_vmap_list_next(LqrVMapList *list)
 {
-    TRY_N_N(list);
+    LQR_TRY_N_N(list);
     return list->next;
 }
 
@@ -85,7 +85,7 @@ lqr_vmap_list_next(LqrVMapList *list)
 LqrVMap *
 lqr_vmap_list_current(LqrVMapList *list)
 {
-    TRY_N_N(list);
+    LQR_TRY_N_N(list);
     return list->current;
 }
 
