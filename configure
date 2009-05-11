@@ -17600,7 +17600,7 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 
-GLIB_REQUIRED_VERSION=2.0.0
+GLIB_REQUIRED_VERSION=2.8.0
 
 
 

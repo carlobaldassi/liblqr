@@ -90,7 +90,7 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
-GLIB_REQUIRED_VERSION=2.0.0
+GLIB_REQUIRED_VERSION=2.8.0
 
 PKG_CHECK_MODULES(GLIB,
   glib-2.0 >= $GLIB_REQUIRED_VERSION)
