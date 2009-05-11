@@ -83,8 +83,9 @@ LQR_PUBLIC void lqr_carver_set_use_cache(LqrCarver *r, gboolean use_cache);
 LQR_PUBLIC LqrRetVal lqr_carver_attach(LqrCarver *r, LqrCarver *aux);
 LQR_PUBLIC void lqr_carver_set_progress(LqrCarver *r, LqrProgress * p);
 LQR_PUBLIC void lqr_carver_set_preserve_input_image(LqrCarver *r);
-/* WARNING: THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
+/* THIS FUNCTION IS ONLY MAINTAINED FOR BACK-COMPATIBILITY PURPOSES */
 /* lqr_carver_set_energy_function_builtin() should be used instead */
+G_GNUC_DEPRECATED
 LQR_PUBLIC void lqr_carver_set_gradient_function(LqrCarver *r, LqrGradFuncType gf_ind);
 
 /* image manipulations */
@@ -99,6 +100,7 @@ LQR_PUBLIC gboolean lqr_carver_scan_ext(LqrCarver *r, gint *x, gint *y, void **r
 LQR_PUBLIC gboolean lqr_carver_scan_line(LqrCarver *r, gint *n, guchar **rgb);
 LQR_PUBLIC gboolean lqr_carver_scan_line_ext(LqrCarver *r, gint *n, void **rgb);
 LQR_PUBLIC gboolean lqr_carver_scan_by_row(LqrCarver *r);
+G_GNUC_DEPRECATED
 LQR_PUBLIC gint lqr_carver_get_bpp(LqrCarver *r);
 LQR_PUBLIC gint lqr_carver_get_channels(LqrCarver *r);
 LQR_PUBLIC gint lqr_carver_get_width(LqrCarver *r);
