@@ -14,15 +14,15 @@ m4_define([library_name], [liblqr-api_version])
 
 dnl These three define the library version number
 m4_define([package_major_version], [0])
-m4_define([package_minor_version], [4])
-m4_define([package_micro_version], [0])
+m4_define([package_minor_version], [5])
+m4_define([package_micro_version], [0git])
 
 m4_define([package_version],
           [package_major_version.package_minor_version.package_micro_version])
 
-m4_define([ltversion_current], [3])
+m4_define([ltversion_current], [4])
 m4_define([ltversion_revision], [0])
-m4_define([ltversion_age], [3])
+m4_define([ltversion_age], [4])
 
 AC_INIT([library_name], [package_version])
 

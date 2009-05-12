@@ -1,3 +1,7 @@
+2009-05-12  Carlo Baldassi  <carlobaldassi@gmail.com>
+
+	* Forgot (undocumented) legacy macro
+
 2009-05-09  Carlo Baldassi  <carlobaldassi@gmail.com>
 
 	* Changed lqr_carver_get_[true_]energy
