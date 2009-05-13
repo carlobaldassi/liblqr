@@ -132,7 +132,7 @@ AS_IF([test "x$legacy_macros" = "xfalse"],
       [:]
       )
 
-AC_ARG_ENABLE([dllimport],
+AC_ARG_ENABLE([declspec],
      [AS_HELP_STRING([--disable-declspec], [Disable Win32 __declspec directives (only meaningful for building static library on MinGW)])],
      [AS_CASE([["${enableval}"]],
 	  [yes], [declspec=true],

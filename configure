@@ -928,7 +928,7 @@ enable_libtool_lock
 enable_maintainer_mode
 enable_install_man
 enable_legacy_macros
-enable_dllimport
+enable_declspec
 '
       ac_precious_vars='build_alias
 host_alias
@@ -17999,9 +17999,9 @@ else
 fi
 
 
-# Check whether --enable-dllimport was given.
-if test "${enable_dllimport+set}" = set; then
-  enableval=$enable_dllimport; case "${enableval}" in
+# Check whether --enable-declspec was given.
+if test "${enable_declspec+set}" = set; then
+  enableval=$enable_declspec; case "${enableval}" in
   yes) declspec=true ;;
   no) declspec=false ;;
   *) { { $as_echo "$as_me:$LINENO: error: bad value ${enableval} for --enable-declspec" >&5
