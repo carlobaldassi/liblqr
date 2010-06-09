@@ -1300,7 +1300,7 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL);
                     </funcsynopsis>
                 </para>
                 <para>
-                    The last function can be used to fill directly an image buffer:
+                    The third function can be used to fill directly an image buffer:
                     <funcsynopsis>
                         <funcprototype>
                             <funcdef>LqrRetVal <function>lqr_carver_get_energy_image</function></funcdef>
@@ -1328,7 +1328,7 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL);
                     <para>
                         Calling the function <function>lqr_carver_get_energy_image</function> with &col_depth_32f; and
                         &img_type_grey; arguments will yield the same result as calling the function
-                        <function>lqr_carver_get_image</function>, but the latter is slightly more efficient.
+                        <function>lqr_carver_get_energy</function>, but the latter is slightly more efficient.
                     </para>
                 </note>
             </sect2>
@@ -1491,7 +1491,7 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL);
                 <para>
                     The provided buffers have to be of size <literal>&param_w; * &param_h;</literal> (or
                     <literal>&param_w; * &param_h; * &param_channels;</literal> for the rgb case) but the specified
-                    areas need not to be strictly included inside the &carv_obj; image area : only the parts which
+                    areas need not to be strictly included inside the &carv_obj; image area: only the parts which
                     overlap with it will be used. For example, the offsets can also be negative.
                 </para>
             </sect2>
@@ -1658,7 +1658,7 @@ lqr_carver_set_energy_function (carver, sobel, 1, LQR_ER_BRIGHTNESS, NULL);
                 <para>
                     The provided buffers have to be of size <literal>&param_w; * &param_h;</literal> (or
                     <literal>&param_w; * &param_h; * &param_channels;</literal> for the rgb case) but the specified
-                    areas need not to be strictly included inside the &carv_obj; image area : only the parts which
+                    areas need not to be strictly included inside the &carv_obj; image area: only the parts which
                     overlap with it will be used. For example, the offsets can also be negative.
                 </para>
             </sect2>
@@ -2015,7 +2015,7 @@ vis =  buffer[y * width + x];
                         </programlisting>
                         <para>
                             Uninitialised points will yield <literal><symbol>vis</symbol> = 0</literal>. For
-                            initialised points, <symbol>vis</symbol> will store a positive value between
+			    initialised points, <literal><symbol>vis</symbol></literal> will store a positive value between
                             <literal>1</literal> (least visible points, the first to be carved away or to be duplicated)
                             and <literal>(&param_depth; + 1)</literal> (most visible points, the last to be carved away
                             or to be duplicated).
@@ -2229,7 +2229,7 @@ lqr_carver_list_foreach_recursive (list, my_func, data_tok);
             <title>Progress indicators</title>
 
             <para>
-                By default, the resizing performed silently. However, it is possible to define progress report
+                By default, the resizing is performed silently. However, it is possible to define progress report
                 functions, to receive feedback while the resizing is in progress. This is done through the &prog_obj;
                 objects. 
             </para>
