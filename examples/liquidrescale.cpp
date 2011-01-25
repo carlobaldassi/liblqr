@@ -221,7 +221,7 @@ main(int argc, char **argv)
     TRAP_N(carver = lqr_carver_new(rgb_buffer, old_width, old_height, 3));
 
     /* (I.2) if we have to attach other images, we have to do so
-     *       immediatley after the carver construction (we might
+     *       immediately after the carver construction (we might
      *       initialize the carver first, but not load a visibility map)*/
     LqrCarver *pres_carver;
     if (pres_outfile) {
