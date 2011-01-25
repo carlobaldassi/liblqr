@@ -171,6 +171,7 @@ lqr_carver_destroy(LqrCarver *r)
     if (r->root == NULL) {
         g_free(r->vs);
     }
+    g_free(r->rgb_ro_buffer);
     g_free(r->en);
     g_free(r->bias);
     g_free(r->m);
