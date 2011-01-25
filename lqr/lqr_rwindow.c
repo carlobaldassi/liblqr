@@ -294,6 +294,7 @@ lqr_rwindow_destroy(LqrReadingWindow *rwindow)
     buffer[0] -= rwindow->radius * rwindow->channels;
     g_free(buffer[0]);
     g_free(buffer);
+    g_free(rwindow);
 }
 
 gdouble
