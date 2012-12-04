@@ -617,7 +617,6 @@ lqr_carver_get_true_energy(LqrCarver *r, gfloat *buffer, gint orientation)
     gint x, y;
     gint z0 = 0;
     gint w, h;
-    gint buf_size;
     gint data;
 
     LQR_CATCH_F(orientation == 0 || orientation == 1);
@@ -634,8 +633,6 @@ lqr_carver_get_true_energy(LqrCarver *r, gfloat *buffer, gint orientation)
 #endif /* __LQR_DEBUG__ */
         LQR_CATCH(lqr_carver_flatten(r));
     }
-
-    buf_size = r->w * r->h;
 
     if (orientation != lqr_carver_get_orientation(r)) {
         LQR_CATCH(lqr_carver_transpose(r));

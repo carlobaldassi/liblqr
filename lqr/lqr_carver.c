@@ -1395,8 +1395,8 @@ lqr_carver_propagate_vsmap(LqrCarver *r)
 LqrRetVal
 lqr_carver_propagate_vsmap_attached(LqrCarver *r, LqrDataTok data)
 {
-    LqrDataTok data_tok;
-    data_tok.data = NULL;
+    /* LqrDataTok data_tok;
+    data_tok.data = NULL; */
     r->vs = r->root->vs;
     lqr_carver_scan_reset(r);
     /* LQR_CATCH (lqr_carver_list_foreach (r->attached_list,  lqr_carver_propagate_vsmap_attached, data_tok)); */
@@ -1944,7 +1944,11 @@ lqr_carver_set_state(LqrCarver *r, LqrCarverState state, gboolean skip_canceled)
 
     LQR_CATCH_F(r->root == NULL);
 
+#if (GLIB_MAJOR_VERSION == 2) && (GLIB_MINOR_VERSION < 30)
     lock_pos = g_atomic_int_exchange_and_add(&r->state_lock_queue, 1);
+#else
+    lock_pos = g_atomic_int_add(&r->state_lock_queue, 1);
+#endif /* GLIB_VERSION < 2.30 */
 
     while (g_atomic_int_get(&r->state_lock) != lock_pos) {
         g_usleep(10000);
