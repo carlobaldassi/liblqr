@@ -38,18 +38,18 @@
 #define LQR_SATURATE_(x) (1 / (1 + (1 / (x))))
 #define LQR_SATURATE(x) ((x) >= 0 ? LQR_SATURATE_(x) : -LQR_SATURATE_(-x))
 
-inline gdouble lqr_pixel_get_norm(void *src, gint src_ind, LqrColDepth col_depth);
-inline void lqr_pixel_set_norm(gdouble val, void *rgb, gint rgb_ind, LqrColDepth col_depth);
-inline gdouble lqr_pixel_get_rgbcol(void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type,
-                                    gint channel);
-inline gdouble lqr_carver_read_brightness_grey(LqrCarver *r, gint x, gint y);
-inline gdouble lqr_carver_read_brightness_std(LqrCarver *r, gint x, gint y);
+gdouble lqr_pixel_get_norm(void *src, gint src_ind, LqrColDepth col_depth);
+void lqr_pixel_set_norm(gdouble val, void *rgb, gint rgb_ind, LqrColDepth col_depth);
+gdouble lqr_pixel_get_rgbcol(void *rgb, gint rgb_ind, LqrColDepth col_depth, LqrImageType image_type,
+                             gint channel);
+gdouble lqr_carver_read_brightness_grey(LqrCarver *r, gint x, gint y);
+gdouble lqr_carver_read_brightness_std(LqrCarver *r, gint x, gint y);
 gdouble lqr_carver_read_brightness_custom(LqrCarver *r, gint x, gint y);
-inline gdouble lqr_carver_read_brightness(LqrCarver *r, gint x, gint y);
-inline gdouble lqr_carver_read_luma_std(LqrCarver *r, gint x, gint y);
-inline gdouble lqr_carver_read_luma(LqrCarver *r, gint x, gint y);
-inline gdouble lqr_carver_read_rgba(LqrCarver *r, gint x, gint y, gint channel);
-inline gdouble lqr_carver_read_custom(LqrCarver *r, gint x, gint y, gint channel);
+gdouble lqr_carver_read_brightness(LqrCarver *r, gint x, gint y);
+gdouble lqr_carver_read_luma_std(LqrCarver *r, gint x, gint y);
+gdouble lqr_carver_read_luma(LqrCarver *r, gint x, gint y);
+gdouble lqr_carver_read_rgba(LqrCarver *r, gint x, gint y, gint channel);
+gdouble lqr_carver_read_custom(LqrCarver *r, gint x, gint y, gint channel);
 
 gdouble lqr_carver_read_cached_std(LqrCarver *r, gint x, gint y);
 gdouble lqr_carver_read_cached_rgba(LqrCarver *r, gint x, gint y, gint channel);
