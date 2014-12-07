@@ -13,7 +13,6 @@ TEST_TYPE=-f
 FILE=lqr/lqr_carver.c
 
 AUTOCONF_REQUIRED_VERSION=2.54
-AUTOMAKE_REQUIRED_VERSION=1.6
 GLIB_REQUIRED_VERSION=2.0.0
 LIBTOOL_REQUIRED_VERSION=1.5.24
 
@@ -53,22 +52,15 @@ else
 fi
 
 echo -n "checking for automake >= $AUTOMAKE_REQUIRED_VERSION ... "
-if (automake-1.7 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.7
-   ACLOCAL=aclocal-1.7
-elif (automake-1.8 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.8
-   ACLOCAL=aclocal-1.8
-elif (automake-1.9 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.9
-   ACLOCAL=aclocal-1.9
-elif (automake-1.10 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.10
-   ACLOCAL=aclocal-1.10
-elif (automake-1.6 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.6
-   ACLOCAL=aclocal-1.6
-else
+for AUTOMAKE_VERSION in 1.7 1.8 1.9 1.10 1.11 1.12 1.13 1.14 1.15; do
+    if (automake-${AUTOMAKE_VERSION} --version) < /dev/null > /dev/null 2>&1; then
+        AUTOMAKE=automake-${AUTOMAKE_VERSION}
+        ACLOCAL=aclocal-${AUTOMAKE_VERSION}
+	      echo "yes (version ${AUTOMAKE_VERSION})"
+    fi
+done
+
+if [ -z "$AUTOMAKE" ]; then
     echo
     echo "  You must have automake 1.6 or newer installed to compile $PROJECT."
     echo "  Download the appropriate package for your distribution,"
@@ -76,15 +68,14 @@ else
     DIE=1
 fi
 
-if test x$AUTOMAKE != x; then
-    VER=`$AUTOMAKE --version \
-         | grep automake | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
-    check_version $VER $AUTOMAKE_REQUIRED_VERSION
-fi
+case `uname` in
+  Darwin) LIBTOOLIZE=glibtoolize;;
+  *) LIBTOOLIZE=libtoolize;;
+esac
 
 echo -n "checking for libtool >= $LIBTOOL_REQUIRED_VERSION ... "
-if (libtoolize --version) < /dev/null > /dev/null 2>&1; then
-    VER=`libtoolize --version \
+if ($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1; then
+    VER=`${LIBTOOLIZE} --version \
          | grep libtoolize | sed "s/.* \([0-9.]*\)/\1/"`
     check_version $VER $LIBTOOL_REQUIRED_VERSION
 else
