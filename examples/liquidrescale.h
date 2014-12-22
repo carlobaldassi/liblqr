@@ -18,7 +18,10 @@
 #ifndef __LIQUIDRESCALE_H__
 #define __LIQUIDRESCALE_H__
 
+#include "image.h"
+
 /*** SIGNAL HANDLING MACROS ***/
+
 
 #define RBS (1000)
 #define CHECK_OR_N(expr, mess) G_STMT_START{ \
@@ -60,8 +63,9 @@ LqrRetVal parse_command_line(int argc, char **argv);
 void help(char *command);
 
 /*** RGB FILE I/O ***/
-guchar *rgb_buffer_from_image(pngwriter *png);
-LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter *png);
+
+guchar *rgb_buffer_from_image(Image *img);
+LqrRetVal write_carver_to_image(LqrCarver *r, Image &image);
 
 /*** VMAP FILES I/O ***/
 LqrRetVal save_vmap_to_file(LqrVMap *vmap, gchar *name);

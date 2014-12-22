@@ -15,10 +15,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#include <pngwriter.h>
 #include <lqr.h>
 #include <getopt.h>
 #include "liquidrescale-basic.h"
+#include "opencv2/opencv.hpp"
+#include "image.h"
+
 
 using namespace std;
 
@@ -39,12 +41,12 @@ main(int argc, char **argv)
     TRAP(parse_command_line(argc, argv));
 
     /*** open input and output files ***/
-    pngwriter png(1, 1, 0, outfile);
-    png.readfromfile(infile);
+    Image image;
+    image.load_file(infile);
 
     /*** old and new size ***/
-    gint old_width = png.getwidth();
-    gint old_height = png.getheight();
+    gint old_width = image.get_width();
+    gint old_height = image.get_height();
 
     new_width = (new_width ? new_width : old_width);
     new_height = (new_height ? new_height : old_height);
@@ -67,7 +69,7 @@ main(int argc, char **argv)
 
     guchar *rgb_buffer;
 
-    TRAP_N(rgb_buffer = rgb_buffer_from_image(&png));
+    TRAP_N(rgb_buffer = rgb_buffer_from_image(&image));
 
     /**** (I) GENERATE THE MULTISIZE REPRESENTATION ****/
 
@@ -86,15 +88,12 @@ main(int argc, char **argv)
 
     /**** (III) READOUT THE MULTISIZE IMAGE ****/
 
-    TRAP(write_carver_to_image(carver, &png));
+    TRAP(write_carver_to_image(carver, image));
 
     /**** (IV) DESTROY THE CARVER OBJECT ****/
 
     lqr_carver_destroy(carver);
 
-    /*** close file (write the image on disk) ***/
-
-    png.close();
 
     return 0;
 }/*}}}*/
@@ -200,67 +199,94 @@ help(char *command)
 
 /* convert the image in the right format */
 guchar *
-rgb_buffer_from_image(pngwriter *png)
+rgb_buffer_from_image(Image *img)
 {/*{{{*/
-    gint x, y, k, channels;
+
     gint w, h;
-    guchar *buffer;
 
     /* get info from the image */
-    w = png->getwidth();
-    h = png->getheight();
-    channels = 3;                       // we assume an RGB image here 
-
+    w = img->get_width();
+    h = img->get_height();
+    // we assume an RGB image here
+    
+    // Create the image buffer
+    int buffer_size = w * 3 * h;
+    
     /* allocate memory to store w * h * channels unsigned chars */
-    buffer = g_try_new(guchar, channels * w * h);
-    g_assert(buffer != NULL);
-
-    /* start iteration (always y first, then x, then colours) */
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            for (k = 0; k < channels; k++) {
-                /* read the image channel k at position x,y */
-                buffer[(y * w + x) * channels + k] = (guchar) (png->dread(x + 1, y + 1, k + 1) * 255);
-                /* note : the x+1,y+1,k+1 on the right side are
-                 *        specific the pngwriter library */
-            }
-        }
-    }
-
-    return buffer;
+    
+    // This will automatically be freed by liblqr
+    guchar *rgb_buffer = (guchar *)malloc(sizeof(guchar)*buffer_size);
+    g_assert(rgb_buffer != NULL);
+    memcpy(rgb_buffer, (unsigned char*)(img->src.data), buffer_size);
+    
+    return rgb_buffer;
 }/*}}}*/
 
-/* readout the multizie image */
+
+/*
+ * Readout the multisize image
+ */
 LqrRetVal
-write_carver_to_image(LqrCarver *r, pngwriter *png)
-{/*{{{*/
-    gint x, y;
+write_carver_to_image(LqrCarver *r, Image &image) {
+    int x, y;
     guchar *rgb;
-    gdouble red, green, blue;
-    gint w, h;
-
-    /* make sure the image is RGB */
-    LQR_CATCH_F(lqr_carver_get_channels(r) == 3);
-
-    /* resize the image canvas as needed to
-     * fit for the new size */
+    int w, h;
+    
+    // Make sure the image is RGB
+    if (lqr_carver_get_channels(r) != 3) {
+        std::cerr << "Error: Image is not RGB" << std::endl;
+    }
+    
+    // resize the image canvas as needed to fit for the new size
     w = lqr_carver_get_width(r);
     h = lqr_carver_get_height(r);
-    png->resize(w, h);
-
-    /* initialize image reading */
+    
+    std::vector<unsigned char> buffer(w * 3 * h);
+    
+    // Initialize image reading
     lqr_carver_scan_reset(r);
+    
+    // Readout (no need to init rgb)
 
-    /* readout (no need to init rgb) */
     while (lqr_carver_scan(r, &x, &y, &rgb)) {
-        /* convert the output into doubles */
-        red = (gdouble) rgb[0] / 255;
-        green = (gdouble) rgb[1] / 255;
-        blue = (gdouble) rgb[2] / 255;
-
-        /* plot (pngwriter's coordinates start from 1,1) */
-        png->plot(x + 1, y + 1, red, green, blue);
+        
+        int index = (x + y*w) * 3;
+        
+        buffer[index] = rgb[0];
+        buffer[index+1] = rgb[1];
+        buffer[index+2] = rgb[2];
     }
-
+    
+    // Update the original image with the rescaled version
+    cv::Mat dest(cv::Size(w, h), CV_8UC3, &buffer[0], cv::Mat::AUTO_STEP);
+    dest.copyTo(image.src);
+    
+    image.save_file(outfile, "", 1);
+    
     return LQR_OK;
-}/*}}}*/
+}
+
+/*
+ * Flip an image
+ */
+int flip(Image &image) {
+    cv::flip(image.src, image.src, 1);
+    
+    return 0;
+}
+
+/*
+ * Rotate an image
+ */
+int rotate(Image &image, double angle) {
+    int len = std::max(image.get_width(), image.get_height());
+    cv::Point2f pt(len / 2., len / 2.);
+    cv::Mat r = cv::getRotationMatrix2D(pt, angle, 1.0);
+    cv::warpAffine(image.src, image.src, r, cv::Size(len, len));
+    
+    return 0;
+}
+
+
+
+
