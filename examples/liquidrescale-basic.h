@@ -19,6 +19,7 @@
 #define __LIQUIDRESCALE_BASIC_H__
 
 /*** SIGNAL HANDLING MACROS ***/
+#include "image.h"
 
 #define RBS (1000)
 #define CHECK_OR_N(expr, mess) G_STMT_START{ \
@@ -60,7 +61,9 @@ LqrRetVal parse_command_line(int argc, char **argv);
 void help(char *command);
 
 /*** RGB FILE I/O ***/
-guchar *rgb_buffer_from_image(pngwriter *png);
-LqrRetVal write_carver_to_image(LqrCarver *r, pngwriter *png);
+guchar *rgb_buffer_from_image(Image *img);
+LqrRetVal write_carver_to_image(LqrCarver *r, Image &image);
+int flip(Image &image);
+int rotate(Image &image, double angle);
 
 #endif /* __LIQUIDRESCALE_BASIC_H__ */

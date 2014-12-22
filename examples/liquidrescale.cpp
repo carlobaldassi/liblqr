@@ -15,10 +15,11 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/> 
  */
 
-#include <pngwriter.h>
 #include <lqr.h>
 #include <getopt.h>
 #include "liquidrescale.h"
+#include <opencv2/opencv.hpp>
+
 
 using namespace std;
 
@@ -71,12 +72,13 @@ main(int argc, char **argv)
     TRAP(parse_command_line(argc, argv));
 
     /*** open input and output files ***/
-    pngwriter png(1, 1, 0, outfile);
-    png.readfromfile(infile);
-
+    
+    Image image;
+    image.load_file(infile);
+    
     /*** old and new size ***/
-    gint old_width = png.getwidth();
-    gint old_height = png.getheight();
+    gint old_width = image.get_width();
+    gint old_height = image.get_height();
 
     if (new_width_p) {
         new_width = (gint) (new_width_p * old_width / 100);
@@ -116,23 +118,23 @@ main(int argc, char **argv)
     }
 
     /*** read and check the feature masks ***/
-    pngwriter png_pmask;
-    pngwriter png_dmask;
+    Image png_pmask;
+    Image png_dmask;
 
     if (pres_infile) {
         info_msg("will read preservation mask from", pres_infile);
         if (pres_outfile) {
             info_msg("will write preservation mask to", pres_outfile);
-            png_pmask.pngwriter_rename(pres_outfile);
+            //png_pmask.pngwriter_rename(pres_outfile);
         }
-        png_pmask.readfromfile(pres_infile);
+        png_pmask.load_file(pres_infile);
         if (pres_outfile) {
-            if (png_pmask.getwidth() != old_width) {
+            if (png_pmask.get_width() != old_width) {
                 cerr << "Fatal error: preservation mask width does not match input file width" << endl;
                 cerr << "cannot honour the --pres-out-file option" << endl;
                 exit(1);
             }
-            if (png_pmask.getheight() != old_height) {
+            if (png_pmask.get_height() != old_height) {
                 cerr << "Fatal error: preservation mask height does not match input file height" << endl;
                 cerr << "cannot honour the --pres-out-file option" << endl;
                 exit(1);
@@ -144,16 +146,16 @@ main(int argc, char **argv)
         info_msg("will read discard mask from", disc_infile);
         if (disc_outfile) {
             info_msg("will write discrad mask to", disc_outfile);
-            png_dmask.pngwriter_rename(disc_outfile);
+            //png_dmask.pngwriter_rename(disc_outfile);
         }
-        png_dmask.readfromfile(disc_infile);
+        png_dmask.load_file(disc_infile);
         if (disc_outfile) {
-            if (png_dmask.getwidth() != old_width) {
+            if (png_dmask.get_width() != old_width) {
                 cerr << "Fatal error: discard mask width does not match input file width" << endl;
                 cerr << "cannot honour the --disc-out-file option" << endl;
                 exit(1);
             }
-            if (png_dmask.getheight() != old_height) {
+            if (png_dmask.get_height() != old_height) {
                 cerr << "Fatal error: discard mask height does not match input file height" << endl;
                 cerr << "cannot honour the --disc-out-file option" << endl;
                 exit(1);
@@ -162,22 +164,22 @@ main(int argc, char **argv)
     }
 
     /*** read and check the rigidity mask ***/
-    pngwriter png_rigmask;
+    Image png_rigmask;
 
     if (rigmask_infile) {
         info_msg("will read rigidity mask from", rigmask_infile);
         if (rigmask_outfile) {
             info_msg("will write rigidity mask to", rigmask_outfile);
-            png_pmask.pngwriter_rename(rigmask_outfile);
+            //png_pmask.pngwriter_rename(rigmask_outfile);
         }
-        png_rigmask.readfromfile(rigmask_infile);
+        png_rigmask.load_file(rigmask_infile);
         if (rigmask_outfile) {
-            if (png_rigmask.getwidth() != old_width) {
+            if (png_rigmask.get_width() != old_width) {
                 cerr << "Fatal error: rigidity mask width does not match input file width" << endl;
                 cerr << "cannot honour the --rigmask-out-file option" << endl;
                 exit(1);
             }
-            if (png_rigmask.getheight() != old_height) {
+            if (png_rigmask.get_height() != old_height) {
                 cerr << "Fatal error: rigidity mask height does not match input file height" << endl;
                 cerr << "cannot honour the --rigmask-out-file option" << endl;
                 exit(1);
@@ -199,7 +201,7 @@ main(int argc, char **argv)
     guchar *rgb_disc_buffer = NULL;
     guchar *rgb_rigmask_buffer = NULL;
 
-    TRAP_N(rgb_buffer = rgb_buffer_from_image(&png));
+    TRAP_N(rgb_buffer = rgb_buffer_from_image(&image));
     if (pres_infile) {
         TRAP_N(rgb_pres_buffer = rgb_buffer_from_image(&png_pmask));
     }
@@ -346,38 +348,26 @@ main(int argc, char **argv)
     /**** (V) READOUT THE MULTISIZE IMAGE ****/
 
     /* (V.1) readout the main image */
-    TRAP(write_carver_to_image(carver, &png));
+    TRAP(write_carver_to_image(carver, image));
     /* (V.2) readout the atteched images */
     LqrCarverList *carver_list = lqr_carver_list_start(carver);
     if (pres_outfile) {
-        TRAP(write_carver_to_image(lqr_carver_list_current(carver_list), &png_pmask));
+        TRAP(write_carver_to_image(lqr_carver_list_current(carver_list), png_pmask));
         lqr_carver_list_next(carver_list);
     }
     if (disc_outfile) {
-        TRAP(write_carver_to_image(lqr_carver_list_current(carver_list), &png_dmask));
+        TRAP(write_carver_to_image(lqr_carver_list_current(carver_list), png_dmask));
         lqr_carver_list_next(carver_list);
     }
     if (rigmask_outfile) {
-        TRAP(write_carver_to_image(lqr_carver_list_current(carver_list), &png_rigmask));
+        TRAP(write_carver_to_image(lqr_carver_list_current(carver_list), png_rigmask));
     }
 
     /**** (VI) DESTROY THE CARVER OBJECT ****/
 
     lqr_carver_destroy(carver);
 
-    /*** close files (write the images on disk) ***/
-
-    png.close();
-    if (pres_outfile) {
-        png_pmask.close();
-    }
-    if (disc_outfile) {
-        png_dmask.close();
-    }
-    if (rigmask_outfile) {
-        png_rigmask.close();
-    }
-
+    
     return 0;
 }/*}}}*/
 
@@ -632,70 +622,74 @@ help(char *command)
 
 /* convert the image in the right format */
 guchar *
-rgb_buffer_from_image(pngwriter *png)
+rgb_buffer_from_image(Image *img)
 {/*{{{*/
-    gint x, y, k, channels;
+    
     gint w, h;
-    guchar *buffer;
-
+    
     /* get info from the image */
-    w = png->getwidth();
-    h = png->getheight();
-    channels = 3;                       // we assume an RGB image here 
-
+    w = img->get_width();
+    h = img->get_height();
+    // we assume an RGB image here
+    
+    // Create the image buffer
+    int buffer_size = w * 3 * h;
+    
     /* allocate memory to store w * h * channels unsigned chars */
-    buffer = g_try_new(guchar, channels * w * h);
-    g_assert(buffer != NULL);
-
-    /* start iteration (always y first, then x, then colours) */
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            for (k = 0; k < channels; k++) {
-                /* read the image channel k at position x,y */
-                buffer[(y * w + x) * channels + k] = (guchar) (png->dread(x + 1, y + 1, k + 1) * 255);
-                /* note : the x+1,y+1,k+1 on the right side are
-                 *        specific the pngwriter library */
-            }
-        }
-    }
-
-    return buffer;
+    
+    // This will automatically be freed by liblqr
+    guchar *rgb_buffer = (guchar *)malloc(sizeof(guchar)*buffer_size);
+    g_assert(rgb_buffer != NULL);
+    memcpy(rgb_buffer, (unsigned char*)(img->src.data), buffer_size);
+    
+    return rgb_buffer;
 }/*}}}*/
 
-/* readout the multizie image */
+/*
+ * Readout the multisize image
+ */
 LqrRetVal
-write_carver_to_image(LqrCarver *r, pngwriter *png)
-{/*{{{*/
-    gint x, y;
+write_carver_to_image(LqrCarver *r, Image &image) {
+    int x, y;
     guchar *rgb;
-    gdouble red, green, blue;
-    gint w, h;
-
-    /* make sure the image is RGB */
-    LQR_CATCH_F(lqr_carver_get_channels(r) == 3);
-
-    /* resize the image canvas as needed to
-     * fit for the new size */
+    int w, h;
+    
+    // Make sure the image is RGB
+    if (lqr_carver_get_channels(r) != 3) {
+        std::cerr << "Error: Image is not RGB" << std::endl;
+    }
+    
+    // resize the image canvas as needed to fit for the new size
     w = lqr_carver_get_width(r);
     h = lqr_carver_get_height(r);
-    png->resize(w, h);
-
-    /* initialize image reading */
+    
+    std::vector<unsigned char> buffer(w * 3 * h);
+    
+    // Initialize image reading
     lqr_carver_scan_reset(r);
-
-    /* readout (no need to init rgb) */
+    
+    // Readout (no need to init rgb)
+    
     while (lqr_carver_scan(r, &x, &y, &rgb)) {
-        /* convert the output into doubles */
-        red = (gdouble) rgb[0] / 255;
-        green = (gdouble) rgb[1] / 255;
-        blue = (gdouble) rgb[2] / 255;
-
-        /* plot (pngwriter's coordinates start from 1,1) */
-        png->plot(x + 1, y + 1, red, green, blue);
+        
+        int index = (x + y*w) * 3;
+        
+        buffer[index] = rgb[0];
+        buffer[index+1] = rgb[1];
+        buffer[index+2] = rgb[2];
     }
-
+    
+    // Update the original image with the rescaled version
+    cv::Mat dest(cv::Size(w, h), CV_8UC3, &buffer[0], cv::Mat::AUTO_STEP);
+    dest.copyTo(image.src);
+    
+    image.save_file(outfile, "", 1);
+    
     return LQR_OK;
-}/*}}}*/
+}
+
+
+
 
 /*** ENERGY FUNCTIONS ***/
 
@@ -756,46 +750,58 @@ set_energy(LqrCarver *carver, gchar *energy_function)
     return LQR_OK;
 }/*}}}*/
 
-/* write out the energy */
+
+/*
+ * Write out the energy map
+ * TODO: Use std::string instead of char for filenames...
+ */
 LqrRetVal
-write_energy(LqrCarver *carver, gchar *energy_outfile, gint orientation)
-{/*{{{*/
-    gfloat *nrg_buffer;
-
-    pngwriter png_nrg;
-
-    png_nrg.pngwriter_rename(energy_outfile);
-
-    gint x, y;
-    gfloat en;
-    gdouble red, green, blue;
-
-    gint w = lqr_carver_get_width(carver);
-    gint h = lqr_carver_get_height(carver);
-
-    png_nrg.resize(w, h);
-
-    LQR_CATCH_MEM(nrg_buffer = g_try_new0(gfloat, w * h));
-    LQR_CATCH(lqr_carver_get_energy(carver, nrg_buffer, orientation));
-
+write_energy(LqrCarver *carver, char *energy_outfile, int orientation) {
+    float *nrg_buffer;
+    
+    int x, y;
+    float en;
+    double red, green, blue;
+    
+    int w = lqr_carver_get_width(carver);
+    int h = lqr_carver_get_height(carver);
+    
+    std::vector<unsigned char> buffer(w * 3 * h);
+    std::vector<unsigned char*> rows(h, NULL);
+    
+    nrg_buffer = (float *)malloc(w * h * sizeof(float));
+    
+    lqr_carver_get_energy(carver, nrg_buffer, orientation);
+    
+    int i = 0;
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             en = nrg_buffer[y * w + x];
-            red = (gdouble) en;
-            green = (gdouble) en;
-            blue = (gdouble) en;
-
-            /* plot (pngwriter's coordinates start from 1,1) */
-            png_nrg.plot(x + 1, y + 1, red, green, blue);
+            red = (en * 255);
+            green = (en * 255);
+            blue = (en * 255);
+            
+            buffer[i] = red;
+            buffer[i+1] = green;
+            buffer[i+2] = blue;
+            
+            i += 3;
         }
     }
+     std::string s = energy_outfile;
+     std::string fileType = s.substr(s.find("."), s.size());
+     
+     cv::Mat image(cv::Size(w, h), CV_8UC3, &buffer[0], cv::Mat::AUTO_STEP);
+     std::vector<uchar> buf;
+     cv::imencode(fileType, image, buf, std::vector<int>() );
+     imwrite(energy_outfile, image);
 
-    g_free(nrg_buffer);
-
-    png_nrg.close();
-
+    free(nrg_buffer);
+    
     return LQR_OK;
-}/*}}}*/
+}
+
+
 
 /*** PROGRESS INDICATOR ***/
 
