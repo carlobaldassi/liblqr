@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
+AC_PREREQ(2.68)
 
 dnl remember to edit the .pc file name
 dnl and lqr/Makefile.am if you change these 
@@ -60,20 +60,19 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
-AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
 AC_HEADER_STDC
 
 AC_C_INLINE
 AC_C_VOLATILE
 
 AC_DISABLE_STATIC
+AM_PROG_AR
 LT_INIT([win32-dll])
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
@@ -148,11 +147,11 @@ AS_IF([test "x$declspec" = "xfalse"],
 
 AC_MSG_CHECKING([[if we are on Win32]])
 AC_LANG([C])
-AC_PREPROC_IFELSE([[
+AC_PREPROC_IFELSE([AC_LANG_PROGRAM([[
 		   #ifndef WIN32
-		   #errrrrrrrrorrrrr
+		   #error
 		   #endif
-		   ]],
+		   ]])],
 		   [[is_win32=true]],
 		   [[is_win32=false]]
 		   )
