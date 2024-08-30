@@ -1,105 +1,163 @@
 #!/bin/sh
 
 # This script does all the magic calls to automake/autoconf and
-# friends that are needed to configure a cvs checkout.  You need a
-# couple of extra tools to run this script successfully.
+# friends that are needed to configure a git clone. As described in
+# the file HACKING you need a couple of extra tools to run this script
+# successfully.
 #
 # If you are compiling from a released tarball you don't need these
 # tools and you shouldn't use this script.  Just call ./configure
 # directly.
 
+ACLOCAL=${ACLOCAL-aclocal-1.19}
+AUTOCONF=${AUTOCONF-autoconf}
+AUTOHEADER=${AUTOHEADER-autoheader}
+AUTOMAKE=${AUTOMAKE-automake-1.19}
+LIBTOOLIZE=${LIBTOOLIZE-libtoolize}
+
+AUTOCONF_REQUIRED_VERSION=2.68
+AUTOMAKE_REQUIRED_VERSION=1.11.2
+LIBTOOL_REQUIRED_VERSION=1.5
+LIBTOOL_WIN32_REQUIRED_VERSION=2.2
+GLIB_REQUIRED_VERSION=2.0.0
+
+
 PROJECT="LiquidRescale library"
 TEST_TYPE=-f
 FILE=lqr/lqr_carver.c
 
-AUTOCONF_REQUIRED_VERSION=2.54
-AUTOMAKE_REQUIRED_VERSION=1.6
-GLIB_REQUIRED_VERSION=2.0.0
-LIBTOOL_REQUIRED_VERSION=1.5.24
 
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 ORIGDIR=`pwd`
 cd $srcdir
 
+
 check_version ()
 {
-    if expr $1 \>= $2 > /dev/null; then
-	echo "yes (version $1)"
+    VERSION_A=$1
+    VERSION_B=$2
+
+    save_ifs="$IFS"
+    IFS=.
+    set dummy $VERSION_A 0 0 0
+    MAJOR_A=$2
+    MINOR_A=$3
+    MICRO_A=$4
+    set dummy $VERSION_B 0 0 0
+    MAJOR_B=$2
+    MINOR_B=$3
+    MICRO_B=$4
+    IFS="$save_ifs"
+
+    if expr "$MAJOR_A" = "$MAJOR_B" > /dev/null; then
+        if expr "$MINOR_A" \> "$MINOR_B" > /dev/null; then
+           echo "yes (version $VERSION_A)"
+        elif expr "$MINOR_A" = "$MINOR_B" > /dev/null; then
+            if expr "$MICRO_A" \>= "$MICRO_B" > /dev/null; then
+               echo "yes (version $VERSION_A)"
+            else
+                echo "Too old (version $VERSION_A)"
+                DIE=1
+            fi
+        else
+            echo "Too old (version $VERSION_A)"
+            DIE=1
+        fi
+    elif expr "$MAJOR_A" \> "$MAJOR_B" > /dev/null; then
+        echo "Major version might be too new ($VERSION_A)"
     else
-	echo "Too old (found version $1)!"
-	DIE=1
+        echo "Too old (version $VERSION_A)"
+        DIE=1
     fi
 }
 
 echo
-echo "I am testing that you have the required versions of autoconf," 
-echo "automake and libtoolize..."
+echo "I am testing that you have the tools required to build the"
+echo "$PROJECT from git. This test is not foolproof,"
+echo "so if anything goes wrong, see the file HACKING for more information..."
 echo
 
 DIE=0
 
-echo -n "checking for autoconf >= $AUTOCONF_REQUIRED_VERSION ... "
-if (autoconf --version) < /dev/null > /dev/null 2>&1; then
-    VER=`autoconf --version \
+
+OS=`uname -s`
+case $OS in
+    *YGWIN* | *INGW*)
+        echo "Looks like Win32, you will need libtool $LIBTOOL_WIN32_REQUIRED_VERSION or newer."
+        echo
+        LIBTOOL_REQUIRED_VERSION=$LIBTOOL_WIN32_REQUIRED_VERSION
+        ;;
+esac
+
+printf "checking for libtool >= %s ... " "$LIBTOOL_REQUIRED_VERSION"
+if ($LIBTOOLIZE --version) < /dev/null > /dev/null 2>&1; then
+   LIBTOOLIZE=$LIBTOOLIZE
+elif (glibtoolize --version) < /dev/null > /dev/null 2>&1; then
+   LIBTOOLIZE=glibtoolize
+else
+    echo
+    echo "  You must have libtool installed to compile $PROJECT."
+    echo "  Install the appropriate package for your distribution,"
+    echo "  or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+    echo
+    DIE=1
+fi
+
+if test x$LIBTOOLIZE != x; then
+    VER=`$LIBTOOLIZE --version \
+         | grep libtool | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
+    check_version $VER $LIBTOOL_REQUIRED_VERSION
+fi
+printf "checking for autoconf >= %s ... " "$AUTOCONF_REQUIRED_VERSION"
+if ($AUTOCONF --version) < /dev/null > /dev/null 2>&1; then
+    VER=`$AUTOCONF --version | head -n 1 \
          | grep -iw autoconf | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
     check_version $VER $AUTOCONF_REQUIRED_VERSION
 else
     echo
     echo "  You must have autoconf installed to compile $PROJECT."
     echo "  Download the appropriate package for your distribution,"
-    echo "  or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
+    echo "  or get the source tarball at ftp://ftp.gnu.org/pub/gnu/autoconf/"
+    echo
     DIE=1;
 fi
 
-echo -n "checking for automake >= $AUTOMAKE_REQUIRED_VERSION ... "
-if (automake-1.7 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.7
-   ACLOCAL=aclocal-1.7
-elif (automake-1.8 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.8
-   ACLOCAL=aclocal-1.8
-elif (automake-1.9 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.9
-   ACLOCAL=aclocal-1.9
-elif (automake-1.10 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.10
-   ACLOCAL=aclocal-1.10
-elif (automake-1.6 --version) < /dev/null > /dev/null 2>&1; then
-   AUTOMAKE=automake-1.6
-   ACLOCAL=aclocal-1.6
-else
-    echo
-    echo "  You must have automake 1.6 or newer installed to compile $PROJECT."
-    echo "  Download the appropriate package for your distribution,"
-    echo "  or get the source tarball at ftp://ftp.gnu.org/pub/gnu/automake/"
-    DIE=1
-fi
 
-if test x$AUTOMAKE != x; then
+printf "checking for automake >= %s ... " "$AUTOMAKE_REQUIRED_VERSION"
+if ($AUTOMAKE --version) < /dev/null > /dev/null 2>&1; then
+    AUTOMAKE=$AUTOMAKE
+    ACLOCAL=$ACLOCAL
+else
+    amfound=0
+    for amver in 1.19 1.18 1.17 1.16 1.15 1.14 1.13 1.12 1.11; do
+        if (automake-$amver --version) < /dev/null > /dev/null 2>&1; then
+            AUTOMAKE=automake-$amver
+            ACLOCAL=aclocal-$amver
+            amfound=1
+            break
+        fi
+    done
+    if expr $amfound = 0 > /dev/null; then
+        echo
+        echo "  You must have automake $AUTOMAKE_REQUIRED_VERSION or newer installed to compile $PROJECT."
+        echo "  Download the appropriate package for your distribution,"
+        echo "  or get the source tarball at ftp://ftp.gnu.org/pub/gnu/automake/"
+        echo
+        DIE=1
+    fi
+fi
+if test x$AUTOMAKE != x -a $DIE = 0; then
     VER=`$AUTOMAKE --version \
-         | grep automake | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
+         | grep automake | sed "s/.* \([0-9.]\+\)[-a-z0-9]*$/\1/"`
     check_version $VER $AUTOMAKE_REQUIRED_VERSION
-fi
-
-echo -n "checking for libtool >= $LIBTOOL_REQUIRED_VERSION ... "
-if (libtoolize --version) < /dev/null > /dev/null 2>&1; then
-    VER=`libtoolize --version \
-         | grep libtoolize | sed "s/.* \([0-9.]*\)/\1/"`
-    check_version $VER $LIBTOOL_REQUIRED_VERSION
-else
-    echo
-    echo "  You must have libtool installed to compile $PROJECT."
-    echo "  Get the latest version from"
-    echo "  ???"
-    DIE=1
 fi
 
 
 if test "$DIE" -eq 1; then
     echo
     echo "Please install/upgrade the missing tools and call me again."
-    echo	
+    echo
     exit 1
 fi
 
@@ -112,65 +170,52 @@ test $TEST_TYPE $FILE || {
 }
 
 
-echo
-echo "I am going to run ./configure with the following arguments:"
-echo
-echo "  --enable-maintainer-mode --enable-install-man $AUTOGEN_CONFIGURE_ARGS $@"
-echo
-
-if test -z "$*"; then
-    echo "If you wish to pass additional arguments, please specify them "
-    echo "on the $0 command line or set the AUTOGEN_CONFIGURE_ARGS "
-    echo "environment variable."
+if test -z "$NOCONFIGURE"; then
     echo
+    echo "I am going to run ./configure with the following arguments:"
+    echo
+    echo "  --enable-maintainer-mode --enable-install-man $AUTOGEN_CONFIGURE_ARGS $@"
+    echo
+
+    if test -z "$*"; then
+        echo "If you wish to pass additional arguments, please specify them "
+        echo "on the $0 command line or set the AUTOGEN_CONFIGURE_ARGS "
+        echo "environment variable."
+        echo
+    fi
 fi
 
-if test -z "$ACLOCAL_FLAGS"; then
-
-    acdir=`$ACLOCAL --print-ac-dir`
-    m4list="glib-gettext.m4 intltool.m4"
-
-    for file in $m4list
-    do
-	if [ ! -f "$acdir/$file" ]; then
-	    echo
-	    echo "WARNING: aclocal's directory is $acdir, but..."
-            echo "         no file $acdir/$file"
-            echo "         You may see fatal macro warnings below."
-            echo "         If these files are installed in /some/dir, set the ACLOCAL_FLAGS "
-            echo "         environment variable to \"-I /some/dir\", or install"
-            echo "         $acdir/$file."
-            echo
-        fi
-    done
-fi
 
 rm -rf autom4te.cache
 
 $ACLOCAL $ACLOCAL_FLAGS
 RC=$?
 if test $RC -ne 0; then
-   echo "$ACLOCAL gave errors. Please fix the error conditions and try again."
-   exit 1
+    echo "$ACLOCAL gave errors. Please fix the error conditions and try again."
+    exit $RC
 fi
 
+
 # optionally feature autoheader
-(autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader || exit 1
+($AUTOHEADER --version)  < /dev/null > /dev/null 2>&1 && $AUTOHEADER || exit 1
 
-$AUTOMAKE --add-missing --copy || exit 1
-autoconf || exit 1
+$LIBTOOLIZE --force --copy --install || exit 1
 
-libtoolize --force --copy --install || exit 1
+$AUTOMAKE --add-missing --force --copy || exit $?
+$AUTOCONF || exit $?
 
 cd $ORIGDIR
 
-$srcdir/configure --enable-maintainer-mode --enable-install-man $AUTOGEN_CONFIGURE_ARGS "$@"
-RC=$?
-if test $RC -ne 0; then
-  echo
-  echo "Configure failed or did not finish!"
-  exit $RC
+if test -z "$NOCONFIGURE"; then
+    $srcdir/configure --enable-maintainer-mode --enable-install-man $AUTOGEN_CONFIGURE_ARGS "$@"
+    RC=$?
+    if test $RC -ne 0; then
+        echo
+        echo "Configure failed or did not finish!"
+        exit $RC
+    fi
+
+    echo
+    echo "Now type 'make' to compile the $PROJECT."
 fi
 
-echo
-echo "Now type 'make' to compile $PROJECT."
