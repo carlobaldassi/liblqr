@@ -56,11 +56,11 @@ gdouble lqr_carver_read_cached_rgba(LqrCarver *r, gint x, gint y, gint channel);
 gdouble lqr_carver_read_cached_custom(LqrCarver *r, gint x, gint y, gint channel);
 
 /* cache brightness (or luma or else) to speedup energy computation */
-gdouble *lqr_carver_generate_rcache_bright();
-gdouble *lqr_carver_generate_rcache_luma();
-gdouble *lqr_carver_generate_rcache_rgba();
-gdouble *lqr_carver_generate_rcache_custom();
-gdouble *lqr_carver_generate_rcache();
+gdouble *lqr_carver_generate_rcache_bright(LqrCarver *r);
+gdouble *lqr_carver_generate_rcache_luma(LqrCarver *r);
+gdouble *lqr_carver_generate_rcache_rgba(LqrCarver *r);
+gdouble *lqr_carver_generate_rcache_custom(LqrCarver *r);
+gdouble *lqr_carver_generate_rcache(LqrCarver *r);
 
 gfloat lqr_energy_builtin_grad_all(gint x, gint y, gint img_width, gint img_height, LqrReadingWindow *rwindow,
                                    LqrGradFunc gf);
